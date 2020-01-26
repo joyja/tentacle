@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const sqlite3 = require('sqlite3').verbose()
 const { GraphQLServer, PubSub } = require('graphql-yoga')
 const resolvers = require('./resolvers')
