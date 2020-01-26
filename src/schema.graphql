@@ -1,0 +1,202 @@
+scalar DateTime
+
+enum ModbusRegisterType {
+  DISCRETE_INPUT
+  COIL
+  INPUT_REGISTER
+  HOLDING_REGISTER
+}
+
+enum Datatype {
+  BOOLEAN,
+  INT16,
+  INT32,
+  FLOAT
+}
+
+union Source = ModbusSource | EthernetIPSource
+union DeviceConfig = Modbus | EthernetIP
+
+type User {
+  id: ID!
+  username: String!
+}
+
+type Device {
+  id: ID!
+  name: String!
+  description: String!
+  config: DeviceConfig
+  createdBy: User
+  createdOn: DateTime!
+}
+
+type Modbus {
+  id: ID!
+  device: Device!
+  host: String!
+  port: String!
+  reverseBits: Boolean!
+  reverseWords: Boolean!
+  sources: [ModbusSource!]!
+  status: String
+}
+
+type ModbusSource {
+  id: ID!
+  modbus: Modbus!
+  tag: Tag!
+  register: Int!
+  registerType: ModbusRegisterType!
+}
+
+type EthernetIP {
+  id: ID!
+  device: Device!
+  host: String!
+  slot: String!
+  sources: [EthernetIPSource!]!
+  status: String
+}
+
+type EthernetIPSource {
+  id: ID!
+  ethernetip: EthernetIP!
+  tag: Tag!
+  tagname: String!
+}
+
+type ScanClass {
+  id: ID!
+  rate: Int!
+  tags: [Tag!]!
+}
+
+type Tag {
+  id: ID!
+  name: String!
+  description: String!
+  value: String
+  datatype: Datatype!
+  scanClass: ScanClass!
+  createdBy: User
+  createdOn: DateTime!
+  source: Source
+}
+
+type Service {
+  id: ID!
+  name: String!
+  description: String!
+  config: Mqtt
+  createdBy: User
+  createdOn: DateTime!
+}
+
+type Mqtt {
+  id: ID!
+  host: String!
+  port: String!
+  group: String!
+  node: String!
+  username: String!
+  password: String!
+  sources: [MqttSource!]!
+  rate: Int!
+  encrypt: Boolean!
+}
+
+type MqttSource {
+  id: ID!
+  mqtt: Mqtt!
+  device: Device!
+}
+
+type AuthPayload {
+  token: String
+  user: User
+}
+
+type Query {
+  tags: [Tag!]!
+  scanClasses: [ScanClass!]!
+  devices(type: String): [Device!]!
+  services(type: String): [Service!]!
+}
+
+type Mutation {
+  login(username: String!, password: String!): AuthPayload
+  changePassword(oldPassword: String!, newPassword: String!): User
+  createScanClass(name: String!, rate: Int!): ScanClass
+  updateScanClass(id: ID!, rate: Int!): ScanClass
+  deleteScanClass(id: ID!): ScanClass
+  createTag(name: String!, description: String!, datatype: Datatype!, value: String!, scanClass: Int!): Tag
+  updateTag(id: ID!, name: String, description: String, value: String, scanClass: Int): Tag
+  deleteTag(id: ID!): Tag
+  createModbus(
+    name: String!, 
+    description: String!, 
+    host: String!, 
+    port: Int!,
+    reverseBits: Boolean!,
+    reversWords: Boolean!,
+    zeroBase: Boolean!
+  ): Device
+  updateModbus(
+    id: ID!,
+    name: String, 
+    description: String, 
+    host: String, 
+    port: Int,
+    reverseBits: Boolean,
+    reversWords: Boolean,
+    zeroBase: Boolean
+  ): Device
+  deleteModbus(id: ID!): Device
+  createModbusSource(deviceId: ID!, tagId: ID!, register: Int!, registerType: ModbusRegisterType): ModbusSource
+  updateModbusSource(tagId: ID!, register: Int!, registerType: ModbusRegisterType): ModbusSource
+  deleteModbusSource(tagId: ID!): ModbusSource
+  createEthernetIP(
+    name: String!, 
+    description: String!, 
+    host: String!, 
+    slot: Int!,
+  ): Device
+  updateEthernetIP(
+    id: ID!,
+    name: String, 
+    description: String, 
+    host: String, 
+    slot: Int,
+  ): Device
+  deleteEthernetIP(id: ID!): Device
+  createEthernetIPSource(deviceId: ID!, tagId: ID!, tagname: String): EthernetIPSource
+  updateEthernetIPSource(tagId: ID!, tagname: String): EthernetIPSource
+  deleteEthernetIPSource(tagId: ID!): EthernetIPSource
+  createMqtt(name: String!,
+    description: String!,
+    host: String!, 
+    port: Int!,
+    group: String!,
+    node: String!,
+    username: String!,
+    password: String!,
+    devices: [Int!]!,
+    rate: Int!,
+    encrypt: Boolean!
+  ): Service
+  updateMqtt(
+    id: ID!,
+    name: String!,
+    description: String!,
+    host: String!, 
+    port: Int!,
+    group: String!,
+    node: String!,
+    username: String!,
+    password: String!
+  ): Service
+  addMqttDevice(id: ID!, deviceId: ID!): Service
+  deleteMqttDevice(id: ID!, deviceId: ID!): Service
+  deleteMqtt(id: ID!): Service
+}
