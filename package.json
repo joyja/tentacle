@@ -1,7 +1,7 @@
 {
   "name": "spread-edge",
   "version": "0.0.0",
-  "description": "Industrial automation edge gateway",
+  "description": "Edge software for use with Spread",
   "scripts": {
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
     "dev": "cross-env NODE_ENV=development nodemon ./src/index.js -e js,graphql --watch src",
@@ -15,7 +15,7 @@
   },
   "main": "src/index.js",
   "author": "",
-  "license": "GPL-3.0",
+  "license": "ISC",
   "devDependencies": {
     "eslint": "^6.6.0",
     "eslint-config-prettier": "^6.5.0",
