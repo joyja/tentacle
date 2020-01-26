@@ -1,7 +1,7 @@
 {
-  "name": "spread-edge",
+  "name": "tentacle",
   "version": "0.0.0",
-  "description": "Edge software for use with Spread",
+  "description": "Industrial automation gateway",
   "scripts": {
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
     "dev": "cross-env NODE_ENV=development nodemon ./src/index.js -e js,graphql --watch src",
