@@ -15,7 +15,7 @@
   },
   "main": "src/index.js",
   "author": "",
-  "license": "ISC",
+  "license": "GPL-3.0",
   "devDependencies": {
     "eslint": "^6.6.0",
     "eslint-config-prettier": "^6.5.0",
