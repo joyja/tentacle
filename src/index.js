@@ -33,21 +33,29 @@ server
     const context = server.context()
     await context.db.get('PRAGMA foreign_keys = ON')
     //Check for administrator account and initialize one if it doesn't exist.
-    await User.initialize(context.db, context.pubsub)
-    await Tag.initialize(context.db, context.pubsub)
-    await Device.initialize(context.db, context.pubsub)
-    await Service.initialize(context.db, context.pubsub)
-    for (device of Device.instances) {
-      await device.config.connect().catch((error) => {
-        throw error
-      })
-    }
-    for (service of Service.instances) {
-      await service.config.connect()
-    }
-    for (scanClass of ScanClass.instances) {
-      await scanClass.startScan()
-    }
+    await User.initialize(context.db, context.pubsub).catch((error) => {
+      throw error
+    })
+    // await Tag.initialize(context.db, context.pubsub).catch((error) => {
+    //   throw error
+    // })
+    // await Device.initialize(context.db, context.pubsub).catch((error) => {
+    //   throw error
+    // })
+    // await Service.initialize(context.db, context.pubsub).catch((error) => {
+    //   throw error
+    // })
+    // for (device of Device.instances) {
+    //   await device.config.connect().catch((error) => {
+    //     throw error
+    //   })
+    // }
+    // for (service of Service.instances) {
+    //   await service.config.connect()
+    // }
+    // for (scanClass of ScanClass.instances) {
+    //   await scanClass.startScan()
+    // }
   })
   .then((server) => {
     process.on('SIGINT', () => {
@@ -64,4 +72,7 @@ server
       db.close()
       server.close()
     })
+  })
+  .catch((error) => {
+    throw error
   })

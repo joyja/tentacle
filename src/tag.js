@@ -100,6 +100,15 @@ class Tag extends Model {
   }
 }
 Tag.table = `tag`
+Tag.fields = [
+  { colName: 'name', colType: 'TEXT' },
+  { colName: 'description', colType: 'TEXT' },
+  { colName: 'scanClass', colRef: 'scanClass', onDelete: 'CASCADE' },
+  { colName: 'value', colType: 'TEXT' },
+  { colName: 'createdBy', colRef: 'user', onDelete: 'SET NULL' },
+  { colName: 'createdOn', colType: 'INTEGER' },
+  { colName: 'datatype', colType: 'TEXT' }
+]
 Tag.instances = []
 Tag.initialized = false
 
@@ -158,6 +167,11 @@ class ScanClass extends Model {
   }
 }
 ScanClass.table = `scanClass`
+ScanClass.fields = [
+  { colName: 'rate', colType: 'INTEGER' },
+  { colName: 'createdBy', colRef: 'user', onDelete: 'SET NULL' },
+  { colName: 'createdOn', colType: 'INTEGER' }
+]
 ScanClass.instances = []
 ScanClass.initialized = false
 

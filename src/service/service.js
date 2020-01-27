@@ -80,6 +80,13 @@ class Service extends Model {
 }
 Service.table = `service`
 Service.instances = []
+Service.fields = [
+  { colName: 'name', colType: 'TEXT' },
+  { colName: 'description', colType: 'TEXT' },
+  { colName: 'type', colType: 'TEXT' },
+  { colName: 'createdBy', colRef: 'user', onDelete: 'SET NULL' },
+  { colName: 'createdOn', colType: 'INTEGER' }
+]
 Service.initialized = false
 Service.connected = false
 

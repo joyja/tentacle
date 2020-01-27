@@ -145,6 +145,15 @@ class Modbus extends Model {
   }
 }
 Modbus.table = `modbus`
+Modbus.fields = [
+  { colName: 'device', colRef: 'device', onDelete: 'CASCADE' },
+  { colName: 'host', colType: 'TEXT' },
+  { colName: 'port', colType: 'INTEGER' },
+  { colName: 'reverseBits', colType: 'INTEGER' },
+  { colName: 'reverseWords', colType: 'INTEGER' },
+  { colName: 'zeroBased', colType: 'INTEGER' },
+  { colName: 'timeout', colType: 'INTEGER' }
+]
 Modbus.instances = []
 Modbus.initialized = false
 
@@ -289,6 +298,12 @@ class ModbusSource extends Model {
   }
 }
 ModbusSource.table = `modbusSource`
+ModbusSource.fields = [
+  { colName: 'modbus', colRef: 'modbus', onDelete: 'CASCADE' },
+  { colName: 'tag', colRef: 'tag', onDelete: 'CASCADE' },
+  { colName: 'register', colType: 'INTEGER' },
+  { colName: 'registerType', colType: 'TEXT' }
+]
 ModbusSource.instances = []
 ModbusSource.initialized = false
 

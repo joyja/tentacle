@@ -7,12 +7,16 @@ const APP_SECRET = uuidv1()
 
 class User extends Model {
   static async initialize(db, pubsub) {
-    const result = await super.initialize(db, pubsub)
+    const result = await super.initialize(db, pubsub).catch((error) => {
+      throw error
+    })
     const rootUser = User.instances.find((user) => {
       return user.username === `admin`
     })
     if (!rootUser) {
-      await User.create(`admin`, `password`)
+      await User.create(`admin`, `password`).catch((error) => {
+        throw error
+      })
     }
     return result
   }
@@ -115,6 +119,10 @@ class User extends Model {
   }
 }
 User.table = `user`
+User.fields = [
+  { colName: 'username', colType: 'TEXT' },
+  { colName: 'password', colType: 'TEXT' }
+]
 User.instances = []
 User.initialized = false
 

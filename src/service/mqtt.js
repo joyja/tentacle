@@ -192,6 +192,16 @@ class Mqtt extends Model {
   }
 }
 Mqtt.table = `mqtt`
+Mqtt.fields = [
+  { colName: 'service', colRef: 'service', onDelete: 'CASCADE' },
+  { colName: 'host', colType: 'TEXT' },
+  { colName: 'port', colType: 'INTEGER' },
+  { colName: 'group', colType: 'TEXT' },
+  { colName: 'node', colType: 'TEXT' },
+  { colName: 'username', colType: 'TEXT' },
+  { colName: 'password', colType: 'TEXT' },
+  { colName: 'rate', colType: 'INTEGER' }
+]
 Mqtt.instances = []
 Mqtt.initialized = false
 Mqtt.connected = false
@@ -220,6 +230,10 @@ class MqttSource extends Model {
   }
 }
 MqttSource.table = `mqttSource`
+MqttSource.fields = [
+  { colName: 'mqtt', colRef: 'mqtt', onDelete: 'CASCADE' },
+  { colName: 'device', colRef: 'device', onDelete: 'CASCADE' }
+]
 MqttSource.instances = []
 MqttSource.initialized = false
 MqttSource.connected = false

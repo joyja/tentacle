@@ -71,6 +71,11 @@ class EthernetIP extends Model {
   }
 }
 EthernetIP.table = `ethernetip`
+EthernetIP.fields = [
+  { colName: 'device', colRef: 'device', onDelete: 'CASCADE' },
+  { colName: 'host', colType: 'TEXT' },
+  { colName: 'slot', colType: 'INTEGER' }
+]
 EthernetIP.instances = []
 EthernetIP.initialized = false
 
@@ -109,6 +114,11 @@ class EthernetIPSource extends Model {
   }
 }
 EthernetIPSource.table = `ethernetipSource`
+EthernetIPSource.fields = [
+  { colName: 'ethernetip', colRef: 'ethernetip', onDelete: 'CASCADE' },
+  { colName: 'tag', colRef: 'tag', onDelete: 'CASCADE' },
+  { colName: 'tagname', colType: 'TEXT' }
+]
 EthernetIPSource.instances = []
 EthernetIPSource.initialized = false
 

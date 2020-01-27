@@ -64,6 +64,13 @@ class Device extends Model {
   }
 }
 Device.table = `device`
+Device.fields = [
+  { colName: 'name', colType: 'TEXT' },
+  { colName: 'description', colType: 'TEXT' },
+  { colName: 'type', colType: 'TEXT' },
+  { colName: 'createdBy', colRef: 'user', onDelete: 'SET NULL' },
+  { colName: 'createdOn', colType: 'INTEGER' }
+]
 Device.instances = []
 Device.initialized = false
 
