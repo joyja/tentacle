@@ -6,9 +6,15 @@ const fromUnixTime = require('date-fns/fromUnixTime')
 
 class Device extends Model {
   static async initialize(db, pubsub) {
-    await Modbus.initialize(db, pubsub)
-    await EthernetIP.initialize(db, pubsub)
-    return super.initialize(db, pubsub, Device)
+    await Modbus.initialize(db, pubsub).catch((error) => {
+      throw error
+    })
+    await EthernetIP.initialize(db, pubsub).catch((error) => {
+      throw error
+    })
+    return super.initialize(db, pubsub, Device).catch((error) => {
+      throw error
+    })
   }
   static create(name, description, type, createdBy) {
     const createdOn = getUnixTime(new Date())

@@ -1,24 +1,23 @@
 const { createTestDb, deleteTestDb } = require('../../../test/db')
 const { executeQuery, executeUpdate, Model } = require('../../database')
 
-const testModelTable = `test`
 const dbFilename = `test-model-spread-edge.db`
 
 let db = undefined
 beforeAll(async () => {
   db = await createTestDb(dbFilename)
-  const sql = `CREATE TABLE ${testModelTable} (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, testField TEXT)`
-  const params = []
-  await new Promise((resolve, reject) => {
-    return db.run(sql, params, (error) => {
-      if (error) {
-        reject(error)
-      }
-      resolve()
-    })
-  }).catch((error) => {
-    throw error
-  })
+  // const sql = `CREATE TABLE ${testModelTable} (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, testField TEXT)`
+  // const params = []
+  // await new Promise((resolve, reject) => {
+  //   return db.run(sql, params, (error) => {
+  //     if (error) {
+  //       reject(error)
+  //     }
+  //     resolve()
+  //   })
+  // }).catch((error) => {
+  //   throw error
+  // })
 })
 
 afterAll(async () => {
@@ -34,8 +33,9 @@ class TestModel extends Model {
   }
 }
 TestModel.initialized = false
+TestModel.fields = [{ colName: 'testField', colType: 'TEXT' }]
 TestModel.instances = []
-TestModel.table = testModelTable
+TestModel.table = 'test'
 
 describe(`executeQuery:`, () => {
   test('Called with undefined params calls db.all with empty object.', () => {
@@ -51,7 +51,7 @@ describe(`executeQuery:`, () => {
   test('If db call returns error, error is thrown', async () => {
     const sql = ``
     expect(await executeQuery(db, sql).catch((e) => e)).toMatchInlineSnapshot(
-      `"SQLITE_MISUSE: not an error"`
+      `[Error: SQLITE_MISUSE: not an error]`
     )
   })
 })
@@ -103,9 +103,9 @@ describe(`Model:`, () => {
     }
   })
 
-  test('initialized sets class parameters.', () => {
+  test('initialized sets class parameters.', async () => {
     const pubsub = {}
-    TestModel.initialize(db, pubsub)
+    await TestModel.initialize(db, pubsub)
     expect(TestModel.db).toEqual(db)
     expect(TestModel.pubsub).toEqual(pubsub)
     expect(TestModel.initialized).toBe(true)
@@ -168,7 +168,7 @@ describe(`Model:`, () => {
   })
   test('update throws exception on sqlite error', async () => {
     expect(await testInstance.update().catch((e) => e)).toMatchInlineSnapshot(
-      `"SQLITE_ERROR: no such column: undefined"`
+      `[Error: SQLITE_ERROR: no such column: undefined]`
     )
   })
   test('delete removes the instance from constructor instances, deletes it from the database, and returns the deleted instance.', async () => {

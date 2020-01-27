@@ -36,30 +36,30 @@ server
     await User.initialize(context.db, context.pubsub).catch((error) => {
       throw error
     })
-    // await Tag.initialize(context.db, context.pubsub).catch((error) => {
-    //   throw error
-    // })
-    // await Device.initialize(context.db, context.pubsub).catch((error) => {
-    //   throw error
-    // })
-    // await Service.initialize(context.db, context.pubsub).catch((error) => {
-    //   throw error
-    // })
-    // for (device of Device.instances) {
-    //   await device.config.connect().catch((error) => {
-    //     throw error
-    //   })
-    // }
-    // for (service of Service.instances) {
-    //   await service.config.connect()
-    // }
-    // for (scanClass of ScanClass.instances) {
-    //   await scanClass.startScan()
-    // }
+    await Tag.initialize(context.db, context.pubsub).catch((error) => {
+      throw error
+    })
+    await Device.initialize(context.db, context.pubsub).catch((error) => {
+      throw error
+    })
+    await Service.initialize(context.db, context.pubsub).catch((error) => {
+      throw error
+    })
+    for (device of Device.instances) {
+      await device.config.connect().catch((error) => {
+        throw error
+      })
+    }
+    for (service of Service.instances) {
+      await service.config.connect()
+    }
+    for (scanClass of ScanClass.instances) {
+      await scanClass.startScan()
+    }
   })
   .then((server) => {
     process.on('SIGINT', () => {
-      console.log(`Closing database and server connections.`)
+      console.log(`Closing database, device, and service connections.`)
       ScanClass.instances.forEach((instance) => {
         instance.stopScan()
       })

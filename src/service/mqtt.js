@@ -200,7 +200,8 @@ Mqtt.fields = [
   { colName: 'node', colType: 'TEXT' },
   { colName: 'username', colType: 'TEXT' },
   { colName: 'password', colType: 'TEXT' },
-  { colName: 'rate', colType: 'INTEGER' }
+  { colName: 'rate', colType: 'INTEGER' },
+  { colName: 'encrypt', colType: 'INTEGER' }
 ]
 Mqtt.instances = []
 Mqtt.initialized = false

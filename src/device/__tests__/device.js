@@ -14,12 +14,17 @@ const {
 } = require('../../relations')
 const fromUnixTime = require('date-fns/fromUnixTime')
 
-const testModelTable = `test`
 const dbFilename = `test-device-spread-edge.db`
-
+const pubsub = {}
 let db = undefined
 beforeAll(async () => {
   db = await createTestDb(dbFilename).catch((error) => {
+    throw error
+  })
+  await User.initialize(db, pubsub).catch((error) => {
+    throw error
+  })
+  await Tag.initialize(db, pubsub).catch((error) => {
     throw error
   })
 })
@@ -30,7 +35,6 @@ afterAll(async () => {
   })
 })
 
-const pubsub = {}
 test(`Initializing Device, also initializes Modbus, ModbusSource and EthernetIP.`, async () => {
   await Device.initialize(db, pubsub)
   expect(Device.initialized).toBe(true)
@@ -212,8 +216,12 @@ Modbus.instances = []
 let scanClass = undefined
 describe(`Modbus Source: `, () => {
   test(`Create creates instance and adds to Modbus.sources.`, async () => {
-    ScanClass.initialize(db, pubsub)
-    Tag.initialize(db, pubsub)
+    await ScanClass.initialize(db, pubsub).catch((error) => {
+      throw error
+    })
+    await Tag.initialize(db, pubsub).catch((error) => {
+      throw error
+    })
     const modbus = Modbus.instances[0]
     const user = User.instances[0]
     scanClass = await ScanClass.create(1000, user)

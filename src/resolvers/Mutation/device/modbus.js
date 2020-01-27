@@ -1,3 +1,4 @@
+jest.mock(`modbus-serial`)
 const {
   Device,
   Modbus,
@@ -34,7 +35,9 @@ async function updateModbus(root, args, context, info) {
   const device = Device.findById(args.id)
   if (device) {
     if (args.name) {
-      await device.setName(args.name)
+      await device.setName(args.name).catch((error) => {
+        throw error
+      })
     }
     if (args.description) {
       await device.setDescription(args.description)
@@ -68,7 +71,7 @@ async function deleteModbus(root, args, context, info) {
   })
   const device = Device.findById(args.id)
   if (device) {
-    await device.config.disconnect()
+    // await device.config.disconnect()
     return device.delete()
   } else {
     throw new Error(`Device with id ${args.id} does not exist.`)

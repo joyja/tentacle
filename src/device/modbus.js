@@ -3,8 +3,12 @@ const ModbusRTU = require(`modbus-serial`)
 
 class Modbus extends Model {
   static async initialize(db, pubsub) {
-    await ModbusSource.initialize(db, pubsub)
-    return super.initialize(db, pubsub)
+    await ModbusSource.initialize(db, pubsub).catch((error) => {
+      throw error
+    })
+    return super.initialize(db, pubsub).catch((error) => {
+      throw error
+    })
   }
   static _createModel(fields) {
     return super.create(fields)

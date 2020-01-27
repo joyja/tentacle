@@ -3,7 +3,7 @@ const { User, Tag, ScanClass } = require('../relations')
 const fromUnixTime = require('date-fns/fromUnixTime')
 
 const dbFilename = `test-tag-spread-edge.db`
-
+const pubsub = {}
 let db = undefined
 beforeAll(async () => {
   db = await createTestDb(dbFilename)
@@ -14,7 +14,6 @@ afterAll(async () => {
 })
 
 test(`Tag: initialize initializes ScanClass to.`, async () => {
-  const pubsub = {}
   await Tag.initialize(db, pubsub)
   expect(ScanClass.initialized).toBe(true)
 })
@@ -22,7 +21,6 @@ test(`Tag: initialize initializes ScanClass to.`, async () => {
 jest.useFakeTimers()
 describe(`ScanClass:`, () => {
   test(`create creates a new ScanClass with the appropriate fields.`, async () => {
-    const pubsub = {}
     await User.initialize(db, pubsub)
     const user = User.instances[0]
     const rate = 1000
@@ -41,7 +39,10 @@ describe(`ScanClass:`, () => {
     const scanClass = ScanClass.instances[0]
     scanClass.startScan()
     expect(setInterval).toHaveBeenCalledTimes(1)
-    expect(setInterval).toHaveBeenCalledWith(scanClass.scan, scanClass.rate)
+    expect(setInterval).toHaveBeenCalledWith(
+      expect.any(Function),
+      scanClass.rate
+    )
   })
   test(`stopScan clears an interval if there is one.`, () => {
     const scanClass = ScanClass.instances[0]

@@ -1,3 +1,6 @@
+jest.mock(`modbus-serial`)
+const ModbusRTU = require(`modbus-serial`)
+
 const { createTestDb, deleteTestDb } = require('../../../test/db')
 const {
   User,
@@ -25,11 +28,21 @@ let unauthorizedContext = {}
 const pubsub = {}
 beforeAll(async () => {
   db = await createTestDb(dbFilename)
-  await User.initialize(db, pubsub)
-  await ScanClass.initialize(db, pubsub)
-  await Tag.initialize(db, pubsub)
-  await Device.initialize(db, pubsub)
-  await Service.initialize(db, pubsub)
+  await User.initialize(db, pubsub).catch((error) => {
+    throw error
+  })
+  await ScanClass.initialize(db, pubsub).catch((error) => {
+    throw error
+  })
+  await Tag.initialize(db, pubsub).catch((error) => {
+    throw error
+  })
+  await Device.initialize(db, pubsub).catch((error) => {
+    throw error
+  })
+  await Service.initialize(db, pubsub).catch((error) => {
+    throw error
+  })
   user = User.instances[0]
   const { token } = await User.login(user.username, `password`)
   context.request = {
@@ -297,6 +310,10 @@ describe(`Mutations: `, () => {
   })
   let device = undefined
   test(`createModbus creates a modbus device with the selected settings.`, async () => {
+    ModbusRTU.prototype.connectTCP.mockResolvedValue({})
+    ModbusRTU.prototype.close.mockImplementation((callback) => {
+      callback()
+    })
     prevCount = Modbus.instances.length
     const args = {
       name: `resolverTestModbus`,
@@ -366,6 +383,8 @@ describe(`Mutations: `, () => {
     })
     expect(Modbus.instances.length).toBe(prevCount - 1)
     expect(deletedDevice.id).toBe(args.id)
+    ModbusRTU.prototype.connectTCP.mockReset()
+    ModbusRTU.prototype.close.mockReset()
   })
   test(`createModbusSource creates a modbus device with the selected settings.`, async () => {
     prevCount = ModbusSource.instances.length
@@ -583,7 +602,7 @@ describe(`Mutations: `, () => {
     ])
   })
   test(`updateMqtt updates a mqtt service with the selected settings.`, async () => {
-    prevCount = Modbus.instances.length
+    prevCount = Mqtt.instances.length
     const args = {
       id: service.id,
       name: `ANewNamedMqtt`,

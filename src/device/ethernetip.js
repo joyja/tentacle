@@ -3,8 +3,12 @@ const { Controller, Tag } = require('ethernet-ip')
 
 class EthernetIP extends Model {
   static async initialize(db, pubsub) {
-    await EthernetIPSource.initialize(db, pubsub)
-    return super.initialize(db, pubsub)
+    await EthernetIPSource.initialize(db, pubsub).catch((error) => {
+      throw error
+    })
+    return super.initialize(db, pubsub).catch((error) => {
+      throw error
+    })
   }
   static _createModel(fields) {
     return super.create(fields)

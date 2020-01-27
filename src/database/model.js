@@ -3,7 +3,7 @@ const executeQuery = function(db, sql, params) {
   return new Promise((resolve, reject) => {
     db.all(sql, params, (error, rows) => {
       if (error) {
-        reject(error.message)
+        reject(error)
       } else {
         resolve(rows)
       }
@@ -18,7 +18,7 @@ const executeUpdate = function(db, sql, params) {
   return new Promise((resolve, reject) => {
     db.run(sql, params, function(error) {
       if (error) {
-        throw error
+        reject(error)
       } else {
         resolve(this)
       }
@@ -99,7 +99,9 @@ class Model {
     })
     this.instances = await Promise.all(
       result.map((row) => {
-        return this.get(row.id, true).catch((error) => console.error(error))
+        return this.get(row.id, true).catch((error) => {
+          throw error
+        })
       })
     )
     return this.instances
