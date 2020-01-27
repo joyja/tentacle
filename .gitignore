@@ -90,4 +90,4 @@ sw.*
 *.swp
 
 # database folder
-database
+/database
