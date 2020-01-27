@@ -1,0 +1,122 @@
+BEGIN TRANSACTION;
+CREATE TABLE IF NOT EXISTS "ethernetipSource" (
+	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"ethernetip"	INTEGER,
+	"tag"	INTEGER,
+	"tagname"	TEXT,
+	FOREIGN KEY("ethernetip") REFERENCES "ethernetip"("id") ON DELETE CASCADE,
+	FOREIGN KEY("tag") REFERENCES "tag"("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "ethernetip" (
+	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"device"	INTEGER,
+	"host"	TEXT,
+	"slot"	INTEGER,
+	FOREIGN KEY("device") REFERENCES "device"("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "modbus" (
+	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"host"	TEXT,
+	"port"	INTEGER,
+	"device"	INTEGER,
+	"reverseBits"	INTEGER DEFAULT 0,
+	"reverseWords"	INTEGER DEFAULT 0,
+	"zeroBased"	INTEGER DEFAULT 0,
+	"timeout"	INTEGER DEFAULT 500,
+	FOREIGN KEY("device") REFERENCES "device"("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "tag" (
+	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"name"	TEXT,
+	"description"	TEXT,
+	"scanClass"	INTEGER,
+	"value"	TEXT,
+	"createdBy"	INTEGER,
+	"createdOn"	INTEGER,
+	"datatype"	TEXT,
+	FOREIGN KEY("createdBy") REFERENCES "user"("id"),
+	FOREIGN KEY("scanClass") REFERENCES "scanClass"("id")
+);
+CREATE TABLE IF NOT EXISTS "modbusSource" (
+	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"modbus"	INTEGER,
+	"tag"	INTEGER,
+	"register"	INTEGER,
+	"registerType"	TEXT,
+	FOREIGN KEY("modbus") REFERENCES "modbus"("id"),
+	FOREIGN KEY("tag") REFERENCES "tag"("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "mqtt" (
+	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"service"	INTEGER,
+	"host"	TEXT,
+	"port"	INTEGER,
+	"group"	TEXT,
+	"node"	TEXT,
+	"username"	TEXT,
+	"password"	TEXT,
+	"rate"	INTEGER,
+	FOREIGN KEY("service") REFERENCES "service"("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "mqttSource" (
+	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"mqtt"	INTEGER,
+	"device"	INTEGER,
+	FOREIGN KEY("mqtt") REFERENCES "mqtt"("id") ON DELETE CASCADE,
+	FOREIGN KEY("device") REFERENCES "device"("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "service" (
+	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"name"	INTEGER,
+	"description"	INTEGER,
+	"type"	TEXT,
+	"createdBy"	INTEGER,
+	"createdOn"	INTEGER,
+	FOREIGN KEY("createdBy") REFERENCES "user"("id") ON DELETE SET NULL
+);
+CREATE TABLE IF NOT EXISTS "scanClass" (
+	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"rate"	INTEGER,
+	"createdBy"	INTEGER,
+	"createdOn"	INTEGER,
+	FOREIGN KEY("createdBy") REFERENCES "user"("id") ON DELETE SET NULL
+);
+CREATE TABLE IF NOT EXISTS "device" (
+	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"name"	TEXT,
+	"description"	TEXT,
+	"type"	TEXT,
+	"createdBy"	INTEGER,
+	"createdOn"	INTEGER
+);
+CREATE TABLE IF NOT EXISTS "user" (
+	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"username"	TEXT,
+	"password"	TEXT
+);
+CREATE TABLE IF NOT EXISTS "opto_groov_manage" (
+	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"enable"	INTEGER,
+	"device"	INTEGER,
+	"api_key"	TEXT,
+	"host"	TEXT,
+	FOREIGN KEY("device") REFERENCES "device"("id")
+);
+CREATE TABLE IF NOT EXISTS "simulator_sinusoidal" (
+	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"simulator"	INTEGER,
+	"path"	TEXT,
+	"max"	REAL,
+	"min"	REAL,
+	"period"	REAL
+);
+CREATE TABLE IF NOT EXISTS "simulator" (
+	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"device"	INTEGER,
+	FOREIGN KEY("device") REFERENCES "device"("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "brokers" (
+	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"connection_string"	INTEGER
+);
+COMMIT;
