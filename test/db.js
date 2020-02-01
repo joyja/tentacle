@@ -5,17 +5,24 @@ const sqlite3 = require('sqlite3')
 async function createTestDb(filename) {
   const filePath = path.join(__dirname, '..', 'database', filename)
   const db = await new Promise((resolve, reject) => {
-    const database = new sqlite3.cached.Database(
-      filePath,
-      sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
-      (error) => {
-        if (error) {
-          throw error
-        } else {
-          resolve(database)
-        }
+    // const database = new sqlite3.cached.Database(
+    //   filePath,
+    //   sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
+    //   (error) => {
+    //     if (error) {
+    //       throw error
+    //     } else {
+    //       resolve(database)
+    //     }
+    //   }
+    // )
+    const database = new sqlite3.Database(':memory:', (error) => {
+      if (error) {
+        throw error
+      } else {
+        resolve(database)
       }
-    )
+    })
   })
   await new Promise((resolve, reject) => {
     const database = db
@@ -43,17 +50,17 @@ async function deleteTestDb(db) {
         }
       })
     })
-    await new Promise((resolve, reject) => {
-      fs.unlink(db.filename, (error) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve()
-        }
-      })
-    }).catch((error) => {
-      throw error
-    })
+    // await new Promise((resolve, reject) => {
+    //   fs.unlink(db.filename, (error) => {
+    //     if (error) {
+    //       reject(error)
+    //     } else {
+    //       resolve()
+    //     }
+    //   })
+    // }).catch((error) => {
+    //   throw error
+    // })
   } else {
     console.log(db)
   }
