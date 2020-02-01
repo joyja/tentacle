@@ -8,7 +8,8 @@
     "start": "cross-env node ./src/index.js",
     "test": "jest --watchAll",
     "test:coverage": "jest --coverage",
-    "fix": "eslint --ext .js,.vue --fix --ignore-path .gitignore ."
+    "fix": "eslint --ext .js,.vue --fix --ignore-path .gitignore .",
+    "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls"
   },
   "bin": {
     "tentacle": "./src/index.js"
@@ -17,6 +18,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "coveralls": "^3.0.9",
     "eslint": "^6.6.0",
     "eslint-config-prettier": "^6.5.0",
     "eslint-config-standard": "^14.1.0",
