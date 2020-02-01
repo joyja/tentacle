@@ -1,4 +1,3 @@
-jest.mock(`modbus-serial`)
 const {
   Device,
   Modbus,

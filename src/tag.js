@@ -130,6 +130,7 @@ class ScanClass extends Model {
     this._rate = result.rate
     this._createdBy = result.createdBy
     this._createdOn = result.createdOn
+    this.scanCount = 0
   }
   async scan() {
     for (const tag of this.tags) {
@@ -141,14 +142,16 @@ class ScanClass extends Model {
     }
   }
   startScan() {
-    this.interval = setInterval(() => {
-      this.scan()
+    this.interval = setInterval(async () => {
+      await this.scan()
+      this.scanCount += 1
     }, this.rate)
   }
   stopScan() {
     if (this.interval) {
       clearInterval(this.interval)
     }
+    this.scanCount = 0
   }
   get rate() {
     this.checkInit()

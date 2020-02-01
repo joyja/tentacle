@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken')
 const { executeUpdate, Model } = require('./database')
 const uuidv1 = require('uuid/v1')
 
-const APP_SECRET = uuidv1()
+const APP_SECRET = 'temporary' //uuidv1()
 
 class User extends Model {
   static async initialize(db, pubsub) {

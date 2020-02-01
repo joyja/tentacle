@@ -19,6 +19,8 @@ async function updateScanClass(root, args, context, info) {
     if (args.rate) {
       await scanClass.setRate(args.rate)
     }
+    scanClass.stopScan()
+    scanClass.startScan()
     return scanClass
   } else {
     throw new Error(`Scan Class with id ${args.id} does not exist.`)
@@ -42,15 +44,17 @@ async function createTag(root, args, context, info) {
     throw error
   })
   const createdBy = user.id
-  return Tag.create(
+  const tag = await Tag.create(
     args.name,
     args.description,
     args.value,
     args.scanClassId,
-    createdBy
+    createdBy,
+    args.datatype
   ).catch((error) => {
     throw error
   })
+  return tag
 }
 
 async function updateTag(root, args, context, info) {

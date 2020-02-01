@@ -70,6 +70,7 @@ type ScanClass {
   id: ID!
   rate: Int!
   tags: [Tag!]!
+  scanCount: Int!
 }
 
 type Tag {
@@ -130,8 +131,8 @@ type Mutation {
   createScanClass(name: String!, rate: Int!): ScanClass
   updateScanClass(id: ID!, rate: Int!): ScanClass
   deleteScanClass(id: ID!): ScanClass
-  createTag(name: String!, description: String!, datatype: Datatype!, value: String!, scanClass: Int!): Tag
-  updateTag(id: ID!, name: String, description: String, value: String, scanClass: Int): Tag
+  createTag(name: String!, description: String!, datatype: Datatype!, value: String!, scanClassId: Int!): Tag
+  updateTag(id: ID!, name: String, description: String, value: String, scanClassId: Int): Tag
   deleteTag(id: ID!): Tag
   createModbus(
     name: String!, 
@@ -139,7 +140,7 @@ type Mutation {
     host: String!, 
     port: Int!,
     reverseBits: Boolean!,
-    reversWords: Boolean!,
+    reverseWords: Boolean!,
     zeroBase: Boolean!
   ): Device
   updateModbus(
