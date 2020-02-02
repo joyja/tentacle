@@ -4,7 +4,7 @@ module.exports = {
   roots: [path.join(__dirname, './src')],
   rootDir: path.join(__dirname, '.'),
   testEnvironment: 'node',
-  testMatch: ['**/__tests__/resolvers.js'],
+  testMatch: ['**/__tests__/**'],
   moduleDirectories: ['node_modules', __dirname, path.join(__dirname, './src')],
   coverageDirectory: path.join(__dirname, './coverage/'),
   collectCoverageFrom: ['**/src/**/*.js'],
