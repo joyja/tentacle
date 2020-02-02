@@ -9,7 +9,7 @@
     "test": "jest --watchAll",
     "test:coverage": "jest --coverage",
     "fix": "eslint --ext .js,.vue --fix --ignore-path .gitignore .",
-    "coveralls": "jest --coverage"
+    "coveralls": "jest --coverage && cat ./tests/coverage/lcov.info | coveralls"
   },
   "bin": {
     "tentacle": "./src/index.js"
