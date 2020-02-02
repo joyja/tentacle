@@ -29,7 +29,15 @@ let context = {}
 let unauthorizedContext = {}
 const pubsub = {}
 beforeAll(async () => {
-  db = await createTestDb(dbFilename)
+  ModbusRTU.prototype.connectTCP.mockResolvedValue({})
+  ModbusRTU.prototype.close.mockImplementation((callback) => {
+    callback()
+  })
+  Controller.prototype.connect.mockResolvedValue({})
+  Controller.prototype.destroy.mockResolvedValue({})
+  db = await createTestDb(dbFilename).catch((error) => {
+    throw error
+  })
   await User.initialize(db, pubsub).catch((error) => {
     throw error
   })
@@ -99,7 +107,13 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  await deleteTestDb(db)
+  ModbusRTU.prototype.connectTCP.mockClear()
+  ModbusRTU.prototype.close.mockClear()
+  Controller.prototype.connect.mockClear()
+  Controller.prototype.destroy.mockClear()
+  await deleteTestDb(db).catch((error) => {
+    throw error
+  })
 })
 
 // ==============================
@@ -312,10 +326,6 @@ describe(`Mutations: `, () => {
   })
   let device = undefined
   test(`createModbus creates a modbus device with the selected settings.`, async () => {
-    ModbusRTU.prototype.connectTCP.mockResolvedValue({})
-    ModbusRTU.prototype.close.mockImplementation((callback) => {
-      callback()
-    })
     prevCount = Modbus.instances.length
     const args = {
       name: `resolverTestModbus`,
@@ -385,8 +395,6 @@ describe(`Mutations: `, () => {
     })
     expect(Modbus.instances.length).toBe(prevCount - 1)
     expect(deletedDevice.id).toBe(args.id)
-    ModbusRTU.prototype.connectTCP.mockReset()
-    ModbusRTU.prototype.close.mockReset()
   })
   test(`createModbusSource creates a modbus device with the selected settings.`, async () => {
     prevCount = ModbusSource.instances.length
@@ -448,7 +456,6 @@ describe(`Mutations: `, () => {
     expect(deletedModbusSource.id).toBe(args.tagId)
   })
   test(`createEthernetIP creates a ethernetip device with the selected settings.`, async () => {
-    Controller.prototype.connect.mockResolvedValue({})
     prevCount = EthernetIP.instances.length
     const args = {
       name: `resolverTestEthernetIP`,
@@ -469,7 +476,6 @@ describe(`Mutations: `, () => {
     expect(device.description).toBe(args.description)
     expect(device.config.host).toBe(args.host)
     expect(device.config.slot).toBe(args.slot)
-    Controller.prototype.connect.mockClear()
   })
   test(`updateEthernetIP updates a ethernetip device with the selected settings.`, async () => {
     prevCount = EthernetIP.instances.length

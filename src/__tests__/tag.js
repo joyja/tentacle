@@ -10,11 +10,15 @@ const dbFilename = `test-tag-spread-edge.db`
 const pubsub = {}
 let db = undefined
 beforeAll(async () => {
-  db = await createTestDb(dbFilename)
+  db = await createTestDb(dbFilename).catch((error) => {
+    throw error
+  })
 })
 
 afterAll(async () => {
-  await deleteTestDb(db)
+  await deleteTestDb(db).catch((error) => {
+    throw error
+  })
 })
 
 test(`Tag: initialize initializes ScanClass to.`, async () => {
