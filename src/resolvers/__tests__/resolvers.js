@@ -117,6 +117,7 @@ afterAll(async () => {
   ModbusRTU.prototype.close.mockClear()
   Controller.prototype.connect.mockClear()
   Controller.prototype.destroy.mockClear()
+  Controller.prototype.readTag.mockClear()
   await deleteTestDb(db).catch((error) => {
     throw error
   })
@@ -127,46 +128,46 @@ afterAll(async () => {
 // ==============================
 
 describe('Query :', () => {
-  test.only(`scanClasses returns all scan class instances`, async () => {
+  test(`scanClasses returns all scan class instances`, async () => {
     expect(await resolvers.Query.scanClasses({}, {}, context, {})).toBe(
       ScanClass.instances
     )
   })
-  test.only(`scanClasses returns error on invalid request instances`, async () => {
+  test(`scanClasses returns error on invalid request instances`, async () => {
     expect(
       await resolvers.Query.scanClasses({}, {}, unauthorizedContext, {}).catch(
         (e) => e
       )
     ).toMatchInlineSnapshot(`[Error: Your are not authorized.]`)
   })
-  test.only(`tags returns all tag instances`, async () => {
+  test(`tags returns all tag instances`, async () => {
     expect(await resolvers.Query.tags({}, {}, context, {})).toBe(Tag.instances)
   })
-  test.only(`tags returns error on invalid request instances`, async () => {
+  test(`tags returns error on invalid request instances`, async () => {
     expect(
       await resolvers.Query.tags({}, {}, unauthorizedContext, {}).catch(
         (e) => e
       )
     ).toMatchInlineSnapshot(`[Error: Your are not authorized.]`)
   })
-  test.only(`device returns all device instances`, async () => {
+  test(`device returns all device instances`, async () => {
     expect(await resolvers.Query.devices({}, {}, context, {})).toBe(
       Device.instances
     )
   })
-  test.only(`devices returns error on invalid request instances`, async () => {
+  test(`devices returns error on invalid request instances`, async () => {
     expect(
       await resolvers.Query.devices({}, {}, unauthorizedContext, {}).catch(
         (e) => e
       )
     ).toMatchInlineSnapshot(`[Error: Your are not authorized.]`)
   })
-  test.only(`services returns all service instances`, async () => {
+  test(`services returns all service instances`, async () => {
     expect(await resolvers.Query.services({}, {}, context, {})).toBe(
       Service.instances
     )
   })
-  test.only(`services returns error on invalid request instances`, async () => {
+  test(`services returns error on invalid request instances`, async () => {
     expect(
       await resolvers.Query.services({}, {}, unauthorizedContext, {}).catch(
         (e) => e
@@ -180,7 +181,7 @@ describe('Query :', () => {
 // ==============================
 
 describe(`Mutations: `, () => {
-  test.only(`login returns the appropriate payload`, async () => {
+  test(`login returns the appropriate payload`, async () => {
     args = {
       username: user.username,
       password: 'password'
@@ -195,7 +196,7 @@ describe(`Mutations: `, () => {
       user
     })
   })
-  test.only(`login with incorrect username causes an error.`, async () => {
+  test(`login with incorrect username causes an error.`, async () => {
     args = {
       username: `bogusUsername`,
       password: 'password'
@@ -204,7 +205,7 @@ describe(`Mutations: `, () => {
       await resolvers.Mutation.login({}, args, context, {}).catch((e) => e)
     ).toMatchInlineSnapshot(`[Error: The username or password is incorrect.]`)
   })
-  test.only(`login with incorrect password causes an error.`, async () => {
+  test(`login with incorrect password causes an error.`, async () => {
     args = {
       username: user.username,
       password: 'bogusPassword'
@@ -213,7 +214,7 @@ describe(`Mutations: `, () => {
       await resolvers.Mutation.login({}, args, context, {}).catch((e) => e)
     ).toMatchInlineSnapshot(`[Error: The username or password is incorrect.]`)
   })
-  test.only(`changePassword changes the password`, async () => {
+  test(`changePassword changes the password`, async () => {
     args = {
       newPassword: `aNewPassword`,
       oldPassword: `password`
@@ -230,7 +231,7 @@ describe(`Mutations: `, () => {
     expect(changedUser).toBe(user)
   })
   let scanClass = undefined
-  test.only(`createScanClass creates a scan class with the selected settings.`, async () => {
+  test(`createScanClass creates a scan class with the selected settings.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
       rate: 1000
@@ -246,7 +247,7 @@ describe(`Mutations: `, () => {
     expect(ScanClass.instances.length).toBe(prevCount + 1)
     expect(scanClass.rate).toBe(args.rate)
   })
-  test.only(`updateScanClass updates a scan class with the selected settings.`, async () => {
+  test(`updateScanClass updates a scan class with the selected settings.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
       id: scanClass.id,
@@ -264,7 +265,7 @@ describe(`Mutations: `, () => {
     expect(ScanClass.instances.length).toBe(prevCount)
     expect(updatedScanClass.rate).toBe(args.rate)
   })
-  test.only(`deleteScanClass deletes a scan class.`, async () => {
+  test(`deleteScanClass deletes a scan class.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
       id: scanClass.id
