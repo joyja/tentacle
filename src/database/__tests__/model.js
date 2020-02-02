@@ -5,23 +5,15 @@ const dbFilename = `test-model-spread-edge.db`
 
 let db = undefined
 beforeAll(async () => {
-  db = await createTestDb(dbFilename)
-  // const sql = `CREATE TABLE ${testModelTable} (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, testField TEXT)`
-  // const params = []
-  // await new Promise((resolve, reject) => {
-  //   return db.run(sql, params, (error) => {
-  //     if (error) {
-  //       reject(error)
-  //     }
-  //     resolve()
-  //   })
-  // }).catch((error) => {
-  //   throw error
-  // })
+  db = await createTestDb(dbFilename).catch((error) => {
+    throw error
+  })
 })
 
 afterAll(async () => {
-  await deleteTestDb(db)
+  await deleteTestDb(db).catch((error) => {
+    throw error
+  })
 })
 
 class TestModel extends Model {
