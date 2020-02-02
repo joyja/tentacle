@@ -39,20 +39,20 @@ describe(`ScanClass:`, () => {
     scanClass.stopScan()
     expect(clearInterval).toHaveBeenCalledTimes(0)
   })
-  // test(`startScan creates an interval`, () => {
-  //   const scanClass = ScanClass.instances[0]
-  //   scanClass.startScan()
-  //   expect(setInterval).toHaveBeenCalledTimes(1)
-  //   expect(setInterval).toHaveBeenCalledWith(
-  //     expect.any(Function),
-  //     scanClass.rate
-  //   )
-  // })
-  // test(`stopScan clears an interval if there is one.`, () => {
-  //   const scanClass = ScanClass.instances[0]
-  //   scanClass.stopScan()
-  //   expect(clearInterval).toHaveBeenCalledTimes(1)
-  // })
+  test(`startScan creates an interval`, () => {
+    const scanClass = ScanClass.instances[0]
+    scanClass.startScan()
+    expect(setInterval).toHaveBeenCalledTimes(1)
+    expect(setInterval).toHaveBeenCalledWith(
+      expect.any(Function),
+      scanClass.rate
+    )
+  })
+  test(`stopScan clears an interval if there is one.`, () => {
+    const scanClass = ScanClass.instances[0]
+    scanClass.stopScan()
+    expect(clearInterval).toHaveBeenCalledTimes(1)
+  })
   test(`Getters all return their underscore values`, () => {
     const scanClass = ScanClass.instances[0]
     expect(scanClass.rate).toBe(scanClass._rate)
