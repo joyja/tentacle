@@ -224,7 +224,7 @@ describe(`Mutations: `, () => {
     expect(changedUser).toBe(user)
   })
   let scanClass = undefined
-  test.only(`createScanClass creates a scan class with the selected settings.`, async () => {
+  test(`createScanClass creates a scan class with the selected settings.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
       rate: 1000
@@ -240,7 +240,7 @@ describe(`Mutations: `, () => {
     expect(ScanClass.instances.length).toBe(prevCount + 1)
     expect(scanClass.rate).toBe(args.rate)
   })
-  test.only(`updateScanClass updates a scan class with the selected settings.`, async () => {
+  test(`updateScanClass updates a scan class with the selected settings.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
       id: scanClass.id,
@@ -257,7 +257,7 @@ describe(`Mutations: `, () => {
     expect(ScanClass.instances.length).toBe(prevCount)
     expect(updatedScanClass.rate).toBe(args.rate)
   })
-  test.only(`deleteScanClass deletes a scan class.`, async () => {
+  test(`deleteScanClass deletes a scan class.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
       id: scanClass.id
@@ -274,7 +274,7 @@ describe(`Mutations: `, () => {
     expect(deletedScanClass.id).toBe(args.id)
   })
   let tag = undefined
-  test.only(`createTag creates a scan class with the selected settings.`, async () => {
+  test(`createTag creates a scan class with the selected settings.`, async () => {
     prevCount = Tag.instances.length
     const args = {
       name: `TestTag`,
@@ -289,7 +289,7 @@ describe(`Mutations: `, () => {
     )
     expect(Tag.instances.length).toBe(prevCount + 1)
   })
-  test.only(`updateTag updates a scan class with the selected settings.`, async () => {
+  test(`updateTag updates a scan class with the selected settings.`, async () => {
     prevCount = Tag.instances.length
     const args = {
       id: tag.id,
@@ -308,7 +308,7 @@ describe(`Mutations: `, () => {
     })
     expect(Tag.instances.length).toBe(prevCount)
   })
-  test.only(`deleteTag deletes a scan class.`, async () => {
+  test(`deleteTag deletes a scan class.`, async () => {
     prevCount = Tag.instances.length
     const args = {
       id: tag.id
@@ -325,7 +325,7 @@ describe(`Mutations: `, () => {
     expect(deletedTag.id).toBe(args.id)
   })
   let device = undefined
-  test.only(`createModbus creates a modbus device with the selected settings.`, async () => {
+  test(`createModbus creates a modbus device with the selected settings.`, async () => {
     prevCount = Modbus.instances.length
     const args = {
       name: `resolverTestModbus`,
@@ -350,7 +350,7 @@ describe(`Mutations: `, () => {
     expect(device.config.reversWords).toBe(args.reversWords)
     expect(device.config.zeroBased).toBe(args.zeroBased)
   })
-  test.only(`updateModbus updates a modbus device with the selected settings.`, async () => {
+  test(`updateModbus updates a modbus device with the selected settings.`, async () => {
     prevCount = Modbus.instances.length
     const args = {
       id: device.id,
@@ -380,7 +380,7 @@ describe(`Mutations: `, () => {
     expect(updatedDevice.config.reversWords).toBe(args.reversWords)
     expect(updatedDevice.config.zeroBased).toBe(args.zeroBased)
   })
-  test.only(`deleteModbus deletes a modbus device with the selected settings.`, async () => {
+  test(`deleteModbus deletes a modbus device with the selected settings.`, async () => {
     prevCount = Modbus.instances.length
     const args = {
       id: device.id
@@ -396,7 +396,7 @@ describe(`Mutations: `, () => {
     expect(Modbus.instances.length).toBe(prevCount - 1)
     expect(deletedDevice.id).toBe(args.id)
   })
-  test.only(`createModbusSource creates a modbus device with the selected settings.`, async () => {
+  test(`createModbusSource creates a modbus device with the selected settings.`, async () => {
     prevCount = ModbusSource.instances.length
     const args = {
       deviceId: Modbus.instances[0].device.id,
@@ -418,7 +418,7 @@ describe(`Mutations: `, () => {
     expect(modbusSource.register).toBe(args.register)
     expect(modbusSource.registerType).toBe(args.registerType)
   })
-  test.only(`updateModbusSource updates a modbus device with the selected settings.`, async () => {
+  test(`updateModbusSource updates a modbus device with the selected settings.`, async () => {
     prevCount = ModbusSource.instances.length
     const args = {
       tagId: Tag.instances[0].id,
@@ -439,7 +439,7 @@ describe(`Mutations: `, () => {
     expect(updatedModbusSource.register).toBe(args.register)
     expect(updatedModbusSource.registerType).toBe(args.registerType)
   })
-  test.only(`deleteModbusSource deletes a modbus device with the selected settings.`, async () => {
+  test(`deleteModbusSource deletes a modbus device with the selected settings.`, async () => {
     prevCount = ModbusSource.instances.length
     const args = {
       tagId: Tag.instances[0].id
@@ -578,7 +578,7 @@ describe(`Mutations: `, () => {
     expect(deletedEthernetIPSource.id).toBe(args.tagId)
   })
   let service = undefined
-  test.only(`createMqtt creates a mqtt service with the selected settings.`, async () => {
+  test(`createMqtt creates a mqtt service with the selected settings.`, async () => {
     prevCount = Mqtt.instances.length
     const args = {
       name: `AnMqttService`,
@@ -611,7 +611,7 @@ describe(`Mutations: `, () => {
       Device.findById(args.devices[0])
     ])
   })
-  test.only(`updateMqtt updates a mqtt service with the selected settings.`, async () => {
+  test(`updateMqtt updates a mqtt service with the selected settings.`, async () => {
     prevCount = Mqtt.instances.length
     const args = {
       id: service.id,
@@ -644,7 +644,7 @@ describe(`Mutations: `, () => {
     expect(updatedService.config.password).toBe(args.password)
     expect(updatedService.config.rate).toBe(args.rate)
   })
-  test.only(`deleteMqtt deletes a mqtt service with the selected settings.`, async () => {
+  test(`deleteMqtt deletes a mqtt service with the selected settings.`, async () => {
     prevCount = Mqtt.instances.length
     const args = {
       id: service.id
