@@ -455,7 +455,7 @@ describe(`Mutations: `, () => {
     expect(ModbusSource.instances.length).toBe(prevCount - 1)
     expect(deletedModbusSource.id).toBe(args.tagId)
   })
-  test.only(`createEthernetIP creates a ethernetip device with the selected settings.`, async () => {
+  test(`createEthernetIP creates a ethernetip device with the selected settings.`, async () => {
     prevCount = EthernetIP.instances.length
     const args = {
       name: `resolverTestEthernetIP`,
@@ -477,7 +477,7 @@ describe(`Mutations: `, () => {
     expect(device.config.host).toBe(args.host)
     expect(device.config.slot).toBe(args.slot)
   })
-  test.only(`updateEthernetIP updates a ethernetip device with the selected settings.`, async () => {
+  test(`updateEthernetIP updates a ethernetip device with the selected settings.`, async () => {
     prevCount = EthernetIP.instances.length
     const args = {
       id: device.id,
@@ -501,7 +501,7 @@ describe(`Mutations: `, () => {
     expect(updatedDevice.config.host).toBe(args.host)
     expect(updatedDevice.config.slot)
   })
-  test.only(`deleteEthernetIP deletes a ethernetip device with the selected settings.`, async () => {
+  test(`deleteEthernetIP deletes a ethernetip device with the selected settings.`, async () => {
     prevCount = EthernetIP.instances.length
     const args = {
       id: device.id
@@ -518,7 +518,7 @@ describe(`Mutations: `, () => {
     expect(deletedDevice.id).toBe(args.id)
   })
   let ethernetipSource = undefined
-  test.only(`createEthernetIPSource creates a ethernetip source with the selected settings.`, async () => {
+  test(`createEthernetIPSource creates a ethernetip source with the selected settings.`, async () => {
     prevCount = EthernetIPSource.instances.length
     const args = {
       deviceId: EthernetIP.instances[0].device.id,
@@ -540,7 +540,7 @@ describe(`Mutations: `, () => {
     expect(ethernetipSource.tag).toBe(Tag.instances[0])
     expect(ethernetipSource.tagname).toBe(args.tagname)
   })
-  test.only(`updateEthernetIPSource updates a ethernetip source with the selected settings.`, async () => {
+  test(`updateEthernetIPSource updates a ethernetip source with the selected settings.`, async () => {
     prevCount = EthernetIPSource.instances.length
     const args = {
       tagId: Tag.instances[0].id,
@@ -561,7 +561,7 @@ describe(`Mutations: `, () => {
     expect(updatedEthernetIPSource.tag).toBe(Tag.instances[0])
     expect(updatedEthernetIPSource.tagname).toBe(args.tagname)
   })
-  test.only(`deleteEthernetIP deletes a modbus device with the selected settings.`, async () => {
+  test(`deleteEthernetIP deletes a modbus device with the selected settings.`, async () => {
     prevCount = EthernetIP.instances.length
     const args = {
       tagId: Tag.instances[0].id
@@ -578,7 +578,7 @@ describe(`Mutations: `, () => {
     expect(deletedEthernetIPSource.id).toBe(args.tagId)
   })
   let service = undefined
-  test(`createMqtt creates a mqtt service with the selected settings.`, async () => {
+  test.only(`createMqtt creates a mqtt service with the selected settings.`, async () => {
     prevCount = Mqtt.instances.length
     const args = {
       name: `AnMqttService`,
@@ -611,7 +611,7 @@ describe(`Mutations: `, () => {
       Device.findById(args.devices[0])
     ])
   })
-  test(`updateMqtt updates a mqtt service with the selected settings.`, async () => {
+  test.only(`updateMqtt updates a mqtt service with the selected settings.`, async () => {
     prevCount = Mqtt.instances.length
     const args = {
       id: service.id,
@@ -644,7 +644,7 @@ describe(`Mutations: `, () => {
     expect(updatedService.config.password).toBe(args.password)
     expect(updatedService.config.rate).toBe(args.rate)
   })
-  test(`deleteMqtt deletes a mqtt service with the selected settings.`, async () => {
+  test.only(`deleteMqtt deletes a mqtt service with the selected settings.`, async () => {
     prevCount = Mqtt.instances.length
     const args = {
       id: service.id
