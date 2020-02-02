@@ -18,4 +18,4 @@ A nodejs industrial automation edge gateway with a GraphQL API.
 
 ## Services
 
-- [MQTT](https://github.com/eclipse/tahu/tree/master/client_libraries/javascript/sparkplug-client)
+- [MQTT (Sparkplug B)](https://github.com/eclipse/tahu/tree/master/client_libraries/javascript/sparkplug-client)
