@@ -1,5 +1,7 @@
 # Tentacle
 
+[![Coverage Status](https://coveralls.io/repos/github/joyja/tentacle/badge.svg)](https://coveralls.io/github/joyja/tentacle)
+
 A nodejs industrial automation edge gateway with a GraphQL API.
 
 ## Protocols
