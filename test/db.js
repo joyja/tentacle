@@ -41,15 +41,15 @@ async function createTestDb(filename) {
 
 async function deleteTestDb(db) {
   if (db) {
-    await new Promise((resolve, reject) => {
-      return db.close((error) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve()
-        }
-      })
-    })
+    // await new Promise((resolve, reject) => {
+    //   return db.close((error) => {
+    //     if (error) {
+    //       reject(error)
+    //     } else {
+    //       resolve()
+    //     }
+    //   })
+    // })
     // await new Promise((resolve, reject) => {
     //   fs.unlink(db.filename, (error) => {
     //     if (error) {
