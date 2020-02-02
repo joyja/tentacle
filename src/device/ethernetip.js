@@ -29,7 +29,7 @@ class EthernetIP extends Model {
     if (!this.connected) {
       this.error = null
       await this.client.connect(this.host, this.slot).catch((error) => {
-        throw error
+        this.error = error.message
       })
       if (!this.error) {
         this.connected = true

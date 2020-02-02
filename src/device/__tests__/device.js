@@ -1,5 +1,7 @@
 jest.mock(`modbus-serial`)
+jest.mock(`ethernet-ip`)
 const ModbusRTU = require(`modbus-serial`)
+const { Controller } = require(`ethernet-ip`)
 
 const { createTestDb, deleteTestDb } = require('../../../test/db')
 const {
@@ -305,18 +307,41 @@ describe(`EthernetIP :`, () => {
     expect(ethernetip.client.constructor.name).toBe('Controller')
   })
   test.todo(`rewrite connect tests to mock ethernet-ip module.`)
-  test(`connect connects`, async () => {
-    await ethernetip.connect().catch((e) => {
-      throw e
-    })
-    expect(ethernetip.connected).toBe(true)
-  })
-  test.todo(`rewrite disconnect tests to mock ethernet-ip module.`)
-  test(`disconnect disconnects`, async () => {
-    await ethernetip.disconnect().catch((e) => {
-      throw e
-    })
+  test(`Connect calls Controller.connect and rejected results in a false connected status.`, async () => {
+    ethernetip.client.connect.mockRejectedValueOnce(
+      new Error(`Connection Error.`)
+    )
+    await ethernetip.connect()
+    expect(ethernetip.error).toMatchInlineSnapshot(`"Connection Error."`)
+    expect(ethernetip.client.connect).toBeCalledTimes(1)
     expect(ethernetip.connected).toBe(false)
+    ethernetip.client.connect.mockReset()
+  })
+  test(`Connect calls Controller.connect and resolved results in a true connected status.`, async () => {
+    ethernetip.client.connect.mockResolvedValueOnce({})
+    await ethernetip.connect()
+    expect(ethernetip.error).toBe(null)
+    expect(ethernetip.client.connect).toBeCalledTimes(1)
+    expect(ethernetip.connected).toBe(true)
+    ethernetip.client.connect.mockReset()
+  })
+  test(`Disconnect calls client close throws an error on reject.`, async () => {
+    ethernetip.client.destroy.mockImplementation(() => {
+      throw new Error(`Close connection failed.`)
+    })
+    expect(await ethernetip.disconnect().catch((e) => e)).toMatchInlineSnapshot(
+      `[Error: Close connection failed.]`
+    )
+    expect(ethernetip.client.destroy).toBeCalledTimes(1)
+    expect(ethernetip.connected).toBe(true)
+    ethernetip.client.destroy.mockClear()
+  })
+  test(`Disconnect calls client close and connected status becomes false.`, async () => {
+    ethernetip.client.destroy.mockImplementation(() => {})
+    await ethernetip.disconnect()
+    expect(ethernetip.client.destroy).toBeCalledTimes(1)
+    expect(ethernetip.connected).toBe(false)
+    ethernetip.client.destroy.mockClear()
   })
 })
 
@@ -324,6 +349,13 @@ describe(`EthernetIPSource: `, () => {
   let ethernetipSource = undefined
   test.todo(`rewrite read tests to mock ethernet-ip module.`)
   test(`read reads`, async () => {
+    Controller.prototype.connect.mockResolvedValueOnce({})
+    ethernetip.client.readTag.mockImplementation(async (tagData) => {
+      return new Promise((resolve, reject) => {
+        tagData.value = 123.456
+        resolve()
+      })
+    })
     await ethernetip.connect()
     const tag = await Tag.create(
       'testEthernetIP',

@@ -1,5 +1,7 @@
 jest.mock(`modbus-serial`)
+jest.mock(`ethernet-ip`)
 const ModbusRTU = require(`modbus-serial`)
+const { Controller } = require(`ethernet-ip`)
 
 const { createTestDb, deleteTestDb } = require('../../../test/db')
 const {
@@ -446,6 +448,7 @@ describe(`Mutations: `, () => {
     expect(deletedModbusSource.id).toBe(args.tagId)
   })
   test(`createEthernetIP creates a ethernetip device with the selected settings.`, async () => {
+    Controller.prototype.connect.mockResolvedValue({})
     prevCount = EthernetIP.instances.length
     const args = {
       name: `resolverTestEthernetIP`,
@@ -466,6 +469,7 @@ describe(`Mutations: `, () => {
     expect(device.description).toBe(args.description)
     expect(device.config.host).toBe(args.host)
     expect(device.config.slot).toBe(args.slot)
+    Controller.prototype.connect.mockClear()
   })
   test(`updateEthernetIP updates a ethernetip device with the selected settings.`, async () => {
     prevCount = EthernetIP.instances.length
