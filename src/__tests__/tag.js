@@ -1,10 +1,6 @@
-jest.mock(`modbus-serial`)
-jest.mock(`ethernet-ip`)
 const { createTestDb, deleteTestDb } = require('../../test/db')
 const { User, Tag, ScanClass } = require('../relations')
 const fromUnixTime = require('date-fns/fromUnixTime')
-const ModbusRTU = require(`modbus-serial`)
-const { Controller } = require(`ethernet-ip`)
 
 const dbFilename = `test-tag-spread-edge.db`
 const pubsub = {}
