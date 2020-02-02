@@ -5,9 +5,13 @@ async function createScanClass(root, args, context, info) {
     throw error
   })
   const createdBy = user.id
-  return ScanClass.create(args.rate, createdBy).catch((error) => {
-    throw error
-  })
+  const scanClass = await ScanClass.create(args.rate, createdBy).catch(
+    (error) => {
+      throw error
+    }
+  )
+  scanClass.startScan()
+  return scanClass
 }
 
 async function updateScanClass(root, args, context, info) {

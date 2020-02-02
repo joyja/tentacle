@@ -35,6 +35,12 @@ beforeAll(async () => {
   })
   Controller.prototype.connect.mockResolvedValue({})
   Controller.prototype.destroy.mockResolvedValue({})
+  Controller.prototype.readTag.mockImplementation(async (tagData) => {
+    return new Promise((resolve, reject) => {
+      tagData.value = 123.456
+      resolve()
+    })
+  })
   db = await createTestDb(dbFilename).catch((error) => {
     throw error
   })
@@ -254,6 +260,7 @@ describe(`Mutations: `, () => {
     ).catch((error) => {
       throw error
     })
+    await updatedScanClass.stopScan()
     expect(ScanClass.instances.length).toBe(prevCount)
     expect(updatedScanClass.rate).toBe(args.rate)
   })
