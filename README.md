@@ -7,6 +7,10 @@
 
 A nodejs industrial automation edge gateway with a GraphQL API.
 
+## Interface
+
+- [GraphQL](https://github.com/prisma-labs/graphql-yoga)
+
 ## Protocols
 
 - [Ethernet/IP](https://github.com/cmseaton42/node-ethernet-ip)
@@ -14,4 +18,4 @@ A nodejs industrial automation edge gateway with a GraphQL API.
 
 ## Services
 
-* [MQTT](https://github.com/eclipse/tahu/tree/master/client_libraries/javascript/sparkplug-client)
+- [MQTT](https://github.com/eclipse/tahu/tree/master/client_libraries/javascript/sparkplug-client)
