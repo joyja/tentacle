@@ -224,7 +224,7 @@ describe(`Mutations: `, () => {
     expect(changedUser).toBe(user)
   })
   let scanClass = undefined
-  test(`createScanClass creates a scan class with the selected settings.`, async () => {
+  test.only(`createScanClass creates a scan class with the selected settings.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
       rate: 1000
@@ -240,7 +240,7 @@ describe(`Mutations: `, () => {
     expect(ScanClass.instances.length).toBe(prevCount + 1)
     expect(scanClass.rate).toBe(args.rate)
   })
-  test(`updateScanClass updates a scan class with the selected settings.`, async () => {
+  test.only(`updateScanClass updates a scan class with the selected settings.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
       id: scanClass.id,
@@ -257,7 +257,7 @@ describe(`Mutations: `, () => {
     expect(ScanClass.instances.length).toBe(prevCount)
     expect(updatedScanClass.rate).toBe(args.rate)
   })
-  test(`deleteScanClass deletes a scan class.`, async () => {
+  test.only(`deleteScanClass deletes a scan class.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
       id: scanClass.id
