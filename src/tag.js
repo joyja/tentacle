@@ -133,7 +133,7 @@ class ScanClass extends Model {
     this.scanCount = 0
   }
   async scan() {
-    // for (const tag of this.tags) {
+    //  for (const tag of this.tags) {
     //   if (tag.source) {
     //     await tag.source.read().catch((error) => {
     //       throw error
