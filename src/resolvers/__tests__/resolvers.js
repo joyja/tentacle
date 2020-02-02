@@ -121,46 +121,46 @@ afterAll(async () => {
 // ==============================
 
 describe('Query :', () => {
-  test(`scanClasses returns all scan class instances`, async () => {
+  test.only(`scanClasses returns all scan class instances`, async () => {
     expect(await resolvers.Query.scanClasses({}, {}, context, {})).toBe(
       ScanClass.instances
     )
   })
-  test(`scanClasses returns error on invalid request instances`, async () => {
+  test.only(`scanClasses returns error on invalid request instances`, async () => {
     expect(
       await resolvers.Query.scanClasses({}, {}, unauthorizedContext, {}).catch(
         (e) => e
       )
     ).toMatchInlineSnapshot(`[Error: Your are not authorized.]`)
   })
-  test(`tags returns all tag instances`, async () => {
+  test.only(`tags returns all tag instances`, async () => {
     expect(await resolvers.Query.tags({}, {}, context, {})).toBe(Tag.instances)
   })
-  test(`tags returns error on invalid request instances`, async () => {
+  test.only(`tags returns error on invalid request instances`, async () => {
     expect(
       await resolvers.Query.tags({}, {}, unauthorizedContext, {}).catch(
         (e) => e
       )
     ).toMatchInlineSnapshot(`[Error: Your are not authorized.]`)
   })
-  test(`device returns all device instances`, async () => {
+  test.only(`device returns all device instances`, async () => {
     expect(await resolvers.Query.devices({}, {}, context, {})).toBe(
       Device.instances
     )
   })
-  test(`devices returns error on invalid request instances`, async () => {
+  test.only(`devices returns error on invalid request instances`, async () => {
     expect(
       await resolvers.Query.devices({}, {}, unauthorizedContext, {}).catch(
         (e) => e
       )
     ).toMatchInlineSnapshot(`[Error: Your are not authorized.]`)
   })
-  test(`services returns all service instances`, async () => {
+  test.only(`services returns all service instances`, async () => {
     expect(await resolvers.Query.services({}, {}, context, {})).toBe(
       Service.instances
     )
   })
-  test(`services returns error on invalid request instances`, async () => {
+  test.only(`services returns error on invalid request instances`, async () => {
     expect(
       await resolvers.Query.services({}, {}, unauthorizedContext, {}).catch(
         (e) => e
@@ -174,7 +174,7 @@ describe('Query :', () => {
 // ==============================
 
 describe(`Mutations: `, () => {
-  test(`login returns the appropriate payload`, async () => {
+  test.only(`login returns the appropriate payload`, async () => {
     args = {
       username: user.username,
       password: 'password'
@@ -189,7 +189,7 @@ describe(`Mutations: `, () => {
       user
     })
   })
-  test(`login with incorrect username causes an error.`, async () => {
+  test.only(`login with incorrect username causes an error.`, async () => {
     args = {
       username: `bogusUsername`,
       password: 'password'
@@ -198,7 +198,7 @@ describe(`Mutations: `, () => {
       await resolvers.Mutation.login({}, args, context, {}).catch((e) => e)
     ).toMatchInlineSnapshot(`[Error: The username or password is incorrect.]`)
   })
-  test(`login with incorrect password causes an error.`, async () => {
+  test.only(`login with incorrect password causes an error.`, async () => {
     args = {
       username: user.username,
       password: 'bogusPassword'
@@ -207,7 +207,7 @@ describe(`Mutations: `, () => {
       await resolvers.Mutation.login({}, args, context, {}).catch((e) => e)
     ).toMatchInlineSnapshot(`[Error: The username or password is incorrect.]`)
   })
-  test(`changePassword changes the password`, async () => {
+  test.only(`changePassword changes the password`, async () => {
     args = {
       newPassword: `aNewPassword`,
       oldPassword: `password`
@@ -224,7 +224,7 @@ describe(`Mutations: `, () => {
     expect(changedUser).toBe(user)
   })
   let scanClass = undefined
-  test(`createScanClass creates a scan class with the selected settings.`, async () => {
+  test.only(`createScanClass creates a scan class with the selected settings.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
       rate: 1000
@@ -240,7 +240,7 @@ describe(`Mutations: `, () => {
     expect(ScanClass.instances.length).toBe(prevCount + 1)
     expect(scanClass.rate).toBe(args.rate)
   })
-  test(`updateScanClass updates a scan class with the selected settings.`, async () => {
+  test.only(`updateScanClass updates a scan class with the selected settings.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
       id: scanClass.id,
@@ -257,7 +257,7 @@ describe(`Mutations: `, () => {
     expect(ScanClass.instances.length).toBe(prevCount)
     expect(updatedScanClass.rate).toBe(args.rate)
   })
-  test(`deleteScanClass deletes a scan class.`, async () => {
+  test.only(`deleteScanClass deletes a scan class.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
       id: scanClass.id
@@ -274,7 +274,7 @@ describe(`Mutations: `, () => {
     expect(deletedScanClass.id).toBe(args.id)
   })
   let tag = undefined
-  test(`createTag creates a scan class with the selected settings.`, async () => {
+  test.only(`createTag creates a scan class with the selected settings.`, async () => {
     prevCount = Tag.instances.length
     const args = {
       name: `TestTag`,
@@ -289,7 +289,7 @@ describe(`Mutations: `, () => {
     )
     expect(Tag.instances.length).toBe(prevCount + 1)
   })
-  test(`updateTag updates a scan class with the selected settings.`, async () => {
+  test.only(`updateTag updates a scan class with the selected settings.`, async () => {
     prevCount = Tag.instances.length
     const args = {
       id: tag.id,
@@ -308,7 +308,7 @@ describe(`Mutations: `, () => {
     })
     expect(Tag.instances.length).toBe(prevCount)
   })
-  test(`deleteTag deletes a scan class.`, async () => {
+  test.only(`deleteTag deletes a scan class.`, async () => {
     prevCount = Tag.instances.length
     const args = {
       id: tag.id
@@ -325,7 +325,7 @@ describe(`Mutations: `, () => {
     expect(deletedTag.id).toBe(args.id)
   })
   let device = undefined
-  test(`createModbus creates a modbus device with the selected settings.`, async () => {
+  test.only(`createModbus creates a modbus device with the selected settings.`, async () => {
     prevCount = Modbus.instances.length
     const args = {
       name: `resolverTestModbus`,
@@ -350,7 +350,7 @@ describe(`Mutations: `, () => {
     expect(device.config.reversWords).toBe(args.reversWords)
     expect(device.config.zeroBased).toBe(args.zeroBased)
   })
-  test(`updateModbus updates a modbus device with the selected settings.`, async () => {
+  test.only(`updateModbus updates a modbus device with the selected settings.`, async () => {
     prevCount = Modbus.instances.length
     const args = {
       id: device.id,
@@ -380,7 +380,7 @@ describe(`Mutations: `, () => {
     expect(updatedDevice.config.reversWords).toBe(args.reversWords)
     expect(updatedDevice.config.zeroBased).toBe(args.zeroBased)
   })
-  test(`deleteModbus deletes a modbus device with the selected settings.`, async () => {
+  test.only(`deleteModbus deletes a modbus device with the selected settings.`, async () => {
     prevCount = Modbus.instances.length
     const args = {
       id: device.id
@@ -396,7 +396,7 @@ describe(`Mutations: `, () => {
     expect(Modbus.instances.length).toBe(prevCount - 1)
     expect(deletedDevice.id).toBe(args.id)
   })
-  test(`createModbusSource creates a modbus device with the selected settings.`, async () => {
+  test.only(`createModbusSource creates a modbus device with the selected settings.`, async () => {
     prevCount = ModbusSource.instances.length
     const args = {
       deviceId: Modbus.instances[0].device.id,
@@ -418,7 +418,7 @@ describe(`Mutations: `, () => {
     expect(modbusSource.register).toBe(args.register)
     expect(modbusSource.registerType).toBe(args.registerType)
   })
-  test(`updateModbusSource updates a modbus device with the selected settings.`, async () => {
+  test.only(`updateModbusSource updates a modbus device with the selected settings.`, async () => {
     prevCount = ModbusSource.instances.length
     const args = {
       tagId: Tag.instances[0].id,
@@ -439,7 +439,7 @@ describe(`Mutations: `, () => {
     expect(updatedModbusSource.register).toBe(args.register)
     expect(updatedModbusSource.registerType).toBe(args.registerType)
   })
-  test(`deleteModbusSource deletes a modbus device with the selected settings.`, async () => {
+  test.only(`deleteModbusSource deletes a modbus device with the selected settings.`, async () => {
     prevCount = ModbusSource.instances.length
     const args = {
       tagId: Tag.instances[0].id
@@ -455,7 +455,7 @@ describe(`Mutations: `, () => {
     expect(ModbusSource.instances.length).toBe(prevCount - 1)
     expect(deletedModbusSource.id).toBe(args.tagId)
   })
-  test(`createEthernetIP creates a ethernetip device with the selected settings.`, async () => {
+  test.only(`createEthernetIP creates a ethernetip device with the selected settings.`, async () => {
     prevCount = EthernetIP.instances.length
     const args = {
       name: `resolverTestEthernetIP`,
@@ -477,7 +477,7 @@ describe(`Mutations: `, () => {
     expect(device.config.host).toBe(args.host)
     expect(device.config.slot).toBe(args.slot)
   })
-  test(`updateEthernetIP updates a ethernetip device with the selected settings.`, async () => {
+  test.only(`updateEthernetIP updates a ethernetip device with the selected settings.`, async () => {
     prevCount = EthernetIP.instances.length
     const args = {
       id: device.id,
@@ -501,7 +501,7 @@ describe(`Mutations: `, () => {
     expect(updatedDevice.config.host).toBe(args.host)
     expect(updatedDevice.config.slot)
   })
-  test(`deleteEthernetIP deletes a ethernetip device with the selected settings.`, async () => {
+  test.only(`deleteEthernetIP deletes a ethernetip device with the selected settings.`, async () => {
     prevCount = EthernetIP.instances.length
     const args = {
       id: device.id
@@ -518,7 +518,7 @@ describe(`Mutations: `, () => {
     expect(deletedDevice.id).toBe(args.id)
   })
   let ethernetipSource = undefined
-  test(`createEthernetIPSource creates a ethernetip source with the selected settings.`, async () => {
+  test.only(`createEthernetIPSource creates a ethernetip source with the selected settings.`, async () => {
     prevCount = EthernetIPSource.instances.length
     const args = {
       deviceId: EthernetIP.instances[0].device.id,
@@ -540,7 +540,7 @@ describe(`Mutations: `, () => {
     expect(ethernetipSource.tag).toBe(Tag.instances[0])
     expect(ethernetipSource.tagname).toBe(args.tagname)
   })
-  test(`updateEthernetIPSource updates a ethernetip source with the selected settings.`, async () => {
+  test.only(`updateEthernetIPSource updates a ethernetip source with the selected settings.`, async () => {
     prevCount = EthernetIPSource.instances.length
     const args = {
       tagId: Tag.instances[0].id,
@@ -561,7 +561,7 @@ describe(`Mutations: `, () => {
     expect(updatedEthernetIPSource.tag).toBe(Tag.instances[0])
     expect(updatedEthernetIPSource.tagname).toBe(args.tagname)
   })
-  test(`deleteEthernetIP deletes a modbus device with the selected settings.`, async () => {
+  test.only(`deleteEthernetIP deletes a modbus device with the selected settings.`, async () => {
     prevCount = EthernetIP.instances.length
     const args = {
       tagId: Tag.instances[0].id
