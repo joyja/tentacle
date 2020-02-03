@@ -48,6 +48,6 @@
     "mqtt": "^3.0.0",
     "sparkplug-client": "^3.2.2",
     "sparkplug-client-jar": "^3.2.1",
-    "sqlite3": "^4.1.0"
+    "sqlite3": "^4.1.1"
   }
 }
