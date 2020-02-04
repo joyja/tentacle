@@ -44,7 +44,7 @@
     "graphql-request": "^1.8.2",
     "graphql-yoga": "^1.18.3",
     "jsonwebtoken": "^8.5.1",
-    "modbus-serial": "^7.7.3",
+    "modbus-serial": "^7.7.4",
     "mqtt": "^3.0.0",
     "sparkplug-client": "^3.2.2",
     "sparkplug-client-jar": "^3.2.1",
