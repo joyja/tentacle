@@ -1,5 +1,5 @@
 const { Model } = require(`../database`)
-const sparkplug = require(`sparkplug-client-jar`)
+const sparkplug = require(`sparkplug-client`)
 const getUnixTime = require('date-fns/getUnixTime')
 
 class Mqtt extends Model {
