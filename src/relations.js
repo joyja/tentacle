@@ -170,6 +170,14 @@ Object.defineProperties(EthernetIP.prototype, {
       this.checkInit()
       return Device.findById(this._device)
     }
+  },
+  sources: {
+    get() {
+      this.checkInit()
+      return EthernetIPSource.instances.filter((instance) => {
+        return instance.ethernetip.id === this.id
+      })
+    }
   }
 })
 
@@ -223,6 +231,7 @@ Mqtt.create = async function(
   password,
   devices,
   rate,
+  encrypt,
   createdBy
 ) {
   const service = await Service.create(name, description, 'mqtt', createdBy)
@@ -234,7 +243,8 @@ Mqtt.create = async function(
     node,
     username,
     password,
-    rate
+    rate,
+    encrypt
   }
   const mqtt = await this._createModel(fields)
   for (device of devices) {

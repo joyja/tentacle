@@ -16,8 +16,10 @@ async function createMqtt(root, args, context, info) {
     args.password,
     args.devices,
     args.rate,
+    args.encrypt,
     createdBy
   )
+  await mqtt.connect()
   return mqtt.service
 }
 
@@ -57,9 +59,11 @@ async function updateMqtt(root, args, context, info) {
     if (args.rate) {
       await service.config.setRate(args.rate)
     }
-    if (args.encrypt) {
+    if (args.encrypt !== undefined) {
       await service.config.setEncrypt(args.encrypt)
     }
+    await service.config.disconnect()
+    await service.config.connect()
     return service
   } else {
     throw new Error(`Service with id ${args.id} does not exist.`)
@@ -72,6 +76,7 @@ async function deleteMqtt(root, args, context, info) {
   })
   const service = Service.findById(args.id)
   if (service) {
+    await service.config.disconnect()
     return service.delete()
   } else {
     throw new Error(`Service with id ${args.id} does not exist.`)

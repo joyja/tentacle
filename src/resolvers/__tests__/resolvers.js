@@ -1,7 +1,9 @@
+jest.mock(`sparkplug-client`)
 jest.mock(`modbus-serial`)
 jest.mock(`ethernet-ip`)
 const ModbusRTU = require(`modbus-serial`)
 const { Controller } = require(`ethernet-ip`)
+const sparkplug = require(`sparkplug-client`)
 
 const { createTestDb, deleteTestDb } = require('../../../test/db')
 const {
@@ -17,6 +19,18 @@ const {
   Mqtt,
   MqttSource
 } = require('../../relations')
+const mockSparkplug = {
+  on: jest.fn((state, callback) => {
+    if (state === 'birth') {
+      callback()
+    }
+  }),
+  publishNodeBirth: jest.fn(),
+  publishDeviceBirth: jest.fn(),
+  publishDeviceData: jest.fn(),
+  publishDeviceDeath: jest.fn(),
+  stop: jest.fn()
+}
 const bcrypt = require('bcryptjs')
 
 const resolvers = require('../index')
@@ -40,6 +54,9 @@ beforeAll(async () => {
       tagData.value = 123.456
       resolve()
     })
+  })
+  sparkplug.newClient.mockImplementation(() => {
+    return mockSparkplug
   })
   db = await createTestDb(dbFilename).catch((error) => {
     throw error

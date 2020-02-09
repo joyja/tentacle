@@ -1,5 +1,7 @@
+"""Used to deliver timestamp values."""
 scalar DateTime
 
+"""Modbus register types for use with modbus sources per the modbus specification."""
 enum ModbusRegisterType {
   DISCRETE_INPUT
   COIL
@@ -7,6 +9,7 @@ enum ModbusRegisterType {
   HOLDING_REGISTER
 }
 
+"""Tag datatypes allowing for clients to properly parse tag values."""
 enum Datatype {
   BOOLEAN,
   INT16,
@@ -14,126 +17,211 @@ enum Datatype {
   FLOAT
 }
 
+"""Sources store the configuration to be used for tag value updates from devices."""
 union Source = ModbusSource | EthernetIPSource
+"""DeviceConfig stores the protocol specific configuration and status for each device."""
 union DeviceConfig = Modbus | EthernetIP
 
+"""Credentials used to identify who is logging into the gateway."""
 type User {
   id: ID!
   username: String!
 }
 
+"""A Device is a something that can serve data to be used for updating tag values, such as a modbus TCP or Ethernet/IP server."""
 type Device {
   id: ID!
+  """Identifier for the device that will be also used for external services, such as MQTT Sparkplug B."""
   name: String!
+  """Description to allow for users to give the device more context."""
   description: String!
+  """Configuration is specific to the protocol used by the device, such as modbus or Ethernet/IP"""
   config: DeviceConfig
+  """User who created the tag."""
   createdBy: User
+  """Date/time the tag was created."""
   createdOn: DateTime!
 }
 
+"""Modbus is a device config allowing for access to data for updating tag values per the Modbus TCP specification."""
 type Modbus {
   id: ID!
+  """Device for this modbus configuration."""
   device: Device!
+  """Host or IP address of the modbus device."""
   host: String!
+  """Port of the modbus device."""
   port: String!
+  """Whether registers are stored as Big Endian (false) or Little Endian (true)."""
   reverseBits: Boolean!
+  """Whether multiregister sources should use the lowest register first (false) or the highest register first (true)."""
   reverseWords: Boolean!
+  """List of sources (tag/register) pairs that are using this modbus device."""
   sources: [ModbusSource!]!
+  """Status of the modbus device connection. Will be connected if connection is successful or an error message if connection failed."""
   status: String
+  """Whether registers start from zero or one. Can be used to make sure device addresses and those configured in the gateway match (and are not one off from eachother)"""
+  zeroBased: Boolean!
 }
 
+"""A Mobus source reads a register from a modbus TCP device and updates a tag value per the tags scan class."""
 type ModbusSource {
   id: ID!
+  """The modbus device this source uses to get the register values."""
   modbus: Modbus!
+  """The tag to update."""
   tag: Tag!
+  """The starting register to read from the modbus device."""
   register: Int!
+  """The register type per the modbus specification. Can be `HOLDING_REGISTER`, `INPUT_REGISTER`, `DISCRETE_INPUT`, or `COIL`."""
   registerType: ModbusRegisterType!
 }
 
+"""Ethernet/IP is a device config allowing for access to data for updating tag values per the ODVA Ethernet/IP specification."""
 type EthernetIP {
   id: ID!
+  """Device for this Ethernet/IP configuration."""
   device: Device!
+  """Host or IP address of the Ethernet/IP device. Port is fixed at 44818."""
   host: String!
+  """Slot of the PLC. It is typically zero for devices that do no have slots or where the PLC is fixed."""
   slot: String!
+  """List of sources (tag/register) pairs that are using this Ethernet/IP device."""
   sources: [EthernetIPSource!]!
+  """Status of the Ethernet/IP device connection. Will be connected if connection is successful or an error message if connection failed."""
   status: String
 }
 
+"""An Ethernet/IP source reads an tag from an Ethernet/IP device and updates a tag value per the tags scan class."""
 type EthernetIPSource {
   id: ID!
+  """The ethernet/IP device this source uses to get the register values."""
   ethernetip: EthernetIP!
+  """The tag to update."""
   tag: Tag!
+  """The tagname of the tag in the Ethernet/IP device (not to be confused with the name of the tag in this gateway)"""
   tagname: String!
 }
 
+"""A scan class allows for groups of tags to be updated at the same pre-defined rate."""
 type ScanClass {
   id: ID!
+  """Rate at which to update that tags assigned to this scan class from their device source."""
   rate: Int!
+  """List of tags assigned to this scan class"""
   tags: [Tag!]!
+  """The number of times this scan class has been scanned since the scan class scan started. This values clears to zero when the periodic scan is stopped."""
   scanCount: Int!
 }
 
+"""A Tag stores data point values. It's value can be updated from a device source per it's scan class, and it's value can be made available to external services like MQTT."""
 type Tag {
   id: ID!
+  """Identifier for the tag that will be also used for external services, such as MQTT Sparkplug B."""
   name: String!
+  """Description to allow for users to give the tag more context."""
   description: String!
+  """Tag value, which is updated at the scan class rate from the assigned source and also delivered to services that use this tag as a source."""
   value: String
+  """Format of that tag value, allowing clients to parse the value appropriately."""
   datatype: Datatype!
+  """Assigned scan class which determines the rate at which the tag is updated from it's assigned source."""
   scanClass: ScanClass!
+  """User who created the tag."""
   createdBy: User
+  """Date/time the tag was created."""
   createdOn: DateTime!
+  """Source from which this tag value is updated."""
   source: Source
 }
 
+"""A service makes data available to external services by acting as a server or publishing the data as is done with MQTT."""
 type Service {
   id: ID!
+  """Identifier for the service."""
   name: String!
+  """Description to allow for users to give the service more context."""
   description: String!
+  """Configuration is specific to the protocol used by the service, such as MQTT"""
   config: Mqtt
+  """User who created the service."""
   createdBy: User
+  """Date/time the service was created."""
   createdOn: DateTime!
 }
 
+"""MQTT is a service that allows for publishing tag values to an MQTT broker using the sparkplug B specification, which will server data to other subscribing nodes. One broker per service."""
 type Mqtt {
   id: ID!
+  """Hostname or IP address of the MQTT broker"""
   host: String!
+  """Port for the service on the MQTT broker"""
   port: String!
+  """Identifies a logical grouping of edge devices."""
   group: String!
+  """Identifies the edge device pushing data to the MQTT broker."""
   node: String!
+  """MQTT Broker username."""
   username: String!
+  """MQTT Broker password."""
   password: String!
+  """List of MQTT source devices that will be publishing to this broker."""
   sources: [MqttSource!]!
+  """Publishing rate in milliseconds"""
   rate: Int!
+  """True if ssl:// is to be used, otherwise tcp:// will be used."""
   encrypt: Boolean!
 }
 
+"""An MQTT source publishes data from all tags with the same device source. The device name will be used as the `Device` field in sparkplug B."""
 type MqttSource {
   id: ID!
+  """MQTT service (broker)"""
   mqtt: Mqtt!
+  """Source device. All tags updating their values from this device will be published at the MQTT services configured scan rate."""
   device: Device!
 }
 
+"""The data returned after a successful login attempt."""
 type AuthPayload {
+  """Bearer token to be added to the Authorization header for future requests."""
   token: String
+  """User that successfully logged in."""
   user: User
 }
 
+"""Read only queries"""
 type Query {
+  """Requires a valid authorization token. List of all tags configured in this gateway"""
   tags: [Tag!]!
+  """Requires a valid authorization token. ist of all scan classes configured in this gateway"""
   scanClasses: [ScanClass!]!
+  """Requires a valid authorization token. List of all devices configured in this gateway"""
   devices(type: String): [Device!]!
+  """Requires a valid authorization token. List of all services configured in this gateway"""
   services(type: String): [Service!]!
 }
 
+"""Read/Write queries"""
 type Mutation {
+  """If a valid username and password is provided, this will return an auth payload with a java web token to be used for future requests 
+  and information about the user that successfully logged in."""
   login(username: String!, password: String!): AuthPayload
+  """Allows the user to change their password"""
   changePassword(oldPassword: String!, newPassword: String!): User
+  """Requires a valid authorization token. Creates a new scan class"""
   createScanClass(name: String!, rate: Int!): ScanClass
+  """Requires a valid authorization token. Updates an existing scan class"""
   updateScanClass(id: ID!, rate: Int!): ScanClass
+  """Requires a valid authorization token. Deletes a scan class. Will not be successfully if there are tags currently assigned to this scan class."""
   deleteScanClass(id: ID!): ScanClass
-  createTag(name: String!, description: String!, datatype: Datatype!, value: String!, scanClassId: Int!): Tag
-  updateTag(id: ID!, name: String, description: String, value: String, scanClassId: Int): Tag
+  """Requires a valid authorization token. Creates a new tag"""
+  createTag(name: String!, description: String!, datatype: Datatype!, value: String!, scanClassId: ID!): Tag
+  """Requires a valid authorization token. Updates an existing tag"""
+  updateTag(id: ID!, name: String, description: String, value: String, scanClassId: ID): Tag
+  """Requires a valid authorization token. Deletes a tag. Will delete any source assigned to this tag, and tag will no longer be scanned."""
   deleteTag(id: ID!): Tag
+  """Requires a valid authorization token. Creates a modbus device, and automatically starts a connection."""
   createModbus(
     name: String!, 
     description: String!, 
@@ -141,8 +229,9 @@ type Mutation {
     port: Int!,
     reverseBits: Boolean!,
     reverseWords: Boolean!,
-    zeroBase: Boolean!
+    zeroBased: Boolean!
   ): Device
+  """Requires a valid authorization token. Updates an existing modbus device and refreshes the connection."""
   updateModbus(
     id: ID!,
     name: String, 
@@ -150,19 +239,26 @@ type Mutation {
     host: String, 
     port: Int,
     reverseBits: Boolean,
-    reversWords: Boolean,
-    zeroBase: Boolean
+    reverseWords: Boolean,
+    zeroBased: Boolean
   ): Device
+  """Requires a valid authorization token. Deletes a modbus device. All sources assigned to this device are deleted and tags using
+  this device as a source will have their sources set to null, making their values static."""
   deleteModbus(id: ID!): Device
+  """Requires a valid authorization token. Creates a modbus source. The tag value will then be updated to the value at the source register per the scan class"""
   createModbusSource(deviceId: ID!, tagId: ID!, register: Int!, registerType: ModbusRegisterType): ModbusSource
+  """Requires a valid authorization token. Updates a modbus source register. The tag value will then update per the new register at the rate of the scan class."""
   updateModbusSource(tagId: ID!, register: Int!, registerType: ModbusRegisterType): ModbusSource
+  """Requires a valid authorization token. Deletes a modbus source. The tag value will then be static."""
   deleteModbusSource(tagId: ID!): ModbusSource
+  """Requires a valid authorization token. Creates an Ethernet/IP device, and automatically starts a connection."""
   createEthernetIP(
     name: String!, 
     description: String!, 
     host: String!, 
     slot: Int!,
   ): Device
+  """Requires a valid authorization token. Updates an existing Ethernet/IP device and refreshes the connection."""
   updateEthernetIP(
     id: ID!,
     name: String, 
@@ -170,11 +266,18 @@ type Mutation {
     host: String, 
     slot: Int,
   ): Device
+  """Requires a valid authorization token. Deletes an Ethernet/IP device. All sources assigned to this device are deleted and tags using
+  this device as a source will have their sources set to null, making their values static."""
   deleteEthernetIP(id: ID!): Device
+  """Requires a valid authorization token. Creates an Ethernet/IP source. The tag value will then be updated to the value at the source register per the scan class"""
   createEthernetIPSource(deviceId: ID!, tagId: ID!, tagname: String): EthernetIPSource
+  """Requires a valid authorization token. Updates an Ethernet/IP source tagname. The tag value will then update per the new tagname at the rate of the scan class."""
   updateEthernetIPSource(tagId: ID!, tagname: String): EthernetIPSource
+  """Requires a valid authorization token. Deletes an Ethernet/IP source. The tag value will then be static."""
   deleteEthernetIPSource(tagId: ID!): EthernetIPSource
-  createMqtt(name: String!,
+  """Requires a valid authorization token. Creates an MQTT Sparkplug B service (tied to a single MQTT broker)."""
+  createMqtt(
+    name: String!,
     description: String!,
     host: String!, 
     port: Int!,
@@ -186,18 +289,24 @@ type Mutation {
     rate: Int!,
     encrypt: Boolean!
   ): Service
+  """Requires a valid authorization token. Updates an MQTT Sparkplug B service and restarts the connection."""
   updateMqtt(
     id: ID!,
-    name: String!,
-    description: String!,
-    host: String!, 
-    port: Int!,
-    group: String!,
-    node: String!,
-    username: String!,
-    password: String!
+    name: String,
+    description: String,
+    host: String, 
+    port: Int,
+    group: String,
+    node: String,
+    username: String,
+    password: String,
+    rate: Int,
+    encrypt: Boolean
   ): Service
+  """Requires a valid authorization token. Adds a device to an MQTT service. All the tags with sources from that device will be published at the rate of the MQTT service configuration."""
   addMqttDevice(id: ID!, deviceId: ID!): Service
+  """Requires a valid authorization token. Deletes a device from an MQTT service. The tags for the removed device will no longer be published to the broker (but the device and tags will still exist)."""
   deleteMqttDevice(id: ID!, deviceId: ID!): Service
+  """Requires a valid authorization token. Deletes an MQTT Service. All devices assigned to this service will no longer have their tags published."""
   deleteMqtt(id: ID!): Service
 }
