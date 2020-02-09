@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const path = require('path')
 const sqlite3 = require('sqlite3').verbose()
 const { GraphQLServer, PubSub } = require('graphql-yoga')
 const resolvers = require('./resolvers')
@@ -25,7 +26,7 @@ start = async function(inMemory = false) {
   }
   const pubsub = new PubSub()
   server = new GraphQLServer({
-    typeDefs: './src/schema.graphql',
+    typeDefs: path.resolve('src/schema.graphql'),
     resolvers,
     context: (req) => ({
       ...req,
