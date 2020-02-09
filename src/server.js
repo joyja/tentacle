@@ -79,18 +79,10 @@ start = async function(inMemory = false) {
         throw error
       })
   })
-  process.on('SIGINT', () => {
-    ScanClass.instances.forEach((instance) => {
-      instance.stopScan()
+  process.on('SIGINT', async () => {
+    await stop().catch((error) => {
+      throw error
     })
-    Device.instances.forEach((instance) => {
-      instance.config.disconnect()
-    })
-    Service.instances.forEach((instance) => {
-      instance.config.disconnect()
-    })
-    db.close()
-    httpServer.close()
   })
 }
 
@@ -104,7 +96,9 @@ stop = async function() {
   Service.instances.forEach((instance) => {
     instance.config.disconnect()
   })
-  db.close()
+  try {
+    db.close()
+  } catch (error) {}
   httpServer.close()
 }
 
