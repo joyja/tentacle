@@ -55,7 +55,7 @@ beforeEach(() => {
 })
 
 let client = undefined
-test.only('login with default username/password returns appropriate results.', async () => {
+test('login with default username/password returns appropriate results.', async () => {
   const mutation = `mutation {
     login(username: "admin", password: "password") {
       user {
