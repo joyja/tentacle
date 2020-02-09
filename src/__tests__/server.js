@@ -6,7 +6,7 @@ const { Controller } = require(`ethernet-ip`)
 const sparkplug = require(`sparkplug-client`)
 const { GraphQLClient, request } = require('graphql-request')
 const { query, mutation } = require('../../test/graphql')
-const start = require('../server')
+const { start, stop } = require('../server')
 const _ = require('lodash')
 
 const host = 'http://localhost:4000'
@@ -34,6 +34,10 @@ beforeAll(async () => {
   sparkplug.newClient.mockImplementation(() => {
     return mockSparkplug
   })
+})
+
+afterAll(async () => {
+  await stop()
 })
 
 beforeEach(() => {

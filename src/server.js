@@ -5,9 +5,11 @@ const { GraphQLServer, PubSub } = require('graphql-yoga')
 const resolvers = require('./resolvers')
 const { User, Tag, ScanClass, Device, Service } = require('./relations')
 
+let db = undefined
+let httpServer = undefined
+let server = undefined
 start = async function(inMemory = false) {
   // Create database
-  let db = undefined
   if (inMemory) {
     db = new sqlite3.Database(`:memory:`, (error) => {
       if (error) {
@@ -22,7 +24,7 @@ start = async function(inMemory = false) {
     })
   }
   const pubsub = new PubSub()
-  const server = new GraphQLServer({
+  server = new GraphQLServer({
     typeDefs: './src/schema.graphql',
     resolvers,
     context: (req) => ({
@@ -37,8 +39,8 @@ start = async function(inMemory = false) {
     })
   })
 
-  await new Promise((resolve, reject) => {
-    server
+  await new Promise(async (resolve, reject) => {
+    httpServer = await server
       .start(async () => {
         const context = server.context()
         await context.db.get('PRAGMA foreign_keys = ON')
@@ -88,8 +90,22 @@ start = async function(inMemory = false) {
       instance.config.disconnect()
     })
     db.close()
-    server.close()
+    httpServer.close()
   })
 }
 
-module.exports = start
+stop = async function() {
+  ScanClass.instances.forEach((instance) => {
+    instance.stopScan()
+  })
+  Device.instances.forEach((instance) => {
+    instance.config.disconnect()
+  })
+  Service.instances.forEach((instance) => {
+    instance.config.disconnect()
+  })
+  db.close()
+  httpServer.close()
+}
+
+module.exports = { start, stop }
