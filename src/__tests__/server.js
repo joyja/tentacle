@@ -643,3 +643,42 @@ test('delete tag with valid arguments and credentials returns deleted device', a
   })
   expect(isStillThere).toBe(false)
 })
+test('delete scanClass without authorization headers returns error', async () => {
+  expect(
+    await request(host, mutation.deleteScanClass, { id: scanClass.id }).catch(
+      (e) => e
+    )
+  ).toMatchInlineSnapshot(
+    `[Error: GraphQL Error (Code: 500): {"response":{"error":"<!DOCTYPE html>\\n<html lang=\\"en\\">\\n<head>\\n<meta charset=\\"utf-8\\">\\n<title>Error</title>\\n</head>\\n<body>\\n<pre>Error: Must provide document<br> &nbsp; &nbsp;at devAssert (/home/ubuntu/tentacle/node_modules/graphql/jsutils/devAssert.js:12:11)<br> &nbsp; &nbsp;at Object.validate (/home/ubuntu/tentacle/node_modules/graphql/validation/validate.js:52:41)<br> &nbsp; &nbsp;at doRunQuery (/home/ubuntu/tentacle/node_modules/apollo-server-core/src/runQuery.ts:181:30)<br> &nbsp; &nbsp;at /home/ubuntu/tentacle/node_modules/apollo-server-core/src/runQuery.ts:80:39<br> &nbsp; &nbsp;at processTicksAndRejections (internal/process/task_queues.js:94:5)<br> &nbsp; &nbsp;at async Promise.all (index 0)</pre>\\n</body>\\n</html>\\n","status":500},"request":{"variables":{"id":"1"}}}]`
+  )
+})
+test('delete scanClass with valid credentials deletes a scan class', async () => {
+  const mutation = `mutation DeleteScanClass($id: ID!){
+    deleteScanClass(id: $id) {
+      id
+      rate
+    }
+  }`
+  const { deleteScanClass } = await client
+    .request(mutation, scanClass)
+    .catch((error) => {
+      throw error
+    })
+  expect(deleteScanClass.id).toEqual(scanClass.id)
+  const { scanClasses } = await client
+    .request(
+      `query {
+      scanClasses {
+        id
+        rate
+      }
+    }`
+    )
+    .catch((error) => {
+      error
+    })
+  const isStillThere = scanClasses.some((scanClass) => {
+    scanClass.id === deleteTag.id
+  })
+  expect(isStillThere).toBe(false)
+})
