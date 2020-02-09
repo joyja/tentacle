@@ -26,7 +26,7 @@ start = async function(inMemory = false) {
   }
   const pubsub = new PubSub()
   server = new GraphQLServer({
-    typeDefs: path.resolve('src/schema.graphql'),
+    typeDefs: path.join(__dirname, '/schema.graphql'),
     resolvers,
     context: (req) => ({
       ...req,
