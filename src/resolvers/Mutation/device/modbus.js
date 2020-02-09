@@ -50,8 +50,8 @@ async function updateModbus(root, args, context, info) {
     if (args.reverseBits !== undefined) {
       await device.config.setReverseBits(args.reverseBits)
     }
-    if (args.reversWords !== undefined) {
-      await device.config.setReversWords(args.reversWords)
+    if (args.reverseWords !== undefined) {
+      await device.config.setReverseWords(args.reverseWords)
     }
     if (args.zeroBased !== undefined) {
       await device.config.setZeroBased(args.zeroBased)

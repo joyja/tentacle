@@ -37,6 +37,7 @@ async function deleteScanClass(root, args, context, info) {
   })
   const scanClass = ScanClass.findById(args.id)
   if (scanClass) {
+    scanClass.stopScan()
     return scanClass.delete()
   } else {
     throw new Error(`Scan Class with id ${args.id} does not exist.`)

@@ -5,8 +5,12 @@ const fromUnixTime = require('date-fns/fromUnixTime')
 
 class Service extends Model {
   static async initialize(db, pubsub) {
-    await Mqtt.initialize(db, pubsub)
-    return super.initialize(db, pubsub, Service)
+    await Mqtt.initialize(db, pubsub).catch((error) => {
+      throw error
+    })
+    return super.initialize(db, pubsub, Service).catch((error) => {
+      throw error
+    })
   }
   static create(name, description, type, createdBy) {
     const createdOn = getUnixTime(new Date())
@@ -75,7 +79,7 @@ class Service extends Model {
   }
   get createdOn() {
     this.checkInit()
-    return fromUnixTime(this._createdBy)
+    return fromUnixTime(this._createdOn)
   }
 }
 Service.table = `service`

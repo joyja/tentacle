@@ -73,18 +73,7 @@ class Mqtt extends Model {
           })
         })
         this.interval = setInterval(() => {
-          this.sources.forEach((source) => {
-            this.client.publishDeviceData(`${source.device.name}`, {
-              timestamp: getUnixTime(new Date(Date.UTC())),
-              metrics: source.device.config.sources.map((source) => {
-                return {
-                  name: source.tag.name,
-                  value: source.tag.value,
-                  type: source.tag.datatype
-                }
-              })
-            })
-          })
+          this.publish()
         }, this.rate)
       })
     }
@@ -101,6 +90,20 @@ class Mqtt extends Model {
       this.client.stop()
       this.client = undefined
     }
+  }
+  publish() {
+    this.sources.forEach((source) => {
+      this.client.publishDeviceData(`${source.device.name}`, {
+        timestamp: getUnixTime(new Date(Date.UTC())),
+        metrics: source.device.config.sources.map((source) => {
+          return {
+            name: source.tag.name,
+            value: source.tag.value,
+            type: source.tag.datatype
+          }
+        })
+      })
+    })
   }
   get host() {
     this.checkInit()
@@ -181,11 +184,13 @@ class Mqtt extends Model {
   }
   get encrypt() {
     this.checkInit()
-    return this._encrypt
+    return Boolean(this._encrypt)
   }
-  setRate(value) {
-    return this.update(this.id, 'encrypt', value, Mqtt)
-      .then((result) => (this._encrypt = result))
+  setEncrypt(value) {
+    return this.update(this.id, 'encrypt', value)
+      .then((result) => {
+        this._encrypt = result
+      })
       .catch((error) => {
         throw error
       })

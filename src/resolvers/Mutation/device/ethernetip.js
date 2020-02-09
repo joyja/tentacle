@@ -39,11 +39,11 @@ async function updateEthernetIP(root, args, context, info) {
     if (args.host) {
       await device.config.setHost(args.host)
     }
-    if (args.port) {
-      await device.config.setSlot(args.port)
+    if (args.slot) {
+      await device.config.setSlot(args.slot)
     }
-    await device.config.connect()
     await device.config.disconnect()
+    await device.config.connect()
     return device
   } else {
     throw new Error(`Device with id ${args.id} does not exist.`)

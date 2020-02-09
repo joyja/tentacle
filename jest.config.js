@@ -1,4 +1,5 @@
 const path = require('path')
+const { defaults } = require('jest-config')
 
 module.exports = {
   roots: [path.join(__dirname, './src')],
@@ -9,8 +10,7 @@ module.exports = {
   coverageDirectory: path.join(__dirname, './coverage/'),
   collectCoverageFrom: ['**/src/**/*.js'],
   coveragePathIgnorePatterns: ['.*/__tests__/.*'],
-  // globalSetup: './test/setup.js',
-  // globalTeardown: './test/teardown.js',
+  moduleFileExtensions: [...defaults.moduleFileExtensions, 'graphql'],
   watchPlugins: [
     require.resolve('jest-watch-select-projects'),
     require.resolve('jest-watch-typeahead/filename'),
