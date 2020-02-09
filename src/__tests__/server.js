@@ -9,8 +9,6 @@ const { query, mutation } = require('../../test/graphql')
 const start = require('../server')
 const _ = require('lodash')
 
-jest.useFakeTimers()
-
 const host = 'http://localhost:4000'
 const mockSparkplug = {
   on: jest.fn((state, callback) => {
@@ -39,6 +37,7 @@ beforeAll(async () => {
 })
 
 beforeEach(() => {
+  jest.useFakeTimers()
   ModbusRTU.prototype.connectTCP.mockClear()
   ModbusRTU.prototype.close.mockClear()
   Controller.prototype.connect.mockClear()
@@ -411,6 +410,8 @@ test('create mqtt with the proper headers and fields returns valid results', asy
     .catch((error) => {
       throw error
     })
+  expect(setInterval).toBeCalledTimes(1)
+  expect(clearInterval).toBeCalledTimes(0)
   expect(mockSparkplug.on).toBeCalledTimes(1)
   expect(mockSparkplug.publishNodeBirth).toBeCalledTimes(1)
   expect(mockSparkplug.publishDeviceBirth).toBeCalledTimes(1)
@@ -445,6 +446,8 @@ test('create mqtt without authorization headers returns error', async () => {
   ).toMatchInlineSnapshot(
     `[Error: Your are not authorized.: {"response":{"data":{"createMqtt":null},"errors":[{"message":"Your are not authorized.","locations":[{"line":14,"column":3}],"path":["createMqtt"]}],"status":200},"request":{"query":"mutation CreateMqtt (\\n    $name: String!\\n    $description: String!\\n    $host: String! \\n    $port: Int!\\n    $group: String!\\n    $node: String!\\n    $username: String!\\n    $password: String!\\n    $devices: [Int!]!\\n    $rate: Int!\\n    $encrypt: Boolean!\\n){\\n  createMqtt(\\n    name: $name\\n    description: $description\\n    host: $host \\n    port: $port\\n    group: $group\\n    node: $node\\n    username: $username\\n    password: $password\\n    devices: $devices\\n    rate: $rate\\n    encrypt: $encrypt\\n  ) {\\n    ... FullService\\n  }\\n}\\n\\n  fragment FullService on Service {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Mqtt {\\n        id\\n        host\\n        port\\n        group\\n        node\\n        username\\n        password\\n        rate\\n        encrypt\\n        sources {\\n          device {\\n            id\\n          }\\n        }\\n      }\\n    }\\n  }\\n","variables":{"name":"aMqtt","description":"A Mqtt","host":"localhost","port":1883,"group":"aGroup","node":"aNode","username":"aUsername","password":"aPassword","devices":[1],"rate":1000,"encrypt":true}}}]`
   )
+  expect(setInterval).toBeCalledTimes(0)
+  expect(clearInterval).toBeCalledTimes(0)
   expect(mockSparkplug.on).toBeCalledTimes(0)
   expect(mockSparkplug.publishNodeBirth).toBeCalledTimes(0)
   expect(mockSparkplug.publishDeviceBirth).toBeCalledTimes(0)
@@ -470,6 +473,8 @@ test('update mqtt with the proper headers and fields returns valid results', asy
     .catch((error) => {
       throw error
     })
+  expect(setInterval).toBeCalledTimes(1)
+  expect(clearInterval).toBeCalledTimes(1)
   expect(mockSparkplug.on).toBeCalledTimes(1)
   expect(mockSparkplug.publishNodeBirth).toBeCalledTimes(1)
   expect(mockSparkplug.publishDeviceBirth).toBeCalledTimes(1)
@@ -504,6 +509,8 @@ test('update mqtt without authorization headers returns error', async () => {
   ).toMatchInlineSnapshot(
     `[Error: Your are not authorized.: {"response":{"data":{"updateMqtt":null},"errors":[{"message":"Your are not authorized.","locations":[{"line":14,"column":3}],"path":["updateMqtt"]}],"status":200},"request":{"query":"mutation UpdateMqtt (\\n  $id: ID!\\n  $name: String\\n  $description: String\\n  $host: String \\n  $port: Int\\n  $group: String\\n  $node: String\\n  $username: String\\n  $password: String\\n  $rate: Int\\n  $encrypt: Boolean\\n){\\n  updateMqtt(\\n    id: $id\\n    name: $name\\n    description: $description\\n    host: $host \\n    port: $port\\n    group: $group\\n    node: $node\\n    username: $username\\n    password: $password\\n    rate: $rate\\n    encrypt: $encrypt\\n  ) {\\n    ... FullService\\n  }\\n}\\n\\n  fragment FullService on Service {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Mqtt {\\n        id\\n        host\\n        port\\n        group\\n        node\\n        username\\n        password\\n        rate\\n        encrypt\\n        sources {\\n          device {\\n            id\\n          }\\n        }\\n      }\\n    }\\n  }\\n","variables":{"id":"1","name":"anotherMqtt","description":"Another Mqtt","host":"mqtt.jarautomation.io","port":31112,"group":"anotherGroup","node":"anotherNode","username":"anotherUsername","password":"anotherPassword","rate":2000,"encrypt":false}}}]`
   )
+  expect(setInterval).toBeCalledTimes(0)
+  expect(clearInterval).toBeCalledTimes(0)
   expect(mockSparkplug.on).toBeCalledTimes(0)
   expect(mockSparkplug.publishNodeBirth).toBeCalledTimes(0)
   expect(mockSparkplug.publishDeviceBirth).toBeCalledTimes(0)
@@ -546,6 +553,8 @@ test('delete mqtt with valid arguments and credentials returns deleted service',
     .catch((error) => {
       throw error
     })
+  expect(setInterval).toBeCalledTimes(0)
+  expect(clearInterval).toBeCalledTimes(1)
   expect(mockSparkplug.on).toBeCalledTimes(0)
   expect(mockSparkplug.publishNodeBirth).toBeCalledTimes(0)
   expect(mockSparkplug.publishDeviceBirth).toBeCalledTimes(0)
