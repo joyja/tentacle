@@ -24,7 +24,7 @@ A nodejs industrial automation edge gateway with a GraphQL API.
 
 <!-- START graphql-markdown -->
 
-# Schema Types
+### Schema Types
 
 <details>
   <summary><strong>Table of Contents</strong></summary>
@@ -56,7 +56,7 @@ A nodejs industrial automation edge gateway with a GraphQL API.
 
 </details>
 
-## Query
+#### Query
 Read only queries
 
 <table>
@@ -118,7 +118,7 @@ Requires a valid authorization token. List of all services configured in this ga
 </tbody>
 </table>
 
-## Mutation
+#### Mutation
 Read/Write queries
 
 <table>
@@ -797,9 +797,9 @@ Requires a valid authorization token. Deletes an MQTT Service. All devices assig
 </tbody>
 </table>
 
-## Objects
+#### Objects
 
-### AuthPayload
+##### AuthPayload
 
 The data returned after a successful login attempt.
 
@@ -834,7 +834,7 @@ User that successfully logged in.
 </tbody>
 </table>
 
-### Device
+##### Device
 
 A Device is a something that can serve data to be used for updating tag values, such as a modbus TCP or Ethernet/IP server.
 
@@ -901,7 +901,7 @@ Date/time the tag was created.
 </tbody>
 </table>
 
-### EthernetIP
+##### EthernetIP
 
 Ethernet/IP is a device config allowing for access to data for updating tag values per the ODVA Ethernet/IP specification.
 
@@ -968,7 +968,7 @@ Status of the Ethernet/IP device connection. Will be connected if connection is 
 </tbody>
 </table>
 
-### EthernetIPSource
+##### EthernetIPSource
 
 An Ethernet/IP source reads an tag from an Ethernet/IP device and updates a tag value per the tags scan class.
 
@@ -1017,7 +1017,7 @@ The tagname of the tag in the Ethernet/IP device (not to be confused with the na
 </tbody>
 </table>
 
-### Modbus
+##### Modbus
 
 Modbus is a device config allowing for access to data for updating tag values per the Modbus TCP specification.
 
@@ -1111,7 +1111,7 @@ Whether registers start from zero or one. Can be used to make sure device addres
 </tbody>
 </table>
 
-### ModbusSource
+##### ModbusSource
 
 A Mobus source reads a register from a modbus TCP device and updates a tag value per the tags scan class.
 
@@ -1169,7 +1169,7 @@ The register type per the modbus specification. Can be `HOLDING_REGISTER`, `INPU
 </tbody>
 </table>
 
-### Mqtt
+##### Mqtt
 
 MQTT is a service that allows for publishing tag values to an MQTT broker using the sparkplug B specification, which will server data to other subscribing nodes. One broker per service.
 
@@ -1272,7 +1272,7 @@ True if ssl:// is to be used, otherwise tcp:// will be used.
 </tbody>
 </table>
 
-### MqttSource
+##### MqttSource
 
 An MQTT source publishes data from all tags with the same device source. The device name will be used as the `Device` field in sparkplug B.
 
@@ -1312,7 +1312,7 @@ Source device. All tags updating their values from this device will be published
 </tbody>
 </table>
 
-### ScanClass
+##### ScanClass
 
 A scan class allows for groups of tags to be updated at the same pre-defined rate.
 
@@ -1361,7 +1361,7 @@ The number of times this scan class has been scanned since the scan class scan s
 </tbody>
 </table>
 
-### Service
+##### Service
 
 A service makes data available to external services by acting as a server or publishing the data as is done with MQTT.
 
@@ -1428,7 +1428,7 @@ Date/time the service was created.
 </tbody>
 </table>
 
-### Tag
+##### Tag
 
 A Tag stores data point values. It's value can be updated from a device source per it's scan class, and it's value can be made available to external services like MQTT.
 
@@ -1522,7 +1522,7 @@ Source from which this tag value is updated.
 </tbody>
 </table>
 
-### User
+##### User
 
 Credentials used to identify who is logging into the gateway.
 
@@ -1549,9 +1549,9 @@ Credentials used to identify who is logging into the gateway.
 </tbody>
 </table>
 
-## Enums
+#### Enums
 
-### Datatype
+##### Datatype
 
 Tag datatypes allowing for clients to properly parse tag values.
 
@@ -1580,7 +1580,7 @@ Tag datatypes allowing for clients to properly parse tag values.
 </tbody>
 </table>
 
-### ModbusRegisterType
+##### ModbusRegisterType
 
 Modbus register types for use with modbus sources per the modbus specification.
 
@@ -1609,25 +1609,25 @@ Modbus register types for use with modbus sources per the modbus specification.
 </tbody>
 </table>
 
-## Scalars
+#### Scalars
 
-### Boolean
+##### Boolean
 
 The `Boolean` scalar type represents `true` or `false`.
 
-### DateTime
+##### DateTime
 
 Used to deliver timestamp values.
 
-### ID
+##### ID
 
 The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `"4"`) or integer (such as `4`) input value will be accepted as an ID.
 
-### Int
+##### Int
 
 The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.
 
-### String
+##### String
 
 The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.
 
