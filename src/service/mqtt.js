@@ -220,17 +220,11 @@ class MqttSource extends Model {
     }
     return super.create(fields, MqttSource)
   }
-  static delete(selector) {
-    return super.delete(selector, MqttSource)
-  }
-  static findById(id) {
-    return super.findById(id, MqttSource)
-  }
   constructor(selector, checkExists = true) {
     super(selector, MqttSource, checkExists)
   }
   async init() {
-    const result = await super.init(MqttSource)
+    const result = await super.init()
     this._mqtt = result.mqtt
     this._device = result.device
   }
@@ -244,7 +238,34 @@ MqttSource.instances = []
 MqttSource.initialized = false
 MqttSource.connected = false
 
+class MqttHistory extends Model {
+  static create(value) {
+    const timestamp = getUnixTime(new Date())
+    const fields = {
+      value
+    }
+    return super.create(fields)
+  }
+  async init() {
+    const result = await super.init(ScanClass)
+    this._mqtt = result.mqtt
+    this._tag = result.tag
+    this._value = result.value
+    this._timestamp = result.timestamp
+  }
+}
+MqttHistory.table = `mqttHistory`
+MqttHistory.fields = [
+  { colName: 'mqtt', colRef: 'mqtt', onDelete: 'CASCADE' },
+  { colName: 'tag', colRef: 'tag', onDelete: 'CASCADE' },
+  { colName: 'timestamp', colType: 'INTEGER' },
+  { colName: 'value', colType: 'TEXT' }
+]
+MqttHistory.instances = []
+MqttHistory.initialized = false
+
 module.exports = {
   Mqtt,
-  MqttSource
+  MqttSource,
+  MqttHistory
 }
