@@ -51,15 +51,15 @@ The easiest way is to use [PM2](https://github.com/Unitech/pm2).
 
 4. Tell PM2 to run on boot 
 
-  ```bash
-  pm2 save
-  pm2 startup
-  ```
-  This will generate a command that you must copy/paste and run to add the pm2 process to your services.
+    ```bash
+    pm2 save
+    pm2 startup
+    ```
+    This will generate a command that you must copy/paste and run to add the pm2 process to your services.
 
 5. Reboot
 
-  Reboot and verify everything is working as expected.
+    Reboot and verify everything is working as expected.
   
 ## Protocols
 
