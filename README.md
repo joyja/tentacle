@@ -7,10 +7,60 @@
 
 A nodejs industrial automation edge gateway with a GraphQL API.
 
-## Interface
+## Installation
 
-- [GraphQL](https://github.com/prisma-labs/graphql-yoga)
+To install tentacle as a global module with all of it's dependencies:
 
+```bash
+sudo npm install -g --unsafe-perm tentacle-edge
+```
+
+Once installed you can run them command `tentacle` to start the server. You can use `Ctrl-C` to stop the server.
+
+The graphql api will then be available at http://localhost:4000. You can also access [Graphql Playground](https://github.com/prisma-labs/graphql-playground), a powerful GraphQL IDE, at that at that address.
+
+### Starting Tentacle on Boot
+
+The easiest way is to use [PM2](https://github.com/Unitech/pm2).
+
+1. Install PM2
+    ```bash  
+    sudo npm install -g pm2
+    ```
+2. Determine the exact location of the `tentacle` command
+
+    if you have installed tentacle globally, then on linux/OS X the `tentacle` command will probably be either: `/usr/bin/tentacle` or `/usr/local/bin/tentacle`. The command `which tentacle` can be used to confirm the location.
+
+3. Tell pm2 to run Tentacle
+
+    The following command tells PM2 to run `tentacle`, assuming `/usr/bin/tentacle` as the location of the `tentacle` command.
+
+    The `--` argument must appear before any arguments you want to pass to tentacle.
+
+    ```bash
+    pm2 start /usr/bin/tentacle -- -v
+    ```
+
+    This will start tentacle in the background. You can view information about the process and access the log output using the commands:
+
+    ```bash
+    pm2 info tentacle
+    pm2 logs tentacle
+    ```
+    More information about managing processes under PM2 is available [here](https://github.com/Unitech/pm2#process-management).
+
+4. Tell PM2 to run on boot 
+
+  ```bash
+  pm2 save
+  pm2 startup
+  ```
+  This will generate a command that you must copy/paste and run to add the pm2 process to your services.
+
+5. Reboot
+
+  Reboot and verify everything is working as expected.
+  
 ## Protocols
 
 - [Ethernet/IP](https://github.com/cmseaton42/node-ethernet-ip)
@@ -21,6 +71,8 @@ A nodejs industrial automation edge gateway with a GraphQL API.
 - [MQTT (Sparkplug B)](https://github.com/eclipse/tahu/tree/master/client_libraries/javascript/sparkplug-client)
 
 ## GraphQL API
+
+- [GraphQL](https://github.com/prisma-labs/graphql-yoga)
 
 <!-- START graphql-markdown -->
 
