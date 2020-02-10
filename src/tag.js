@@ -120,10 +120,7 @@ class ScanClass extends Model {
       createdOn,
       createdBy
     }
-    return super.create(fields, ScanClass)
-  }
-  constructor(selector, checkExists = true) {
-    super(selector, ScanClass, checkExists)
+    return super.create(fields)
   }
   async init() {
     const result = await super.init(ScanClass)
@@ -178,7 +175,31 @@ ScanClass.fields = [
 ScanClass.instances = []
 ScanClass.initialized = false
 
+class History extends Model {
+  static create(value) {
+    const timestamp = getUnixTime(new Date())
+    const fields = {
+      value
+    }
+    return super.create(fields)
+  }
+  async init() {
+    const result = await super.init(ScanClass)
+    this._value = result.value
+    this._timestamp = result.timestamp
+  }
+}
+History.table = `history`
+History.fields = [
+  { colName: 'tag', colRef: 'tag', onDelete: 'CASCADE' },
+  { colName: 'timestamp', colType: 'INTEGER' },
+  { colName: 'value', colType: 'TEXT' }
+]
+History.instances = []
+History.initialized = false
+
 module.exports = {
   Tag,
-  ScanClass
+  ScanClass,
+  History
 }
