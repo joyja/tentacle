@@ -5,7 +5,7 @@ const getUnixTime = require('date-fns/getUnixTime')
 class Mqtt extends Model {
   static async initialize(db, pubsub) {
     await MqttSource.initialize(db, pubsub)
-    return super.initialize(db, pubsub, Mqtt)
+    return super.initialize(db, pubsub)
   }
   static _createModel(fields) {
     return super.create(fields)
@@ -21,6 +21,7 @@ class Mqtt extends Model {
     this._password = result.password
     this._rate = result.rate
     this._encrypt = result.encrypt
+    this.error = null
   }
   connect() {
     if (!this.client) {
@@ -37,163 +38,184 @@ class Mqtt extends Model {
         publishDeath: true
       }
       this.client = sparkplug.newClient(config)
-      // TODO: use sparkplug-b client events to set state of client
-      // and make it accessible to GraphQL
-      // this.client.on('reconnect', function() {
-      //   console.log("received 'reconnect' event")
-      // })
-      // this.client.on('connect', function() {
-      //   console.log('mqtt connected')
-      // })
-      // this.client.on('close', function() {
-      //   console.log("received 'close' event")
-      // })
-      // this.client.on('error', function(error) {
-      //   console.log(error)
-      // })
-      // this.client.on('offline', function() {
-      //   console.log("received 'offline' event")
-      // })
+      this.client.on('reconnect', () => {
+        this.onReconnect()
+      })
+      this.client.on('error', () => {
+        this.onError()
+      })
+      this.client.on('offline', () => {
+        this.onOffline()
+      })
       this.client.on('birth', () => {
-        const payload = {
-          timestamp: getUnixTime(new Date()),
-          metrics: []
-        }
-        this.client.publishNodeBirth(payload)
-        this.sources.forEach((source) => {
-          this.client.publishDeviceBirth(`${source.device.name}`, {
-            timestamp: getUnixTime(new Date(Date.UTC())),
-            metrics: source.device.config.sources.map((source) => {
-              return {
-                name: source.tag.name,
-                value: `${source.tag.value}`,
-                type: 'string'
-              }
-            })
-          })
-        })
-        this.interval = setInterval(() => {
-          this.publish()
-        }, this.rate)
+        this.onBirth()
       })
     }
   }
+  onBirth() {
+    const payload = {
+      timestamp: getUnixTime(new Date()),
+      metrics: []
+    }
+    this.client.publishNodeBirth(payload)
+    this.sources.forEach((source) => {
+      this.client.publishDeviceBirth(`${source.device.name}`, {
+        timestamp: getUnixTime(new Date(Date.UTC())),
+        metrics: source.device.config.sources.map((source) => {
+          return {
+            name: source.tag.name,
+            value: `${source.tag.value}`,
+            type: 'string'
+          }
+        })
+      })
+    })
+    this.startPublishing()
+  }
+  onReconnect() {
+    this.stopPublishing()
+    this.startPublishing()
+  }
+  onError(error) {
+    this.error = error.message
+    this.stopPublishing()
+  }
+  onOffline() {
+    this.stopPublishing()
+  }
+  startPublishing() {
+    this.interval = setInterval(() => {
+      this.publish()
+    }, this.rate)
+  }
+  stopPublishing() {
+    clearInterval(this.interval)
+  }
   disconnect() {
     if (this.client) {
-      clearInterval(this.interval)
+      this.stopPublishing()
       const payload = {
         timestamp: getUnixTime(new Date(Date.UTC()))
       }
       this.sources.forEach((source) => {
+        if (this.testNumber) {
+          this.testNumber += this.testNumber
+        } else {
+          this.testNumber = 1
+        }
         this.client.publishDeviceDeath(`${source.device.name}`, payload)
       })
       this.client.stop()
       this.client = undefined
     }
   }
-  publish() {
-    this.sources.forEach((source) => {
+  async publish() {
+    for (const source of this.sources) {
+      const payload = source.device.config.sources.map((source) => {
+        return {
+          name: source.tag.name,
+          value: source.tag.value,
+          type: source.tag.datatype,
+          timestamp: getUnixTime(new Date(Date.UTC()))
+        }
+      })
+      const histPayload = source.history.map((record) => {
+        return {
+          name: record.tag.name,
+          value: record.value,
+          timestamp: record.timestamp,
+          type: record.tag.datatype,
+          is_historical: true
+        }
+      })
       this.client.publishDeviceData(`${source.device.name}`, {
         timestamp: getUnixTime(new Date(Date.UTC())),
-        metrics: source.device.config.sources.map((source) => {
-          return {
-            name: source.tag.name,
-            value: source.tag.value,
-            type: source.tag.datatype
-          }
-        })
+        metrics: [...payload, ...histPayload]
       })
-    })
+      for (const record of source.history) {
+        await record.delete()
+      }
+    }
   }
   get host() {
     this.checkInit()
     return this._host
   }
   setHost(value) {
-    return this.update(this.id, 'host', value)
-      .then((result) => (this._host = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'host', value).then(
+      (result) => (this._host = result)
+    )
   }
   get port() {
     this.checkInit()
     return this._port
   }
   setPort(value) {
-    return this.update(this.id, 'port', value)
-      .then((result) => (this._port = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'port', value).then(
+      (result) => (this._port = result)
+    )
   }
   get group() {
     this.checkInit()
     return this._group
   }
   setGroup(value) {
-    return this.update(this.id, 'group', value)
-      .then((result) => (this._group = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'group', value).then(
+      (result) => (this._group = result)
+    )
   }
   get node() {
     this.checkInit()
     return this._node
   }
   setNode(value) {
-    return this.update(this.id, 'node', value)
-      .then((result) => (this._node = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'node', value).then(
+      (result) => (this._node = result)
+    )
   }
   get username() {
     this.checkInit()
     return this._username
   }
   setUsername(value) {
-    return this.update(this.id, 'username', value)
-      .then((result) => (this._username = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'username', value).then(
+      (result) => (this._username = result)
+    )
   }
   get password() {
     this.checkInit()
     return this._password
   }
   setPassword(value) {
-    return this.update(this.id, 'password', value)
-      .then((result) => (this._password = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'password', value).then(
+      (result) => (this._password = result)
+    )
   }
   get rate() {
     this.checkInit()
     return this._rate
   }
   setRate(value) {
-    return this.update(this.id, 'rate', value)
-      .then((result) => (this._rate = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'rate', value).then(
+      (result) => (this._rate = result)
+    )
   }
   get encrypt() {
     this.checkInit()
     return Boolean(this._encrypt)
   }
   setEncrypt(value) {
-    return this.update(this.id, 'encrypt', value)
-      .then((result) => {
-        this._encrypt = result
-      })
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'encrypt', value).then((result) => {
+      this._encrypt = result
+    })
+  }
+  get connected() {
+    this.checkInit()
+    if (this.client) {
+      return this.client.connected
+    } else {
+      return false
+    }
   }
 }
 Mqtt.table = `mqtt`
@@ -213,15 +235,16 @@ Mqtt.initialized = false
 Mqtt.connected = false
 
 class MqttSource extends Model {
+  static async initialize(db, pubsub) {
+    await MqttHistory.initialize(db, pubsub)
+    return super.initialize(db, pubsub)
+  }
   static create(mqtt, device) {
     const fields = {
       mqtt,
       device
     }
     return super.create(fields, MqttSource)
-  }
-  constructor(selector, checkExists = true) {
-    super(selector, MqttSource, checkExists)
   }
   async init() {
     const result = await super.init()
@@ -236,27 +259,37 @@ MqttSource.fields = [
 ]
 MqttSource.instances = []
 MqttSource.initialized = false
-MqttSource.connected = false
 
 class MqttHistory extends Model {
-  static create(value) {
+  static create(mqttSource, tag, value) {
     const timestamp = getUnixTime(new Date())
     const fields = {
+      mqttSource,
+      tag,
+      timestamp,
       value
     }
     return super.create(fields)
   }
   async init() {
-    const result = await super.init(ScanClass)
-    this._mqtt = result.mqtt
+    const result = await super.init()
+    this._mqttSource = result.mqttSource
     this._tag = result.tag
     this._value = result.value
     this._timestamp = result.timestamp
   }
+  get value() {
+    this.checkInit()
+    return this._value
+  }
+  get timestamp() {
+    this.checkInit()
+    return fromUnixTime(this._timestamp)
+  }
 }
 MqttHistory.table = `mqttHistory`
 MqttHistory.fields = [
-  { colName: 'mqtt', colRef: 'mqtt', onDelete: 'CASCADE' },
+  { colName: 'mqttSource', colRef: 'mqttSource', onDelete: 'CASCADE' },
   { colName: 'tag', colRef: 'tag', onDelete: 'CASCADE' },
   { colName: 'timestamp', colType: 'INTEGER' },
   { colName: 'value', colType: 'TEXT' }

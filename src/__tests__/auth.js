@@ -6,15 +6,11 @@ const dbFilename = `test-auth-spread-edge.db`
 
 let db = undefined
 beforeAll(async () => {
-  db = await createTestDb(dbFilename).catch((error) => {
-    throw error
-  })
+  db = await createTestDb(dbFilename)
 })
 
 afterAll(async () => {
-  await deleteTestDb(db).catch((error) => {
-    throw error
-  })
+  await deleteTestDb(db)
 })
 
 describe(`User:`, () => {

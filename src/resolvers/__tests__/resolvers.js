@@ -155,7 +155,7 @@ describe('Query :', () => {
       await resolvers.Query.scanClasses({}, {}, unauthorizedContext, {}).catch(
         (e) => e
       )
-    ).toMatchInlineSnapshot(`[Error: Your are not authorized.]`)
+    ).toMatchInlineSnapshot(`[Error: You are not authorized.]`)
   })
   test(`tags returns all tag instances`, async () => {
     expect(await resolvers.Query.tags({}, {}, context, {})).toBe(Tag.instances)
@@ -165,7 +165,7 @@ describe('Query :', () => {
       await resolvers.Query.tags({}, {}, unauthorizedContext, {}).catch(
         (e) => e
       )
-    ).toMatchInlineSnapshot(`[Error: Your are not authorized.]`)
+    ).toMatchInlineSnapshot(`[Error: You are not authorized.]`)
   })
   test(`device returns all device instances`, async () => {
     expect(await resolvers.Query.devices({}, {}, context, {})).toBe(
@@ -177,7 +177,7 @@ describe('Query :', () => {
       await resolvers.Query.devices({}, {}, unauthorizedContext, {}).catch(
         (e) => e
       )
-    ).toMatchInlineSnapshot(`[Error: Your are not authorized.]`)
+    ).toMatchInlineSnapshot(`[Error: You are not authorized.]`)
   })
   test(`services returns all service instances`, async () => {
     expect(await resolvers.Query.services({}, {}, context, {})).toBe(
@@ -189,7 +189,7 @@ describe('Query :', () => {
       await resolvers.Query.services({}, {}, unauthorizedContext, {}).catch(
         (e) => e
       )
-    ).toMatchInlineSnapshot(`[Error: Your are not authorized.]`)
+    ).toMatchInlineSnapshot(`[Error: You are not authorized.]`)
   })
 })
 
@@ -282,6 +282,35 @@ describe(`Mutations: `, () => {
     expect(ScanClass.instances.length).toBe(prevCount)
     expect(updatedScanClass.rate).toBe(args.rate)
   })
+  test(`updateScanClass throws error on invalid ID.`, async () => {
+    prevCount = ScanClass.instances.length
+    const args = {
+      id: 1234567,
+      rate: 2000
+    }
+    expect(
+      await resolvers.Mutation.updateScanClass({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(
+      `[Error: Scan Class with id 1234567 does not exist.]`
+    )
+    expect(ScanClass.instances.length).toBe(prevCount)
+  })
+  test(`deleteScanClass with invalid id throws error.`, async () => {
+    prevCount = ScanClass.instances.length
+    const args = {
+      id: 1234567
+    }
+    expect(
+      await resolvers.Mutation.deleteScanClass({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(
+      `[Error: Scan Class with id 1234567 does not exist.]`
+    )
+    expect(ScanClass.instances.length).toBe(prevCount)
+  })
   test(`deleteScanClass deletes a scan class.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
@@ -333,6 +362,22 @@ describe(`Mutations: `, () => {
     })
     expect(Tag.instances.length).toBe(prevCount)
   })
+  test(`updateTag updates with invalid id throws an error.`, async () => {
+    prevCount = Tag.instances.length
+    const args = {
+      id: 1234567,
+      name: `TagWithNewName`,
+      description: `Test Tag with different description`,
+      value: 321,
+      scanClassId: ScanClass.instances[1].id
+    }
+    expect(
+      await resolvers.Mutation.updateTag({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(`[Error: Tag with id 1234567 does not exist.]`)
+    expect(Tag.instances.length).toBe(prevCount)
+  })
   test(`deleteTag deletes a scan class.`, async () => {
     prevCount = Tag.instances.length
     const args = {
@@ -349,6 +394,18 @@ describe(`Mutations: `, () => {
     expect(Tag.instances.length).toBe(prevCount - 1)
     expect(deletedTag.id).toBe(args.id)
   })
+  test(`deleteTag with invalid id throws an error.`, async () => {
+    prevCount = Tag.instances.length
+    const args = {
+      id: 1234567
+    }
+    expect(
+      await resolvers.Mutation.deleteTag({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(`[Error: Tag with id 1234567 does not exist.]`)
+    expect(Tag.instances.length).toBe(prevCount)
+  })
   let device = undefined
   test(`createModbus creates a modbus device with the selected settings.`, async () => {
     prevCount = Modbus.instances.length
@@ -361,11 +418,7 @@ describe(`Mutations: `, () => {
       reverseWords: true,
       zeroBased: true
     }
-    device = await resolvers.Mutation.createModbus({}, args, context, {}).catch(
-      (error) => {
-        throw error
-      }
-    )
+    device = await resolvers.Mutation.createModbus({}, args, context, {})
     expect(Modbus.instances.length).toBe(prevCount + 1)
     expect(device.name).toBe(args.name)
     expect(device.description).toBe(args.description)
@@ -442,6 +495,16 @@ describe(`Mutations: `, () => {
     expect(modbusSource.tag).toBe(Tag.instances[0])
     expect(modbusSource.register).toBe(args.register)
     expect(modbusSource.registerType).toBe(args.registerType)
+  })
+  test(`Source resolver returns it's parents type`, async () => {
+    expect(await resolvers.Source.__resolveType(modbusSource)).toBe(
+      `ModbusSource`
+    )
+  })
+  test(`DeviceConfig resolver type returns the type of the parent`, async () => {
+    expect(
+      await resolvers.DeviceConfig.__resolveType(Modbus.instances[0])
+    ).toBe(`Modbus`)
   })
   test(`updateModbusSource updates a modbus device with the selected settings.`, async () => {
     prevCount = ModbusSource.instances.length
@@ -585,6 +648,16 @@ describe(`Mutations: `, () => {
     )
     expect(updatedEthernetIPSource.tag).toBe(Tag.instances[0])
     expect(updatedEthernetIPSource.tagname).toBe(args.tagname)
+  })
+  test(`Source resolver returns it's parents type`, async () => {
+    expect(await resolvers.Source.__resolveType(ethernetipSource)).toBe(
+      `EthernetIPSource`
+    )
+  })
+  test(`DeviceConfig resolver type returns the type of the parent`, async () => {
+    expect(
+      await resolvers.DeviceConfig.__resolveType(EthernetIP.instances[0])
+    ).toBe(`EthernetIP`)
   })
   test(`deleteEthernetIP deletes a modbus device with the selected settings.`, async () => {
     prevCount = EthernetIP.instances.length

@@ -37,22 +37,18 @@ class Tag extends Model {
     return this._name
   }
   setName(value) {
-    return this.update(this.id, 'name', value, Tag)
-      .then((result) => (this._name = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'name', value, Tag).then(
+      (result) => (this._name = result)
+    )
   }
   get description() {
     this.checkInit()
     return this._description
   }
   setDescription(value) {
-    return this.update(this.id, 'description', value, Tag)
-      .then((result) => (this._description = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'description', value, Tag).then(
+      (result) => (this._description = result)
+    )
   }
   get value() {
     this.checkInit()
@@ -64,11 +60,9 @@ class Tag extends Model {
   }
   setValue(value) {
     this.checkInit()
-    return this.update(this.id, 'value', value, Tag)
-      .then((result) => (this._value = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'value', value, Tag).then(
+      (result) => (this._value = result)
+    )
   }
   get datatype() {
     this.checkInit()
@@ -76,11 +70,9 @@ class Tag extends Model {
   }
   setDatatype(datatype) {
     this.checkInit()
-    return this.update(this.id, 'datatype', datatype, Tag)
-      .then((result) => (this._value = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'datatype', datatype, Tag).then(
+      (result) => (this._value = result)
+    )
   }
   get createdOn() {
     this.checkInit()
@@ -92,11 +84,9 @@ class Tag extends Model {
   }
   setDatatype(datatype) {
     this.checkInit()
-    return this.update(this.id, 'datatype', datatype, Tag)
-      .then((result) => (this._datatype = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'datatype', datatype, Tag).then(
+      (result) => (this._datatype = result)
+    )
   }
 }
 Tag.table = `tag`
@@ -132,9 +122,10 @@ class ScanClass extends Model {
   async scan() {
     for (const tag of this.tags) {
       if (tag.source) {
-        await tag.source.read().catch((error) => {
-          throw error
-        })
+        await tag.source.read()
+        for (mqttSource of tag.source.device.mqttSource) {
+          await mqttSource.log(tag.id)
+        }
       }
     }
   }
@@ -155,11 +146,9 @@ class ScanClass extends Model {
     return this._rate
   }
   setRate(value) {
-    return this.update(this.id, 'rate', value, ScanClass)
-      .then((result) => (this._rate = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'rate', value, ScanClass).then(
+      (result) => (this._rate = result)
+    )
   }
   get createdOn() {
     this.checkInit()

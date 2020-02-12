@@ -1,9 +1,7 @@
 const { Service, Mqtt, Tag, User } = require('../../../relations')
 
 async function createMqtt(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const createdBy = user.id
   const mqtt = await Mqtt.create(
     args.name,
@@ -24,9 +22,7 @@ async function createMqtt(root, args, context, info) {
 }
 
 async function updateMqtt(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const service = Service.findById(args.id)
   if (service) {
     if (args.name) {
@@ -71,9 +67,7 @@ async function updateMqtt(root, args, context, info) {
 }
 
 async function deleteMqtt(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const service = Service.findById(args.id)
   if (service) {
     await service.config.disconnect()

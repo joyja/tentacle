@@ -7,9 +7,7 @@ const {
 } = require('../../../relations')
 
 async function createModbus(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const createdBy = user.id
   const modbus = await Modbus.create(
     args.name,
@@ -19,24 +17,19 @@ async function createModbus(root, args, context, info) {
     args.reverseBits,
     args.reverseWords,
     args.zeroBased,
+    args.timeout,
     createdBy
-  ).catch((error) => {
-    throw error
-  })
+  )
   await modbus.connect()
   return modbus.device
 }
 
 async function updateModbus(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const device = Device.findById(args.id)
   if (device) {
     if (args.name) {
-      await device.setName(args.name).catch((error) => {
-        throw error
-      })
+      await device.setName(args.name)
     }
     if (args.description) {
       await device.setDescription(args.description)
@@ -56,6 +49,9 @@ async function updateModbus(root, args, context, info) {
     if (args.zeroBased !== undefined) {
       await device.config.setZeroBased(args.zeroBased)
     }
+    if (args.timeout) {
+      await device.config.setTimeout(args.timeout)
+    }
     await device.config.disconnect()
     await device.config.connect()
     return device
@@ -65,9 +61,7 @@ async function updateModbus(root, args, context, info) {
 }
 
 async function deleteModbus(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const device = Device.findById(args.id)
   if (device) {
     // await device.config.disconnect()
@@ -78,9 +72,7 @@ async function deleteModbus(root, args, context, info) {
 }
 
 async function createModbusSource(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const createdBy = user.id
   const device = Device.findById(args.deviceId)
   const tag = Tag.findById(args.tagId)
@@ -97,9 +89,7 @@ async function createModbusSource(root, args, context, info) {
           args.register,
           args.registerType,
           createdBy
-        ).catch((error) => {
-          throw error
-        })
+        )
       } else {
         throw Error(`There is no tag with id ${args.tagId}`)
       }
@@ -112,9 +102,7 @@ async function createModbusSource(root, args, context, info) {
 }
 
 async function updateModbusSource(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const tag = Tag.findById(args.tagId)
   if (tag) {
     if (args.register) {
@@ -130,9 +118,7 @@ async function updateModbusSource(root, args, context, info) {
 }
 
 async function deleteModbusSource(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const tag = Tag.findById(args.tagId)
   if (tag) {
     return tag.source.delete()

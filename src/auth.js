@@ -8,16 +8,12 @@ const APP_SECRET =
 
 class User extends Model {
   static async initialize(db, pubsub) {
-    const result = await super.initialize(db, pubsub).catch((error) => {
-      throw error
-    })
+    const result = await super.initialize(db, pubsub)
     const rootUser = User.instances.find((user) => {
       return user.username === `admin`
     })
     if (!rootUser) {
-      await User.create(`admin`, `password`).catch((error) => {
-        throw error
-      })
+      await User.create(`admin`, `password`)
     }
     return result
   }
@@ -56,7 +52,7 @@ class User extends Model {
   }
   static async getUserFromContext(context) {
     const secret = APP_SECRET
-    const errorMessage = `Your are not authorized.`
+    const errorMessage = `You are not authorized.`
     const authorization = context.request
       ? context.request.headers.authorization
       : context.connection.context.Authorization
@@ -96,13 +92,9 @@ class User extends Model {
     return this._username
   }
   setUsername(newValue) {
-    return this.update(this.id, `username`, newValue)
-      .then((result) => {
-        this._username = newValue
-      })
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, `username`, newValue).then((result) => {
+      this._username = newValue
+    })
   }
   get password() {
     this.checkInit()
@@ -110,13 +102,9 @@ class User extends Model {
   }
   async setPassword(newValue) {
     const password = await bcrypt.hash(newValue, 10)
-    return this.update(this.id, `password`, password, User)
-      .then((result) => {
-        this._password = password
-      })
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, `password`, password, User).then((result) => {
+      this._password = password
+    })
   }
 }
 User.table = `user`

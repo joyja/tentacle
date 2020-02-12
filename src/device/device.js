@@ -6,15 +6,9 @@ const fromUnixTime = require('date-fns/fromUnixTime')
 
 class Device extends Model {
   static async initialize(db, pubsub) {
-    await Modbus.initialize(db, pubsub).catch((error) => {
-      throw error
-    })
-    await EthernetIP.initialize(db, pubsub).catch((error) => {
-      throw error
-    })
-    return super.initialize(db, pubsub, Device).catch((error) => {
-      throw error
-    })
+    await Modbus.initialize(db, pubsub)
+    await EthernetIP.initialize(db, pubsub)
+    return super.initialize(db, pubsub, Device)
   }
   static create(name, description, type, createdBy) {
     const createdOn = getUnixTime(new Date())
@@ -47,18 +41,18 @@ class Device extends Model {
     return this._name
   }
   setName(value) {
-    return this.update(this.id, 'name', value)
-      .then((result) => (this._name = result))
-      .catch((error) => console.error(error))
+    return this.update(this.id, 'name', value).then(
+      (result) => (this._name = result)
+    )
   }
   get description() {
     this.checkInit()
     return this._description
   }
   setDescription(value) {
-    return this.update(this.id, 'description', value)
-      .then((result) => (this._description = result))
-      .catch((error) => console.error(error))
+    return this.update(this.id, 'description', value).then(
+      (result) => (this._description = result)
+    )
   }
   get type() {
     this.checkInit()

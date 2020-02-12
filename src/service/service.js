@@ -5,12 +5,8 @@ const fromUnixTime = require('date-fns/fromUnixTime')
 
 class Service extends Model {
   static async initialize(db, pubsub) {
-    await Mqtt.initialize(db, pubsub).catch((error) => {
-      throw error
-    })
-    return super.initialize(db, pubsub, Service).catch((error) => {
-      throw error
-    })
+    await Mqtt.initialize(db, pubsub)
+    return super.initialize(db, pubsub, Service)
   }
   static create(name, description, type, createdBy) {
     const createdOn = getUnixTime(new Date())
@@ -41,12 +37,6 @@ class Service extends Model {
     this._type = result.type
     this._createdBy = result.createdBy
     this._createdOn = result.createdOn
-    if (this._type === `mqtt`) {
-      const mqtt = Mqtt.instances.find((instance) => {
-        return instance._service === this.id
-      })
-      this._config = mqtt ? mqtt.id : null
-    }
   }
   delete() {
     return super.delete(Service)
@@ -56,22 +46,18 @@ class Service extends Model {
     return this._name
   }
   setName(value) {
-    return this.update(this.id, 'name', value)
-      .then((result) => (this._name = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'name', value).then(
+      (result) => (this._name = result)
+    )
   }
   get description() {
     this.checkInit()
     return this._description
   }
   setDescription(value) {
-    return this.update(this.id, 'description', value)
-      .then((result) => (this._description = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'description', value).then(
+      (result) => (this._description = result)
+    )
   }
   get type() {
     this.checkInit()

@@ -3,12 +3,8 @@ const { Controller, Tag } = require('ethernet-ip')
 
 class EthernetIP extends Model {
   static async initialize(db, pubsub) {
-    await EthernetIPSource.initialize(db, pubsub).catch((error) => {
-      throw error
-    })
-    return super.initialize(db, pubsub).catch((error) => {
-      throw error
-    })
+    await EthernetIPSource.initialize(db, pubsub)
+    return super.initialize(db, pubsub)
   }
   static _createModel(fields) {
     return super.create(fields)
@@ -47,22 +43,18 @@ class EthernetIP extends Model {
     return this._host
   }
   setHost(value) {
-    return this.update(this.id, 'host', value)
-      .then((result) => (this._host = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'host', value).then(
+      (result) => (this._host = result)
+    )
   }
   get slot() {
     this.checkInit()
     return this._slot
   }
   setSlot(value) {
-    return this.update(this.id, 'slot', value)
-      .then((result) => (this._slot = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'slot', value).then(
+      (result) => (this._slot = result)
+    )
   }
   get status() {
     if (this.connected) {
@@ -101,9 +93,7 @@ class EthernetIPSource extends Model {
   }
   async read() {
     if (this.ethernetip.connected) {
-      await this.ethernetip.client.readTag(this.tagData).catch((error) => {
-        throw error
-      })
+      await this.ethernetip.client.readTag(this.tagData)
       await this.tag.setValue(this.tagData.value)
     }
   }
@@ -112,9 +102,9 @@ class EthernetIPSource extends Model {
     return this._tagname
   }
   setTagname(value) {
-    return this.update(this.id, 'tagname', value)
-      .then((result) => (this._tagname = result))
-      .catch((error) => console.error(error))
+    return this.update(this.id, 'tagname', value).then(
+      (result) => (this._tagname = result)
+    )
   }
 }
 EthernetIPSource.table = `ethernetipSource`

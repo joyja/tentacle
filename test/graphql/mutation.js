@@ -57,6 +57,7 @@ const createModbus = `mutation CreateModbus (
   $reverseBits: Boolean!
   $reverseWords: Boolean!
   $zeroBased: Boolean!
+  $timeout: Int!
 ){
   createModbus(
     name: $name
@@ -66,6 +67,7 @@ const createModbus = `mutation CreateModbus (
     reverseBits: $reverseBits
     reverseWords: $reverseWords
     zeroBased: $zeroBased
+    timeout: $timeout
   ) {
     ... FullDevice
   }
@@ -81,6 +83,7 @@ const updateModbus = `mutation UpdateModbus (
   $reverseBits: Boolean
   $reverseWords: Boolean
   $zeroBased: Boolean
+  $timeout: Int!
 ){
   updateModbus(
     id: $id
@@ -91,6 +94,7 @@ const updateModbus = `mutation UpdateModbus (
     reverseBits: $reverseBits
     reverseWords: $reverseWords
     zeroBased: $zeroBased
+    timeout: $timeout
   ) {
     ... FullDevice
   }

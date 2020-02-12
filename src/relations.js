@@ -6,8 +6,11 @@ const {
   EthernetIP,
   EthernetIPSource
 } = require('./device')
-const { Service, Mqtt, MqttSource } = require('./service')
+const { Service, Mqtt, MqttSource, MqttHistory } = require('./service')
 const { User } = require('./auth')
+
+// This file creates any properties that form relationships with other models.
+// It is defined here to prevent circular dependencies.
 
 // ==============================
 //           Tags
@@ -95,6 +98,14 @@ Object.defineProperties(Device.prototype, {
       this.checkInit()
       return User.findById(this._createdBy)
     }
+  },
+  mqttSource: {
+    get() {
+      this.checkInit()
+      return MqttSource.instances.find((instance) => {
+        return instance._device === this._id
+      })
+    }
   }
 })
 
@@ -107,6 +118,7 @@ Modbus.create = async function(
   reverseBits,
   reverseWords,
   zeroBased,
+  timeout,
   createdBy
 ) {
   const device = await Device.create(name, description, `modbus`, createdBy)
@@ -116,7 +128,8 @@ Modbus.create = async function(
     port,
     reverseBits,
     reverseWords,
-    zeroBased
+    zeroBased,
+    timeout
   }
   return this._createModel(fields)
 }
@@ -270,6 +283,11 @@ Object.defineProperties(Mqtt.prototype, {
   }
 })
 
+MqttSource.prototype.log = async function(tagId) {
+  const tag = Tag.findById(tagId)
+  await MqttHistory.create(this.id, tag.id, tag.value)
+}
+
 Object.defineProperties(MqttSource.prototype, {
   mqtt: {
     get() {
@@ -281,6 +299,29 @@ Object.defineProperties(MqttSource.prototype, {
     get() {
       this.checkInit()
       return Device.findById(this._device)
+    }
+  },
+  history: {
+    get() {
+      this.checkInit()
+      return MqttHistory.instances.filter((instances) => {
+        return instance.mqttSource.id === this.id
+      })
+    }
+  }
+})
+
+Object.defineProperties(MqttHistory.prototype, {
+  mqtt: {
+    get() {
+      this.checkInit()
+      return Mqtt.findById(this._mqtt)
+    }
+  },
+  tag: {
+    get() {
+      this.checkInit()
+      return Tag.findById(this._tag)
     }
   }
 })
@@ -294,6 +335,7 @@ module.exports = {
   Service,
   Mqtt,
   MqttSource,
+  MqttHistory,
   Tag,
   ScanClass,
   User

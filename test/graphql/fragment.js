@@ -60,6 +60,7 @@ const device = `
         reverseWords
         status
         zeroBased
+        timeout
         sources {
           tag {
             ...ScalarTag

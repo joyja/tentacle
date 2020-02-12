@@ -56,6 +56,8 @@ type Modbus {
   reverseBits: Boolean!
   """Whether multiregister sources should use the lowest register first (false) or the highest register first (true)."""
   reverseWords: Boolean!
+  """How long to wait to for connection with the device to complete before throwing an error."""
+  timeout: Int!
   """List of sources (tag/register) pairs that are using this modbus device."""
   sources: [ModbusSource!]!
   """Status of the modbus device connection. Will be connected if connection is successful or an error message if connection failed."""
@@ -229,7 +231,8 @@ type Mutation {
     port: Int!,
     reverseBits: Boolean!,
     reverseWords: Boolean!,
-    zeroBased: Boolean!
+    zeroBased: Boolean!,
+    timeout: Int!
   ): Device
   """Requires a valid authorization token. Updates an existing modbus device and refreshes the connection."""
   updateModbus(
@@ -240,7 +243,8 @@ type Mutation {
     port: Int,
     reverseBits: Boolean,
     reverseWords: Boolean,
-    zeroBased: Boolean
+    zeroBased: Boolean,
+    timeout: Int
   ): Device
   """Requires a valid authorization token. Deletes a modbus device. All sources assigned to this device are deleted and tags using
   this device as a source will have their sources set to null, making their values static."""

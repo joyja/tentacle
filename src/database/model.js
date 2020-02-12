@@ -8,8 +8,6 @@ const executeQuery = function(db, sql, params) {
         resolve(rows)
       }
     })
-  }).catch((error) => {
-    throw error
   })
 }
 
@@ -23,8 +21,6 @@ const executeUpdate = function(db, sql, params) {
         resolve(this)
       }
     })
-  }).catch((error) => {
-    throw error
   })
 }
 
@@ -48,17 +44,13 @@ class Model {
       }
     })
     sql = `${sql});`
-    return executeUpdate(this.db, sql).catch((error) => {
-      throw error
-    })
+    return executeUpdate(this.db, sql)
   }
   static async initialize(db, pubsub) {
     this.initialized = true
     this.db = db
     this.pubsub = pubsub
-    await this.createTable().catch((error) => {
-      throw error
-    })
+    await this.createTable()
     return this.getAll()
   }
   static checkInitialized() {
@@ -81,27 +73,18 @@ class Model {
     })
     if (!model) {
       model = new this(selector)
-      await model.init(this).catch((error) => {
-        throw error
-      })
+      await model.init(this)
     }
     return model
   }
-  static async getAll(sqloverride = false) {
+  static async getAll() {
     this.checkInitialized()
     let sql = `SELECT id FROM ${this.table}`
-    if (sqloverride) {
-      sql = sqloverride
-    }
     this.instances = []
-    const result = await executeQuery(this.db, sql).catch((error) => {
-      throw error
-    })
+    const result = await executeQuery(this.db, sql)
     this.instances = await Promise.all(
       result.map((row) => {
-        return this.get(row.id, true).catch((error) => {
-          throw error
-        })
+        return this.get(row.id, true)
       })
     )
     return this.instances
@@ -117,17 +100,13 @@ class Model {
       this.db,
       sql,
       Object.keys(fields).map((key) => fields[key])
-    ).catch((error) => {
-      throw error
-    })
+    )
     return this.get(result.lastID, false)
   }
   static async delete(selector) {
     this.checkInitialized()
     const sql = `DELETE FROM ${this.table} WHERE id=?`
-    await executeUpdate(this.db, sql, [selector]).catch((error) => {
-      throw error
-    })
+    await executeUpdate(this.db, sql, [selector])
     this.instances = this.instances.filter((instance) => {
       return instance.id !== selector
     })
@@ -167,9 +146,7 @@ class Model {
     const sql = `SELECT * FROM ${this.constructor.table} WHERE id=?`
     let result
     try {
-      result = await executeQuery(this.db, sql, [this._id]).catch((error) => {
-        throw error
-      })
+      result = await executeQuery(this.db, sql, [this._id])
       if (result.length < 1) {
         throw new Error(
           `There is no ${this.constructor.table} with id# ${this._id}.`
@@ -198,11 +175,7 @@ class Model {
   update(selector, field, value) {
     const sql = `UPDATE ${this.constructor.table} SET "${field}"=? WHERE id=?`
     const params = [value, selector]
-    return executeUpdate(this.db, sql, params)
-      .then((result) => value)
-      .catch((error) => {
-        throw error
-      })
+    return executeUpdate(this.db, sql, params).then((result) => value)
   }
   async delete() {
     await this.constructor.delete(this.id)
