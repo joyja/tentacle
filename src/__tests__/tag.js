@@ -1,5 +1,5 @@
 const { createTestDb, deleteTestDb } = require('../../test/db')
-const { User, Tag, ScanClass } = require('../relations')
+const { User, Tag, ScanClass, Device, Service } = require('../relations')
 const fromUnixTime = require('date-fns/fromUnixTime')
 
 const dbFilename = `test-tag-spread-edge.db`

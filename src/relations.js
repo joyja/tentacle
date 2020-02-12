@@ -158,6 +158,12 @@ Object.defineProperties(ModbusSource.prototype, {
       return Modbus.findById(this._modbus)
     }
   },
+  device: {
+    get() {
+      this.checkInit()
+      return this.modbus.device
+    }
+  },
   tag: {
     get() {
       this.checkInit()
@@ -199,6 +205,12 @@ Object.defineProperties(EthernetIPSource.prototype, {
     get() {
       this.checkInit()
       return EthernetIP.findById(this._ethernetip)
+    }
+  },
+  device: {
+    get() {
+      this.checkInit()
+      return this.ethernetip.device
     }
   },
   tag: {
@@ -283,9 +295,21 @@ Object.defineProperties(Mqtt.prototype, {
   }
 })
 
-MqttSource.prototype.log = async function(tagId) {
-  const tag = Tag.findById(tagId)
-  await MqttHistory.create(this.id, tag.id, tag.value)
+MqttSource.prototype.log = async function(scanClassId) {
+  const scanClass = ScanClass.findById(scanClassId)
+  const tags = Tag.instances.filter((tag) => {
+    if (tag.source) {
+      return (
+        tag.scanClass.id === scanClass.id &&
+        this.device.id === tag.source.device.id
+      )
+    } else {
+      return false
+    }
+  })
+  for (tag of tags) {
+    await MqttHistory.create(this.id, tag.id, tag.value)
+  }
 }
 
 Object.defineProperties(MqttSource.prototype, {
@@ -304,7 +328,7 @@ Object.defineProperties(MqttSource.prototype, {
   history: {
     get() {
       this.checkInit()
-      return MqttHistory.instances.filter((instances) => {
+      return MqttHistory.instances.filter((instance) => {
         return instance.mqttSource.id === this.id
       })
     }
@@ -312,10 +336,10 @@ Object.defineProperties(MqttSource.prototype, {
 })
 
 Object.defineProperties(MqttHistory.prototype, {
-  mqtt: {
+  mqttSource: {
     get() {
       this.checkInit()
-      return Mqtt.findById(this._mqtt)
+      return MqttSource.findById(this._mqttSource)
     }
   },
   tag: {

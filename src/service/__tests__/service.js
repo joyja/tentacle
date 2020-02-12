@@ -1,5 +1,6 @@
 jest.mock(`sparkplug-client`)
 const sparkplug = require(`sparkplug-client`)
+const getUnixTime = require('date-fns/getUnixTime')
 
 const { createTestDb, deleteTestDb } = require('../../../test/db')
 const {
@@ -276,6 +277,7 @@ describe(`MQTT Source: `, () => {
 })
 
 describe(`MQTT History: `, () => {
+  let history = undefined
   test(`Create creates instance and adds to MqttHistory.sources.`, async () => {
     const mqttSource = MqttSource.instances[1]
     const scanClass = await ScanClass.create(1000, User.instances[0].id)
@@ -293,7 +295,7 @@ describe(`MQTT History: `, () => {
       41234,
       'HOLDING_REGISTER'
     )
-    const history = await MqttHistory.create(mqttSource.id, tag.id, tag.value)
+    history = await MqttHistory.create(mqttSource.id, tag.id, tag.value)
   })
   test(`check that init sets the appropriate underscore fields.`, async () => {
     const id = MqttHistory.instances[0].id
@@ -310,4 +312,31 @@ describe(`MQTT History: `, () => {
     expect(mqttHistory._timestamp).toBe(timestamp)
     await MqttHistory.getAll()
   })
+  test(`Getters all return their underscore values.`, async () => {
+    expect(history.value).toBe(history._value)
+    expect(getUnixTime(history.timestamp)).toBe(history._timestamp)
+  })
+})
+
+test(`Mqtt source log creates a historical record for each tag with the device as a source of a specific scan class`, async () => {
+  const prevCount = MqttHistory.instances.length
+  const mqttSource = MqttSource.instances[1]
+  const scanClass = ScanClass.instances[0]
+  await mqttSource.log(scanClass.id)
+  expect(MqttHistory.instances.length).toBe(
+    prevCount +
+      scanClass.tags.filter((tag) => {
+        if (tag.source) {
+          tag.source.device.id === mqttSource.device.id
+        } else {
+          false
+        }
+      }).length
+  )
+})
+test(`Publish publishes the real tag values, the historical tag values, and deletes the buffer.`, async () => {
+  const mqtt = Mqtt.instances[0]
+  mqtt.connect()
+  await mqtt.publish()
+  expect(mockSparkplug.publishDeviceData).toBeCalledTimes(2)
 })

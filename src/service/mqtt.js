@@ -1,6 +1,7 @@
 const { Model } = require(`../database`)
 const sparkplug = require(`sparkplug-client`)
 const getUnixTime = require('date-fns/getUnixTime')
+const fromUnixTime = require('date-fns/fromUnixTime')
 
 class Mqtt extends Model {
   static async initialize(db, pubsub) {
