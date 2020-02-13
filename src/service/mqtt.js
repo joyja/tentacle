@@ -66,7 +66,7 @@ class Mqtt extends Model {
           return {
             name: source.tag.name,
             value: `${source.tag.value}`,
-            type: 'string'
+            type: source.tag.datatype
           }
         })
       })
