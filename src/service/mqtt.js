@@ -138,7 +138,7 @@ class Mqtt extends Model {
       for (const record of source.history.filter(
         (record) => record.initialized
       )) {
-        await record.delete()
+        await record.delete().catch((error) => console.log(error))
       }
     }
   }
