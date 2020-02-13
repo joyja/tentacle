@@ -16,6 +16,15 @@ const { User } = require('./auth')
 //           Tags
 // ==============================
 
+ScanClass.prototype.scan = async function() {
+  for (const tag of this.tags) {
+    if (tag.source) {
+      await tag.source.read()
+    }
+  }
+  await mqttSource.log(this.id)
+}
+
 Object.defineProperties(ScanClass.prototype, {
   tags: {
     get() {

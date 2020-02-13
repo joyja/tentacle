@@ -1,5 +1,12 @@
 const { createTestDb, deleteTestDb } = require('../../test/db')
-const { User, Tag, ScanClass, Device, Service } = require('../relations')
+const {
+  User,
+  Tag,
+  ScanClass,
+  Device,
+  Service,
+  MqttSource
+} = require('../relations')
 const fromUnixTime = require('date-fns/fromUnixTime')
 
 const dbFilename = `test-tag-spread-edge.db`
@@ -53,6 +60,8 @@ describe(`ScanClass:`, () => {
     scanClass.stopScan()
     expect(clearInterval).toHaveBeenCalledTimes(1)
   })
+  test
+
   test(`Getters all return their underscore values`, () => {
     const scanClass = ScanClass.instances[0]
     expect(scanClass.rate).toBe(scanClass._rate)

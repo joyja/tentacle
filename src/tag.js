@@ -119,14 +119,6 @@ class ScanClass extends Model {
     this._createdOn = result.createdOn
     this.scanCount = 0
   }
-  async scan() {
-    for (const tag of this.tags) {
-      if (tag.source) {
-        await tag.source.read()
-      }
-    }
-    await mqttSource.log(this.id)
-  }
   startScan() {
     this.interval = setInterval(async () => {
       await this.scan()
