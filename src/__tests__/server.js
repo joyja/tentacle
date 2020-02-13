@@ -24,7 +24,7 @@ const mockSparkplug = {
 }
 
 beforeAll(async () => {
-  await start(true)
+  await start(`:memory:`)
   ModbusRTU.prototype.connectTCP.mockResolvedValue({})
   ModbusRTU.prototype.close.mockImplementation((callback) => {
     callback()

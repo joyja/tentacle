@@ -120,20 +120,24 @@ class Mqtt extends Model {
           timestamp: getUnixTime(new Date(Date.UTC()))
         }
       })
-      const histPayload = source.history.map((record) => {
-        return {
-          name: record.tag.name,
-          value: record.value,
-          timestamp: record.timestamp,
-          type: record.tag.datatype,
-          is_historical: true
-        }
-      })
+      const histPayload = source.history
+        .filter((record) => record.initialized)
+        .map((record) => {
+          return {
+            name: record.tag.name,
+            value: record.value,
+            timestamp: record.timestamp,
+            type: record.tag.datatype,
+            is_historical: true
+          }
+        })
       this.client.publishDeviceData(`${source.device.name}`, {
         timestamp: getUnixTime(new Date(Date.UTC())),
         metrics: [...payload, ...histPayload]
       })
-      for (const record of source.history) {
+      for (const record of source.history.filter(
+        (record) => record.initialized
+      )) {
         await record.delete()
       }
     }

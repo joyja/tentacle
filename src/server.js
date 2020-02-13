@@ -9,9 +9,9 @@ const { User, Tag, ScanClass, Device, Service } = require('./relations')
 let db = undefined
 let httpServer = undefined
 let server = undefined
-start = async function(dbFilename, inMemory = false) {
+start = async function(dbFilename) {
   // Create database
-  if (inMemory) {
+  if (dbFilename === `:memory:`) {
     db = new sqlite3.Database(`:memory:`, (error) => {
       if (error) {
         throw error
