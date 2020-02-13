@@ -62,8 +62,8 @@ class Mqtt extends Model {
           )
           if (rebirth) {
             if (rebirth.value) {
-              this.client.disconnect()
-              this.client.connect()
+              this.disconnect()
+              this.connect()
             }
           }
         }
