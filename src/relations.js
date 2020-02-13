@@ -340,7 +340,7 @@ Object.defineProperties(MqttSource.prototype, {
     get() {
       this.checkInit()
       return MqttHistory.instances.filter((instance) => {
-        return instance.mqttSource.id === this.id
+        return instance.initialized && instance.mqttSource.id === this.id
       })
     }
   }
