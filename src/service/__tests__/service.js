@@ -170,7 +170,7 @@ describe(`MQTT: `, () => {
   test(`Connect sets up the sparkplug client.`, async () => {
     await mqtt.connect()
     expect(sparkplug.newClient).toBeCalledTimes(1)
-    expect(mockSparkplug.on).toBeCalledTimes(4)
+    expect(mockSparkplug.on).toBeCalledTimes(6)
     expect(mockSparkplug.on).toBeCalledWith('reconnect', expect.any(Function))
     expect(mockSparkplug.on).toBeCalledWith('error', expect.any(Function))
     expect(mockSparkplug.on).toBeCalledWith('offline', expect.any(Function))

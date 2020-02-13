@@ -56,7 +56,17 @@ class Mqtt extends Model {
         console.log(payload)
       })
       this.client.on('ncmd', (payload) => {
-        console.log(payload)
+        if (payload.metrics) {
+          const rebirth = payload.metrics.find(
+            (metric) => metric.name === `Node Control/Rebirth`
+          )
+          if (rebirth) {
+            if (rebirth.value) {
+              this.client.disconnect()
+              this.client.connect()
+            }
+          }
+        }
       })
     }
   }
