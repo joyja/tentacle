@@ -18,7 +18,7 @@ start = async function(dbFilename) {
       }
     })
   } else {
-    db = new sqlite3.cached.Database(`./database/${dbFilename}`, (error) => {
+    db = new sqlite3.cached.Database(`./${dbFilename}`, (error) => {
       if (error) {
         throw error
       }
