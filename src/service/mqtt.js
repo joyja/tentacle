@@ -51,6 +51,12 @@ class Mqtt extends Model {
       this.client.on('birth', () => {
         this.onBirth()
       })
+      this.client.on('dcmd', (deviceId, payload) => {
+        console.log(`${deviceId}: ${payload}`)
+      })
+      this.client.on('ncmd', (payload) => {
+        console.log(`${payload}`)
+      })
     }
   }
   onBirth() {
