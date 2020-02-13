@@ -9,7 +9,7 @@ const { User, Tag, ScanClass, Device, Service } = require('./relations')
 let db = undefined
 let httpServer = undefined
 let server = undefined
-start = async function(inMemory = false) {
+start = async function(dbFilename, inMemory = false) {
   // Create database
   if (inMemory) {
     db = new sqlite3.Database(`:memory:`, (error) => {
