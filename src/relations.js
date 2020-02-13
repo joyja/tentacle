@@ -22,7 +22,9 @@ ScanClass.prototype.scan = async function() {
       await tag.source.read()
     }
   }
-  await mqttSource.log(this.id)
+  for (const source of MqttSource.instances) {
+    await source.log(this.id)
+  }
 }
 
 Object.defineProperties(ScanClass.prototype, {

@@ -347,5 +347,5 @@ test(`Tag: scan calls tag.source.read for each tag with a source and mqttSource.
   expect(ModbusSource.prototype.read).toBeCalledTimes(
     ScanClass.instances[0].tags.filter((tag) => tag.source).length
   )
-  expect(MqttSource.prototype.log).toBeCalledTimes(1)
+  expect(MqttSource.prototype.log).toBeCalledTimes(MqttSource.instances.length)
 })
