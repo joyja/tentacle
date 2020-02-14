@@ -153,6 +153,15 @@ type Service {
 }
 
 """MQTT is a service that allows for publishing tag values to an MQTT broker using the sparkplug B specification, which will server data to other subscribing nodes. One broker per service."""
+type MqttPrimaryHost {
+  id: ID!
+  """Primary Host ID, used to verify primary host state for store and forward"""
+  name: String!
+  """UKNOWN before STATE has been received from broker, ONLINE/OFFLINE otherwise, indicating status"""
+  status: String!
+}
+
+"""MQTT is a service that allows for publishing tag values to an MQTT broker using the sparkplug B specification, which will server data to other subscribing nodes. One broker per service."""
 type Mqtt {
   id: ID!
   """Hostname or IP address of the MQTT broker"""
@@ -174,7 +183,7 @@ type Mqtt {
   """True if ssl:// is to be used, otherwise tcp:// will be used."""
   encrypt: Boolean!
   """Primary host IDs. This is used for store and forward to detect if the consumers are online. The gateway will store data if any consumer is offline."""
-  primaryHosts: [String!]
+  primaryHosts: [MqttPrimaryHost!]!
 }
 
 """An MQTT source publishes data from all tags with the same device source. The device name will be used as the `Device` field in sparkplug B."""
