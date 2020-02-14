@@ -101,6 +101,7 @@ class Mqtt extends Model {
       this.client.subscribePrimaryHost(host.name)
     }
     this.client.on('state', (primaryHostId, state) => {
+      console.log(primaryHostId, state)
       if (primaryHostId) {
         primaryHost = MqttPrimaryHost.instances.find(
           (host) => host.name === primaryHostId
