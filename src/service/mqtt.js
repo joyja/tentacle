@@ -106,7 +106,7 @@ class Mqtt extends Model {
           (host) => host.name === primaryHostId
         )
         if (primaryHost) {
-          primaryHost.state = state
+          primaryHost.status = state
         }
       }
     })
