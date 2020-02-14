@@ -81,8 +81,7 @@ async function addMqttPrimaryHost(root, args, context, info) {
   const service = Service.findById(args.id)
   if (service) {
     if (service.type === `mqtt`) {
-      await service.config.addMqttPrimaryHost(args.name)
-      return service
+      return service.config.addPrimaryHost(args.name)
     } else {
       throw new Error(
         `Service with id ${args.id} is not an mqtt service. It's type ${service.type}`
@@ -97,8 +96,7 @@ async function deleteMqttPrimaryHost(root, args, context, info) {
   const service = Service.findById(args.id)
   if (service) {
     if (service.type === `mqtt`) {
-      await service.config.deleteMqttPrimaryHost(args.name)
-      return service
+      return service.config.deletePrimaryHost(args.name)
     } else {
       throw new Error(
         `Service with id ${args.id} is not an mqtt service. It's type ${service.type}`

@@ -324,9 +324,9 @@ type Mutation {
   """Requires a valid authorization token. Deletes a device from an MQTT service. The tags for the removed device will no longer be published to the broker (but the device and tags will still exist)."""
   deleteMqttDevice(id: ID!, deviceId: ID!): Service
   """Requires a valid authorization token. Adds a primary host id to monitor (for store & forward)"""
-  addMqttPrimaryHost(id: ID!, name: String): Service
+  addMqttPrimaryHost(id: ID!, name: String): MqttPrimaryHost
   """Requires a valid authorization token. Deletes a primary host id to monitor (for store & forward)"""
-  deleteMqttPrimaryHost(id: ID!, name: String): Service
+  deleteMqttPrimaryHost(id: ID!, name: String): MqttPrimaryHost
   """Requires a valid authorization token. Deletes an MQTT Service. All devices assigned to this service will no longer have their tags published."""
   deleteMqtt(id: ID!): Service
 }
