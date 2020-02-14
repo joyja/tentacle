@@ -23,7 +23,11 @@ const mockSparkplug = {
   publishDeviceBirth: jest.fn(),
   publishDeviceData: jest.fn(),
   publishDeviceDeath: jest.fn(),
-  stop: jest.fn()
+  stop: jest.fn(),
+  client: {
+    subscribe: jest.fn(),
+    on: jest.fn()
+  }
 }
 
 const pubsub = {}
@@ -85,6 +89,7 @@ test(`Mqtt: create creates a service with service config`, async () => {
   const rate = 1000
   const encrypt = true
   const createdBy = user.id
+  const primaryHosts = ['aPrimaryHost', 'AnotherPrimaryHost']
   const mqtt = await Mqtt.create(
     name,
     description,
@@ -97,7 +102,8 @@ test(`Mqtt: create creates a service with service config`, async () => {
     devices,
     rate,
     encrypt,
-    createdBy
+    createdBy,
+    primaryHosts
   )
   service = mqtt.service
   expect(mqtt.service).toBe(Service.instances[0])
@@ -113,6 +119,34 @@ test(`Mqtt: create creates a service with service config`, async () => {
   expect(mqtt.rate).toBe(rate)
   expect(mqtt.encrypt).toBe(encrypt)
   expect(mqtt.service.createdBy.id).toBe(user.id)
+  expect(mqtt.primaryHosts.map((host) => host.name)).toEqual(primaryHosts)
+})
+test(`Mqtt: add primary host, adds a primary host`, async () => {
+  const mqtt = service.config
+  const newHostName = `yetAnotherPrimaryHost`
+  const prevPrimaryHosts = mqtt.primaryHosts.map((host) => host)
+  const newHost = await mqtt.addPrimaryHost(newHostName)
+  expect(mqtt.primaryHosts).toEqual([...prevPrimaryHosts, newHost])
+})
+test(`Mqtt: delete primary host, deletes a primary host`, async () => {
+  const mqtt = service.config
+  const deletedHost = `yetAnotherPrimaryHost`
+  const primaryHosts = mqtt.primaryHosts.map((host) => host)
+  await mqtt.deletePrimaryHost(deletedHost)
+  expect(mqtt.primaryHosts).toEqual(
+    primaryHosts.filter((host) => host.name !== deletedHost)
+  )
+})
+test(`Mqtt: deleting a primary host, that doesn't exist throws an error`, async () => {
+  const mqtt = service.config
+  const deletedHost = `iDoNotExist`
+  const primaryHosts = mqtt.primaryHosts.map((host) => host)
+  expect(
+    await mqtt.deletePrimaryHost(deletedHost).catch((e) => e)
+  ).toMatchInlineSnapshot(
+    `[Error: This mqtt service does not have a primary host named iDoNotExist]`
+  )
+  expect(mqtt.primaryHosts).toEqual(primaryHosts)
 })
 describe(`Service: `, () => {
   test(`check that init sets the appropriate underscore fields.`, async () => {

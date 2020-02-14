@@ -268,7 +268,8 @@ Mqtt.create = async function(
   devices,
   rate,
   encrypt,
-  createdBy
+  createdBy,
+  primaryHosts
 ) {
   const service = await Service.create(name, description, 'mqtt', createdBy)
   const fields = {
@@ -280,7 +281,8 @@ Mqtt.create = async function(
     username,
     password,
     rate,
-    encrypt
+    encrypt,
+    primaryHosts
   }
   const mqtt = await this._createModel(fields)
   for (device of devices) {

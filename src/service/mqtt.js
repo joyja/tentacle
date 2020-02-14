@@ -2,14 +2,23 @@ const { Model } = require(`../database`)
 const sparkplug = require(`sparkplug-client`)
 const getUnixTime = require('date-fns/getUnixTime')
 const fromUnixTime = require('date-fns/fromUnixTime')
+const _ = require('lodash')
 
 class Mqtt extends Model {
   static async initialize(db, pubsub) {
     await MqttSource.initialize(db, pubsub)
+    await MqttPrimaryHost.initialize(db, pubsub)
+    await MqttPrimaryHostHistory.initialize(db, pubsub)
     return super.initialize(db, pubsub)
   }
-  static _createModel(fields) {
-    return super.create(fields)
+  static async _createModel(fields) {
+    const mqtt = await super.create(_.omit(fields, 'primaryHosts'))
+    if (fields.primaryHosts) {
+      for (const primaryHost of fields.primaryHosts) {
+        await MqttPrimaryHost.create(mqtt.id, primaryHost)
+      }
+    }
+    return mqtt
   }
   async init() {
     const result = await super.init(Mqtt)
@@ -88,6 +97,24 @@ class Mqtt extends Model {
         })
       })
     })
+    for (const host of this.primaryHosts) {
+      this.client.client.subscribe(`STATE/${host.name}`, { qos: 0 })
+    }
+    this.client.client.on('message', (topic, message) => {
+      const splitTopic = topic.split('/')
+      let primaryHostId = undefined
+      if (splitTopic[0] === 'STATE') {
+        primaryHostId === splitTopic[1]
+      }
+      if (primaryHostId) {
+        primaryHost = MqttPrimaryHost.instances.find(
+          (host) => host.name === primaryHostId
+        )
+        if (primaryHost) {
+          primaryHost.state = splitTopic[1]
+        }
+      }
+    })
     this.startPublishing()
   }
   onReconnect() {
@@ -158,6 +185,26 @@ class Mqtt extends Model {
         await record.delete().catch((error) => console.log(error))
       }
     }
+  }
+  get primaryHosts() {
+    this.checkInit()
+    return MqttPrimaryHost.instances.filter((host) => {
+      return host._mqtt === this.id
+    })
+  }
+  async addPrimaryHost(name) {
+    return MqttPrimaryHost.create(this.id, name)
+  }
+  async deletePrimaryHost(name) {
+    const primaryHost = MqttPrimaryHost.instances.find((instance) => {
+      return instance._mqtt === this.id && instance.name === name
+    })
+    if (!primaryHost) {
+      throw Error(
+        `This mqtt service does not have a primary host named ${name}`
+      )
+    }
+    return await primaryHost.delete()
   }
   get host() {
     this.checkInit()
@@ -250,7 +297,8 @@ Mqtt.fields = [
   { colName: 'username', colType: 'TEXT' },
   { colName: 'password', colType: 'TEXT' },
   { colName: 'rate', colType: 'INTEGER' },
-  { colName: 'encrypt', colType: 'INTEGER' }
+  { colName: 'encrypt', colType: 'INTEGER' },
+  { colName: 'primaryHost', colType: 'TEXT' }
 ]
 Mqtt.instances = []
 Mqtt.initialized = false
@@ -283,7 +331,7 @@ MqttSource.instances = []
 MqttSource.initialized = false
 
 class MqttHistory extends Model {
-  static create(mqttSource, tag, value) {
+  static async create(mqttSource, tag, value) {
     const timestamp = getUnixTime(new Date())
     const fields = {
       mqttSource,
@@ -291,7 +339,11 @@ class MqttHistory extends Model {
       timestamp,
       value
     }
-    return super.create(fields)
+    const history = await super.create(fields)
+    for (const host of history.mqttSource.mqtt.primaryHosts) {
+      await MqttPrimaryHostHistory.create(host.id, history.id)
+    }
+    return history
   }
   async init() {
     const result = await super.init()
@@ -318,6 +370,65 @@ MqttHistory.fields = [
 ]
 MqttHistory.instances = []
 MqttHistory.initialized = false
+
+class MqttPrimaryHost extends Model {
+  static create(mqtt, name) {
+    const fields = {
+      mqtt,
+      name
+    }
+    return super.create(fields)
+  }
+  async init() {
+    const result = await super.init()
+    this._mqtt = result.mqtt
+    this._name = result.name
+    this.status = `UNKNOWN`
+  }
+  get name() {
+    this.checkInit()
+    return this._name
+  }
+  get mqtt() {
+    this.checkInit()
+    return Mqtt.instances.find((instance) => {
+      instance.id === this._mqtt
+    })
+  }
+}
+MqttPrimaryHost.table = `mqttPrimaryHost`
+MqttPrimaryHost.fields = [
+  { colName: 'mqtt', colRef: 'mqtt', onDelete: 'CASCADE' },
+  { colName: 'name', colType: 'TEXT' }
+]
+MqttPrimaryHost.instances = []
+MqttPrimaryHost.initialized = false
+
+class MqttPrimaryHostHistory extends Model {
+  static create(mqttPrimaryHost, mqttHistory) {
+    const fields = {
+      mqttPrimaryHost,
+      mqttHistory
+    }
+    return super.create(fields)
+  }
+  async init() {
+    const result = await super.init()
+    this._mqttPrimaryHost = result.mqttPrimaryHost
+    this._mqttHistory = result.mqttHistory
+  }
+}
+MqttPrimaryHostHistory.table = `mqttPrimaryHostHistory`
+MqttPrimaryHostHistory.fields = [
+  {
+    colName: 'mqttPrimaryHost',
+    colRef: 'mqttPrimaryHost',
+    onDelete: 'CASCADE'
+  },
+  { colName: 'mqttHistory', colRef: 'mqttHistory', onDelete: 'CASCADE' }
+]
+MqttPrimaryHostHistory.instances = []
+MqttPrimaryHostHistory.initialized = []
 
 module.exports = {
   Mqtt,

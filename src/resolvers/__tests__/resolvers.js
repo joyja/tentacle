@@ -29,7 +29,11 @@ const mockSparkplug = {
   publishDeviceBirth: jest.fn(),
   publishDeviceData: jest.fn(),
   publishDeviceDeath: jest.fn(),
-  stop: jest.fn()
+  stop: jest.fn(),
+  client: {
+    subscribe: jest.fn(),
+    on: jest.fn()
+  }
 }
 const bcrypt = require('bcryptjs')
 
