@@ -1,5 +1,5 @@
-jest.mock(`sparkplug-client`)
-const sparkplug = require(`sparkplug-client`)
+jest.mock(`sparkplug-client-jar`)
+const sparkplug = require(`sparkplug-client-jar`)
 const getUnixTime = require('date-fns/getUnixTime')
 
 const { createTestDb, deleteTestDb } = require('../../../test/db')
@@ -24,10 +24,8 @@ const mockSparkplug = {
   publishDeviceData: jest.fn(),
   publishDeviceDeath: jest.fn(),
   stop: jest.fn(),
-  client: {
-    subscribe: jest.fn(),
-    on: jest.fn()
-  }
+  on: jest.fn(),
+  subscribePrimaryHost: jest.fn()
 }
 
 const pubsub = {}

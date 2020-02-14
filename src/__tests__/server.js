@@ -1,9 +1,9 @@
 jest.mock('modbus-serial')
 jest.mock('ethernet-ip')
-jest.mock('sparkplug-client')
+jest.mock('sparkplug-client-jar')
 const ModbusRTU = require(`modbus-serial`)
 const { Controller } = require(`ethernet-ip`)
-const sparkplug = require(`sparkplug-client`)
+const sparkplug = require(`sparkplug-client-jar`)
 const { GraphQLClient, request } = require('graphql-request')
 const { query, mutation } = require('../../test/graphql')
 const { start, stop } = require('../server')
@@ -21,10 +21,7 @@ const mockSparkplug = {
   publishDeviceData: jest.fn(),
   publishDeviceDeath: jest.fn(),
   stop: jest.fn(),
-  client: {
-    subscribe: jest.fn(),
-    on: jest.fn()
-  }
+  subscribePrimaryHost: jest.fn()
 }
 
 beforeAll(async () => {
@@ -424,7 +421,7 @@ test('create mqtt with the proper headers and fields returns valid results', asy
     })
   expect(setInterval).toBeCalledTimes(1)
   expect(clearInterval).toBeCalledTimes(0)
-  expect(mockSparkplug.on).toBeCalledTimes(6)
+  expect(mockSparkplug.on).toBeCalledTimes(7)
   expect(mockSparkplug.publishNodeBirth).toBeCalledTimes(1)
   expect(mockSparkplug.publishDeviceBirth).toBeCalledTimes(1)
   expect(mockSparkplug.publishDeviceDeath).toBeCalledTimes(0)
@@ -487,7 +484,7 @@ test('update mqtt with the proper headers and fields returns valid results', asy
     })
   expect(setInterval).toBeCalledTimes(1)
   expect(clearInterval).toBeCalledTimes(1)
-  expect(mockSparkplug.on).toBeCalledTimes(6)
+  expect(mockSparkplug.on).toBeCalledTimes(7)
   expect(mockSparkplug.publishNodeBirth).toBeCalledTimes(1)
   expect(mockSparkplug.publishDeviceBirth).toBeCalledTimes(1)
   expect(mockSparkplug.publishDeviceDeath).toBeCalledTimes(1)

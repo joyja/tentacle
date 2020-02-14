@@ -1,9 +1,9 @@
-jest.mock(`sparkplug-client`)
+jest.mock(`sparkplug-client-jar`)
 jest.mock(`modbus-serial`)
 jest.mock(`ethernet-ip`)
 const ModbusRTU = require(`modbus-serial`)
 const { Controller } = require(`ethernet-ip`)
-const sparkplug = require(`sparkplug-client`)
+const sparkplug = require(`sparkplug-client-jar`)
 
 const { createTestDb, deleteTestDb } = require('../../../test/db')
 const {
@@ -30,10 +30,8 @@ const mockSparkplug = {
   publishDeviceData: jest.fn(),
   publishDeviceDeath: jest.fn(),
   stop: jest.fn(),
-  client: {
-    subscribe: jest.fn(),
-    on: jest.fn()
-  }
+  on: jest.fn(),
+  subscribePrimaryHost: jest.fn()
 }
 const bcrypt = require('bcryptjs')
 

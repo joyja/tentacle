@@ -1,5 +1,5 @@
 const { Model } = require(`../database`)
-const sparkplug = require(`sparkplug-client`)
+const sparkplug = require(`sparkplug-client-jar`)
 const getUnixTime = require('date-fns/getUnixTime')
 const fromUnixTime = require('date-fns/fromUnixTime')
 const _ = require('lodash')
@@ -98,20 +98,15 @@ class Mqtt extends Model {
       })
     })
     for (const host of this.primaryHosts) {
-      this.client.client.subscribe(`STATE/${host.name}`, { qos: 0 })
+      this.client.subscribePrimaryHost(host.name)
     }
-    this.client.client.on('message', (topic, message) => {
-      const splitTopic = topic.split('/')
-      let primaryHostId = undefined
-      if (splitTopic[0] === 'STATE') {
-        primaryHostId === splitTopic[1]
-      }
+    this.client.on('state', (primaryHostId, state) => {
       if (primaryHostId) {
         primaryHost = MqttPrimaryHost.instances.find(
           (host) => host.name === primaryHostId
         )
         if (primaryHost) {
-          primaryHost.state = splitTopic[1]
+          primaryHost.state = state
         }
       }
     })
@@ -148,7 +143,11 @@ class Mqtt extends Model {
         } else {
           this.testNumber = 1
         }
-        this.client.publishDeviceDeath(`${source.device.name}`, payload)
+        try {
+          this.client.publishDeviceDeath(`${source.device.name}`, payload)
+        } catch (error) {
+          console.log(source)
+        }
       })
       this.client.stop()
       this.client = undefined
