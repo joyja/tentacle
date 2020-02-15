@@ -97,9 +97,6 @@ class Mqtt extends Model {
         })
       })
     })
-    for (const host of this.primaryHosts) {
-      this.client.subscribePrimaryHost(host.name)
-    }
     this.client.on('state', (primaryHostId, state) => {
       console.log(primaryHostId, state)
       if (primaryHostId) {
