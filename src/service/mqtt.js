@@ -176,8 +176,10 @@ class Mqtt extends Model {
         metrics: [...payload, ...histPayload]
       })
       for (const host of this.primaryHosts) {
-        for (const record of host.history) {
-          await record.delete()
+        if (host.status === 'ONLINE') {
+          for (const record of host.history) {
+            await record.delete()
+          }
         }
         for (const source of this.sources) {
           for (const record of source.history) {
