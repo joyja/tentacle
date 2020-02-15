@@ -179,8 +179,9 @@ class Mqtt extends Model {
             isHistorical: true
           }
         })
+      console.log(getUnixTime(new Date(Date.UTC())))
       this.client.publishDeviceData(`${source.device.name}`, {
-        timestamp: new Date(Date.UTC()),
+        timestamp: getUnixTime(new Date(Date.UTC())),
         metrics: [...payload, ...histPayload]
       })
       for (const host of this.primaryHosts) {
