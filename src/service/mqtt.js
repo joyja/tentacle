@@ -178,7 +178,9 @@ class Mqtt extends Model {
       for (const record of source.history.filter(
         (record) => record.initialized
       )) {
-        await record.delete().catch((error) => console.log(error))
+        if (record.primaryHosts.length === 0) {
+          await record.delete().catch((error) => console.log(error))
+        }
       }
     }
   }
@@ -317,6 +319,11 @@ class MqttSource extends Model {
     this._mqtt = result.mqtt
     this._device = result.device
   }
+  get recordCount() {
+    return MqttHistory.instances.filter((history) => {
+      return history._mqttSource === this._id
+    })
+  }
 }
 MqttSource.table = `mqttSource`
 MqttSource.fields = [
@@ -356,6 +363,17 @@ class MqttHistory extends Model {
     this.checkInit()
     return fromUnixTime(this._timestamp)
   }
+  get primaryHosts() {
+    return MqttPrimaryHostHistory.instances
+      .filter((instance) => {
+        return instance._mqttHistory === this._id
+      })
+      .map((instance) => {
+        return MqttPrimaryHost.instances.find((host) => {
+          instance._mqttPrimaryHost === host._id
+        })
+      })
+  }
 }
 MqttHistory.table = `mqttHistory`
 MqttHistory.fields = [
@@ -390,6 +408,11 @@ class MqttPrimaryHost extends Model {
     return Mqtt.instances.find((instance) => {
       instance.id === this._mqtt
     })
+  }
+  get recordCount() {
+    return MqttPrimaryHostHistory.instances.filter((history) => {
+      return history._mqttPrimaryHost === this._id
+    }).length
   }
 }
 MqttPrimaryHost.table = `mqttPrimaryHost`
