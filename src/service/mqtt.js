@@ -98,7 +98,7 @@ class Mqtt extends Model {
       })
     })
     MqttPrimaryHost.instances.forEach((host) => {
-      if (host.status === `ONLINE`) {
+      if (host.status === `ONLINE` || host.status === `UNKNOWN`) {
         host.readyForData = true
       }
     })
@@ -180,7 +180,7 @@ class Mqtt extends Model {
           }
         })
       this.client.publishDeviceData(`${source.device.name}`, {
-        timestamp: getUnixTime(new Date(Date.UTC())),
+        timestamp: new Date(Date.UTC()),
         metrics: [...payload, ...histPayload]
       })
       for (const host of this.primaryHosts) {
