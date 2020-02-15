@@ -175,12 +175,12 @@ class Mqtt extends Model {
         timestamp: getUnixTime(new Date(Date.UTC())),
         metrics: [...payload, ...histPayload]
       })
-      for (host of this.primaryHosts) {
-        for (record of host.history) {
+      for (const host of this.primaryHosts) {
+        for (const record of host.history) {
           await record.delete()
         }
-        for (source of this.sources) {
-          for (record of this.source.history) {
+        for (const source of this.sources) {
+          for (const record of source.history) {
             if (record.primaryHosts.length === 0) {
               await record.delete()
             }
@@ -327,6 +327,11 @@ class MqttSource extends Model {
   get recordCount() {
     return MqttHistory.instances.filter((history) => {
       return history._mqttSource === this._id
+    }).length
+  }
+  get history() {
+    return MqttHistory.instances.filter((history) => {
+      return history._mqttSource === this._id
     })
   }
 }
@@ -418,6 +423,11 @@ class MqttPrimaryHost extends Model {
     return MqttPrimaryHostHistory.instances.filter((history) => {
       return history._mqttPrimaryHost === this._id
     }).length
+  }
+  get history() {
+    return MqttPrimaryHostHistory.instances.filter((history) => {
+      return history._mqttPrimaryHost === this._id
+    })
   }
 }
 MqttPrimaryHost.table = `mqttPrimaryHost`
