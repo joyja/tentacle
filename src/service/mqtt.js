@@ -97,6 +97,11 @@ class Mqtt extends Model {
         })
       })
     })
+    MqttPrimaryHost.instances.forEach((host) => {
+      if (host.status === `ONLINE`) {
+        primaryHost.readyForData = true
+      }
+    })
     this.client.on('state', (primaryHostId, state) => {
       if (primaryHostId) {
         const primaryHost = MqttPrimaryHost.instances.find(
@@ -104,6 +109,9 @@ class Mqtt extends Model {
         )
         if (primaryHost) {
           primaryHost.status = `${state}`
+          if (`${state}` === `OFFLINE`) {
+            primaryHost.readyForData = false
+          }
         }
       }
     })
@@ -176,7 +184,7 @@ class Mqtt extends Model {
         metrics: [...payload, ...histPayload]
       })
       for (const host of this.primaryHosts) {
-        if (host.status === 'ONLINE') {
+        if (host.readyForData) {
           for (const record of host.history) {
             await record.delete()
           }
@@ -410,6 +418,7 @@ class MqttPrimaryHost extends Model {
     this._mqtt = result.mqtt
     this._name = result.name
     this.status = `UNKNOWN`
+    this.readyForData = false
   }
   get name() {
     this.checkInit()
