@@ -99,7 +99,7 @@ class Mqtt extends Model {
     })
     MqttPrimaryHost.instances.forEach((host) => {
       if (host.status === `ONLINE`) {
-        primaryHost.readyForData = true
+        host.readyForData = true
       }
     })
     this.client.on('state', (primaryHostId, state) => {
