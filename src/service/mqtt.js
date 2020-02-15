@@ -175,11 +175,16 @@ class Mqtt extends Model {
         timestamp: getUnixTime(new Date(Date.UTC())),
         metrics: [...payload, ...histPayload]
       })
-      for (const record of source.history.filter(
-        (record) => record.initialized
-      )) {
-        if (record.primaryHosts.length === 0) {
-          await record.delete().catch((error) => console.log(error))
+      for (host of this.primaryHosts) {
+        for (record of host.history) {
+          await record.delete()
+        }
+        for (source of this.sources) {
+          for (record of this.source.history) {
+            if (record.primaryHosts.length === 0) {
+              await record.delete()
+            }
+          }
         }
       }
     }
