@@ -358,6 +358,7 @@ MqttSource.initialized = false
 class MqttHistory extends Model {
   static async create(mqttSource, tag, value) {
     const timestamp = getTime(new Date())
+    console.log(timestamp)
     const fields = {
       mqttSource,
       tag,
