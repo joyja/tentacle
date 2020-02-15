@@ -176,7 +176,7 @@ class Mqtt extends Model {
           return {
             name: record.tag.name,
             value: record.value,
-            timestamp: record.timestamp,
+            timestamp: record._timestamp,
             type: record.tag.datatype,
             isHistorical: true
           }
@@ -358,7 +358,6 @@ MqttSource.initialized = false
 class MqttHistory extends Model {
   static async create(mqttSource, tag, value) {
     const timestamp = getTime(new Date())
-    console.log(timestamp)
     const fields = {
       mqttSource,
       tag,
