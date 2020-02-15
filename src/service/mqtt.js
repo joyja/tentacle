@@ -168,7 +168,7 @@ class Mqtt extends Model {
             value: record.value,
             timestamp: record.timestamp,
             type: record.tag.datatype,
-            is_historical: true
+            isHistorical: true
           }
         })
       this.client.publishDeviceData(`${source.device.name}`, {
