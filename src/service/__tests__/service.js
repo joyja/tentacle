@@ -1,5 +1,5 @@
-jest.mock(`sparkplug-client-jar`)
-const sparkplug = require(`sparkplug-client-jar`)
+jest.mock(`tentacle-sparkplug-client`)
+const sparkplug = require(`tentacle-sparkplug-client`)
 const getUnixTime = require('date-fns/getUnixTime')
 
 const { createTestDb, deleteTestDb } = require('../../../test/db')

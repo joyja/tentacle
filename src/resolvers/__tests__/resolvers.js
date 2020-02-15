@@ -1,9 +1,9 @@
-jest.mock(`sparkplug-client-jar`)
+jest.mock(`tentacle-sparkplug-client`)
 jest.mock(`modbus-serial`)
 jest.mock(`ethernet-ip`)
 const ModbusRTU = require(`modbus-serial`)
 const { Controller } = require(`ethernet-ip`)
-const sparkplug = require(`sparkplug-client-jar`)
+const sparkplug = require(`tentacle-sparkplug-client`)
 
 const { createTestDb, deleteTestDb } = require('../../../test/db')
 const {
