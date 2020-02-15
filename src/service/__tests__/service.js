@@ -1,6 +1,7 @@
 jest.mock(`tentacle-sparkplug-client`)
 const sparkplug = require(`tentacle-sparkplug-client`)
-const getUnixTime = require('date-fns/getUnixTime')
+const getTime = require('date-fns/getTime')
+const parseISO = require('date-fns/parseISO')
 
 const { createTestDb, deleteTestDb } = require('../../../test/db')
 const {
@@ -346,7 +347,7 @@ describe(`MQTT History: `, () => {
   })
   test(`Getters all return their underscore values.`, async () => {
     expect(history.value).toBe(history._value)
-    expect(getUnixTime(history.timestamp)).toBe(history._timestamp)
+    expect(getTime(history.timestamp)).toBe(history._timestamp)
   })
 })
 

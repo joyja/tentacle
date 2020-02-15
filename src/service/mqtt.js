@@ -1,7 +1,9 @@
 const { Model } = require(`../database`)
 const sparkplug = require(`tentacle-sparkplug-client`)
-const getUnixTime = require('date-fns/getUnixTime')
+const getTime = require('date-fns/getTime')
 const fromUnixTime = require('date-fns/fromUnixTime')
+const getMilliseconds = require('date-fns/getMilliseconds')
+const parseISO = require('date-fns/parseISO')
 const _ = require('lodash')
 
 class Mqtt extends Model {
@@ -81,13 +83,13 @@ class Mqtt extends Model {
   }
   onBirth() {
     const payload = {
-      timestamp: getUnixTime(new Date()),
+      timestamp: getTime(new Date()),
       metrics: []
     }
     this.client.publishNodeBirth(payload)
     this.sources.forEach((source) => {
       this.client.publishDeviceBirth(`${source.device.name}`, {
-        timestamp: getUnixTime(new Date()),
+        timestamp: getTime(new Date()),
         metrics: source.device.config.sources.map((source) => {
           return {
             name: source.tag.name,
@@ -140,7 +142,7 @@ class Mqtt extends Model {
     if (this.client) {
       this.stopPublishing()
       const payload = {
-        timestamp: getUnixTime(new Date())
+        timestamp: getTime(new Date())
       }
       this.sources.forEach((source) => {
         if (this.testNumber) {
@@ -165,7 +167,7 @@ class Mqtt extends Model {
           name: source.tag.name,
           value: source.tag.value,
           type: source.tag.datatype,
-          timestamp: getUnixTime(new Date())
+          timestamp: getTime(new Date())
         }
       })
       const histPayload = source.history
@@ -180,7 +182,7 @@ class Mqtt extends Model {
           }
         })
       this.client.publishDeviceData(`${source.device.name}`, {
-        timestamp: getUnixTime(new Date()),
+        timestamp: getTime(new Date()),
         metrics: [...payload, ...histPayload]
       })
       for (const host of this.primaryHosts) {
@@ -355,7 +357,7 @@ MqttSource.initialized = false
 
 class MqttHistory extends Model {
   static async create(mqttSource, tag, value) {
-    const timestamp = getUnixTime(new Date())
+    const timestamp = getTime(new Date())
     const fields = {
       mqttSource,
       tag,
@@ -381,7 +383,7 @@ class MqttHistory extends Model {
   }
   get timestamp() {
     this.checkInit()
-    return fromUnixTime(this._timestamp)
+    return new Date(this._timestamp)
   }
   get primaryHosts() {
     return MqttPrimaryHostHistory.instances

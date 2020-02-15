@@ -39,6 +39,7 @@
     "bcryptjs": "^2.4.3",
     "cross-env": "^6.0.3",
     "date-fns": "^2.9.0",
+    "date-fns-timezone": "^0.1.4",
     "esm": "^3.2.25",
     "ethernet-ip": "^1.2.5",
     "express": "^4.17.1",
