@@ -77,8 +77,6 @@ type ModbusSource {
   register: Int!
   """The register type per the modbus specification. Can be `HOLDING_REGISTER`, `INPUT_REGISTER`, `DISCRETE_INPUT`, or `COIL`."""
   registerType: ModbusRegisterType!
-  """Number of historical records stored, awaiting forwarding"""
-  records: Int!
 }
 
 """Ethernet/IP is a device config allowing for access to data for updating tag values per the ODVA Ethernet/IP specification."""
@@ -162,7 +160,7 @@ type MqttPrimaryHost {
   """UKNOWN before STATE has been received from broker, ONLINE/OFFLINE otherwise, indicating status"""
   status: String!
   """Number of historical records stored, awaiting forwarding"""
-  records: Int!
+  recordCount: Int!
 }
 
 """MQTT is a service that allows for publishing tag values to an MQTT broker using the sparkplug B specification, which will server data to other subscribing nodes. One broker per service."""
@@ -197,6 +195,8 @@ type MqttSource {
   mqtt: Mqtt!
   """Source device. All tags updating their values from this device will be published at the MQTT services configured scan rate."""
   device: Device!
+  """Number of historical records stored, awaiting forwarding"""
+  recordCount: Int!
 }
 
 """The data returned after a successful login attempt."""
