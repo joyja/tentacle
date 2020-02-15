@@ -87,7 +87,7 @@ class Mqtt extends Model {
     this.client.publishNodeBirth(payload)
     this.sources.forEach((source) => {
       this.client.publishDeviceBirth(`${source.device.name}`, {
-        timestamp: getUnixTime(new Date(Date.UTC())),
+        timestamp: getUnixTime(new Date()),
         metrics: source.device.config.sources.map((source) => {
           return {
             name: source.tag.name,
@@ -140,7 +140,7 @@ class Mqtt extends Model {
     if (this.client) {
       this.stopPublishing()
       const payload = {
-        timestamp: getUnixTime(new Date(Date.UTC()))
+        timestamp: getUnixTime(new Date())
       }
       this.sources.forEach((source) => {
         if (this.testNumber) {
@@ -165,7 +165,7 @@ class Mqtt extends Model {
           name: source.tag.name,
           value: source.tag.value,
           type: source.tag.datatype,
-          timestamp: getUnixTime(new Date(Date.UTC()))
+          timestamp: getUnixTime(new Date())
         }
       })
       const histPayload = source.history
@@ -179,9 +179,8 @@ class Mqtt extends Model {
             isHistorical: true
           }
         })
-      console.log(getUnixTime(new Date(Date.UTC())))
       this.client.publishDeviceData(`${source.device.name}`, {
-        timestamp: getUnixTime(new Date(Date.UTC())),
+        timestamp: getUnixTime(new Date()),
         metrics: [...payload, ...histPayload]
       })
       for (const host of this.primaryHosts) {
