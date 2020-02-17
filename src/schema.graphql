@@ -56,6 +56,8 @@ type Modbus {
   reverseBits: Boolean!
   """Whether multiregister sources should use the lowest register first (false) or the highest register first (true)."""
   reverseWords: Boolean!
+  """How long to wait to for connection with the device to complete before throwing an error."""
+  timeout: Int!
   """List of sources (tag/register) pairs that are using this modbus device."""
   sources: [ModbusSource!]!
   """Status of the modbus device connection. Will be connected if connection is successful or an error message if connection failed."""
@@ -151,6 +153,17 @@ type Service {
 }
 
 """MQTT is a service that allows for publishing tag values to an MQTT broker using the sparkplug B specification, which will server data to other subscribing nodes. One broker per service."""
+type MqttPrimaryHost {
+  id: ID!
+  """Primary Host ID, used to verify primary host state for store and forward"""
+  name: String!
+  """UKNOWN before STATE has been received from broker, ONLINE/OFFLINE otherwise, indicating status"""
+  status: String!
+  """Number of historical records stored, awaiting forwarding"""
+  recordCount: Int!
+}
+
+"""MQTT is a service that allows for publishing tag values to an MQTT broker using the sparkplug B specification, which will server data to other subscribing nodes. One broker per service."""
 type Mqtt {
   id: ID!
   """Hostname or IP address of the MQTT broker"""
@@ -171,6 +184,8 @@ type Mqtt {
   rate: Int!
   """True if ssl:// is to be used, otherwise tcp:// will be used."""
   encrypt: Boolean!
+  """Primary host IDs. This is used for store and forward to detect if the consumers are online. The gateway will store data if any consumer is offline."""
+  primaryHosts: [MqttPrimaryHost!]!
 }
 
 """An MQTT source publishes data from all tags with the same device source. The device name will be used as the `Device` field in sparkplug B."""
@@ -180,6 +195,8 @@ type MqttSource {
   mqtt: Mqtt!
   """Source device. All tags updating their values from this device will be published at the MQTT services configured scan rate."""
   device: Device!
+  """Number of historical records stored, awaiting forwarding"""
+  recordCount: Int!
 }
 
 """The data returned after a successful login attempt."""
@@ -229,7 +246,8 @@ type Mutation {
     port: Int!,
     reverseBits: Boolean!,
     reverseWords: Boolean!,
-    zeroBased: Boolean!
+    zeroBased: Boolean!,
+    timeout: Int!
   ): Device
   """Requires a valid authorization token. Updates an existing modbus device and refreshes the connection."""
   updateModbus(
@@ -240,7 +258,8 @@ type Mutation {
     port: Int,
     reverseBits: Boolean,
     reverseWords: Boolean,
-    zeroBased: Boolean
+    zeroBased: Boolean,
+    timeout: Int
   ): Device
   """Requires a valid authorization token. Deletes a modbus device. All sources assigned to this device are deleted and tags using
   this device as a source will have their sources set to null, making their values static."""
@@ -287,7 +306,8 @@ type Mutation {
     password: String!,
     devices: [Int!]!,
     rate: Int!,
-    encrypt: Boolean!
+    encrypt: Boolean!,
+    primaryHosts: [String!]
   ): Service
   """Requires a valid authorization token. Updates an MQTT Sparkplug B service and restarts the connection."""
   updateMqtt(
@@ -307,6 +327,10 @@ type Mutation {
   addMqttDevice(id: ID!, deviceId: ID!): Service
   """Requires a valid authorization token. Deletes a device from an MQTT service. The tags for the removed device will no longer be published to the broker (but the device and tags will still exist)."""
   deleteMqttDevice(id: ID!, deviceId: ID!): Service
+  """Requires a valid authorization token. Adds a primary host id to monitor (for store & forward)"""
+  addMqttPrimaryHost(id: ID!, name: String): MqttPrimaryHost
+  """Requires a valid authorization token. Deletes a primary host id to monitor (for store & forward)"""
+  deleteMqttPrimaryHost(id: ID!, name: String): MqttPrimaryHost
   """Requires a valid authorization token. Deletes an MQTT Service. All devices assigned to this service will no longer have their tags published."""
   deleteMqtt(id: ID!): Service
 }

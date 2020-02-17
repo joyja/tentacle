@@ -89,5 +89,5 @@ sw.*
 # Vim swap files
 *.swp
 
-# database folder
-/database
+# production database
+/spread-edge.db

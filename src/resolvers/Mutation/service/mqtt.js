@@ -1,9 +1,7 @@
 const { Service, Mqtt, Tag, User } = require('../../../relations')
 
 async function createMqtt(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const createdBy = user.id
   const mqtt = await Mqtt.create(
     args.name,
@@ -17,16 +15,15 @@ async function createMqtt(root, args, context, info) {
     args.devices,
     args.rate,
     args.encrypt,
-    createdBy
+    createdBy,
+    args.primaryHosts ? args.primaryHosts : []
   )
   await mqtt.connect()
   return mqtt.service
 }
 
 async function updateMqtt(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const service = Service.findById(args.id)
   if (service) {
     if (args.name) {
@@ -53,9 +50,6 @@ async function updateMqtt(root, args, context, info) {
     if (args.password) {
       await service.config.setPassword(args.password)
     }
-    if (args.devices) {
-      await service.config.setDevices(args.devices)
-    }
     if (args.rate) {
       await service.config.setRate(args.rate)
     }
@@ -71,9 +65,7 @@ async function updateMqtt(root, args, context, info) {
 }
 
 async function deleteMqtt(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const service = Service.findById(args.id)
   if (service) {
     await service.config.disconnect()
@@ -82,9 +74,41 @@ async function deleteMqtt(root, args, context, info) {
     throw new Error(`Service with id ${args.id} does not exist.`)
   }
 }
+async function addMqttPrimaryHost(root, args, context, info) {
+  const user = await User.getUserFromContext(context)
+  const service = Service.findById(args.id)
+  if (service) {
+    if (service.type === `mqtt`) {
+      return service.config.addPrimaryHost(args.name)
+    } else {
+      throw new Error(
+        `Service with id ${args.id} is not an mqtt service. It's type ${service.type}`
+      )
+    }
+  } else {
+    throw new Error(`Service with id ${args.id} does not exist.`)
+  }
+}
+async function deleteMqttPrimaryHost(root, args, context, info) {
+  const user = await User.getUserFromContext(context)
+  const service = Service.findById(args.id)
+  if (service) {
+    if (service.type === `mqtt`) {
+      return service.config.deletePrimaryHost(args.name)
+    } else {
+      throw new Error(
+        `Service with id ${args.id} is not an mqtt service. It's type ${service.type}`
+      )
+    }
+  } else {
+    throw new Error(`Service with id ${args.id} does not exist.`)
+  }
+}
 
 module.exports = {
   createMqtt,
   updateMqtt,
-  deleteMqtt
+  deleteMqtt,
+  addMqttPrimaryHost,
+  deleteMqttPrimaryHost
 }

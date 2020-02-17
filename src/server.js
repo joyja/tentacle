@@ -9,16 +9,16 @@ const { User, Tag, ScanClass, Device, Service } = require('./relations')
 let db = undefined
 let httpServer = undefined
 let server = undefined
-start = async function(inMemory = false) {
+start = async function(dbFilename) {
   // Create database
-  if (inMemory) {
+  if (dbFilename === `:memory:`) {
     db = new sqlite3.Database(`:memory:`, (error) => {
       if (error) {
         throw error
       }
     })
   } else {
-    db = new sqlite3.cached.Database(`./database/${dbFilename}`, (error) => {
+    db = new sqlite3.cached.Database(`./${dbFilename}`, (error) => {
       if (error) {
         throw error
       }
@@ -41,49 +41,28 @@ start = async function(inMemory = false) {
   })
 
   await new Promise(async (resolve, reject) => {
-    httpServer = await server
-      .start(async () => {
-        const context = server.context()
-        await context.db.get('PRAGMA foreign_keys = ON')
-        //Check for administrator account and initialize one if it doesn't exist.
-        await User.initialize(context.db, context.pubsub).catch((error) => {
-          reject(error)
-          return
-        })
-        await Tag.initialize(context.db, context.pubsub).catch((error) => {
-          reject(error)
-          return
-        })
-        await Device.initialize(context.db, context.pubsub).catch((error) => {
-          reject(error)
-          return
-        })
-        await Service.initialize(context.db, context.pubsub).catch((error) => {
-          reject(error)
-          return
-        })
-        for (device of Device.instances) {
-          await device.config.connect().catch((error) => {
-            reject(error)
-            return
-          })
-        }
-        for (service of Service.instances) {
-          await service.config.connect()
-        }
-        for (scanClass of ScanClass.instances) {
-          await scanClass.startScan()
-        }
-        resolve()
-      })
-      .catch((error) => {
-        throw error
-      })
+    httpServer = await server.start(async () => {
+      const context = server.context()
+      await context.db.get('PRAGMA foreign_keys = ON')
+      //Check for administrator account and initialize one if it doesn't exist.
+      await User.initialize(context.db, context.pubsub)
+      await Tag.initialize(context.db, context.pubsub)
+      await Device.initialize(context.db, context.pubsub)
+      await Service.initialize(context.db, context.pubsub)
+      for (device of Device.instances) {
+        await device.config.connect()
+      }
+      for (service of Service.instances) {
+        await service.config.connect()
+      }
+      for (scanClass of ScanClass.instances) {
+        await scanClass.startScan()
+      }
+      resolve()
+    })
   })
   process.on('SIGINT', async () => {
-    await stop().catch((error) => {
-      throw error
-    })
+    await stop()
   })
 }
 

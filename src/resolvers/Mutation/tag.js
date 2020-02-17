@@ -1,23 +1,15 @@
 const { User, Tag, ScanClass } = require('../../relations')
 
 async function createScanClass(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const createdBy = user.id
-  const scanClass = await ScanClass.create(args.rate, createdBy).catch(
-    (error) => {
-      throw error
-    }
-  )
+  const scanClass = await ScanClass.create(args.rate, createdBy)
   scanClass.startScan()
   return scanClass
 }
 
 async function updateScanClass(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const scanClass = ScanClass.findById(args.id)
   if (scanClass) {
     if (args.rate) {
@@ -32,9 +24,7 @@ async function updateScanClass(root, args, context, info) {
 }
 
 async function deleteScanClass(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const scanClass = ScanClass.findById(args.id)
   if (scanClass) {
     scanClass.stopScan()
@@ -45,9 +35,7 @@ async function deleteScanClass(root, args, context, info) {
 }
 
 async function createTag(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const createdBy = user.id
   const tag = await Tag.create(
     args.name,
@@ -56,16 +44,12 @@ async function createTag(root, args, context, info) {
     args.scanClassId,
     createdBy,
     args.datatype
-  ).catch((error) => {
-    throw error
-  })
+  )
   return tag
 }
 
 async function updateTag(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const tag = Tag.findById(args.id)
   if (tag) {
     if (args.name) {
@@ -87,9 +71,7 @@ async function updateTag(root, args, context, info) {
 }
 
 async function deleteTag(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const tag = Tag.findById(args.id)
   if (tag) {
     return tag.delete()

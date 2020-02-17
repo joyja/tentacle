@@ -7,9 +7,7 @@ const {
 } = require('../../../relations')
 
 async function createEthernetIP(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const createdBy = user.id
   const ethernetip = await EthernetIP.create(
     args.name,
@@ -17,17 +15,13 @@ async function createEthernetIP(root, args, context, info) {
     args.host,
     args.slot,
     createdBy
-  ).catch((error) => {
-    throw error
-  })
+  )
   await ethernetip.connect()
   return ethernetip.device
 }
 
 async function updateEthernetIP(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const device = Device.findById(args.id)
   if (device) {
     if (args.name) {
@@ -51,9 +45,7 @@ async function updateEthernetIP(root, args, context, info) {
 }
 
 async function deleteEthernetIP(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const device = Device.findById(args.id)
   if (device) {
     await device.config.disconnect()
@@ -64,9 +56,7 @@ async function deleteEthernetIP(root, args, context, info) {
 }
 
 async function createEthernetIPSource(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const createdBy = user.id
   const device = Device.findById(args.deviceId)
   const tag = Tag.findById(args.tagId)
@@ -92,14 +82,12 @@ async function createEthernetIPSource(root, args, context, info) {
       )
     }
   } else {
-    throw Error(`There is no device with id ${args.id}`)
+    throw Error(`There is no device with id ${args.deviceId}`)
   }
 }
 
 async function updateEthernetIPSource(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const tag = Tag.findById(args.tagId)
   if (tag) {
     if (args.tagname) {
@@ -112,9 +100,7 @@ async function updateEthernetIPSource(root, args, context, info) {
 }
 
 async function deleteEthernetIPSource(root, args, context, info) {
-  const user = await User.getUserFromContext(context).catch((error) => {
-    throw error
-  })
+  const user = await User.getUserFromContext(context)
   const tag = Tag.findById(args.tagId)
   if (tag) {
     return tag.source.delete()

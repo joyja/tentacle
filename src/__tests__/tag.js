@@ -1,5 +1,12 @@
 const { createTestDb, deleteTestDb } = require('../../test/db')
-const { User, Tag, ScanClass } = require('../relations')
+const {
+  User,
+  Tag,
+  ScanClass,
+  Device,
+  Service,
+  MqttSource
+} = require('../relations')
 const fromUnixTime = require('date-fns/fromUnixTime')
 
 const dbFilename = `test-tag-spread-edge.db`
@@ -53,6 +60,8 @@ describe(`ScanClass:`, () => {
     scanClass.stopScan()
     expect(clearInterval).toHaveBeenCalledTimes(1)
   })
+  test
+
   test(`Getters all return their underscore values`, () => {
     const scanClass = ScanClass.instances[0]
     expect(scanClass.rate).toBe(scanClass._rate)
@@ -123,6 +132,11 @@ describe('Tag:', () => {
     expect(tag.description).toBe(description)
     expect(tag.value).toBe(value)
     expect(tag.datatype).toBe(datatype)
+  })
+  test(`setScanClass with invalid scan class id throws error`, async () => {
+    expect(await tag.setScanClass(12345).catch((e) => e)).toMatchInlineSnapshot(
+      `[Error: Scan Class with 12345 does not exist.]`
+    )
   })
 })
 test(`ScanClass: tags returns the tags we've assigned this scan class to.`, () => {

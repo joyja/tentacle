@@ -1,9 +1,9 @@
 jest.mock('modbus-serial')
 jest.mock('ethernet-ip')
-jest.mock('sparkplug-client')
+jest.mock('tentacle-sparkplug-client')
 const ModbusRTU = require(`modbus-serial`)
 const { Controller } = require(`ethernet-ip`)
-const sparkplug = require(`sparkplug-client`)
+const sparkplug = require(`tentacle-sparkplug-client`)
 const { GraphQLClient, request } = require('graphql-request')
 const { query, mutation } = require('../../test/graphql')
 const { start, stop } = require('../server')
@@ -20,14 +20,18 @@ const mockSparkplug = {
   publishDeviceBirth: jest.fn(),
   publishDeviceData: jest.fn(),
   publishDeviceDeath: jest.fn(),
-  stop: jest.fn()
+  stop: jest.fn(),
+  subscribePrimaryHost: jest.fn()
 }
 
 beforeAll(async () => {
-  await start(true)
+  await start(`:memory:`)
   ModbusRTU.prototype.connectTCP.mockResolvedValue({})
   ModbusRTU.prototype.close.mockImplementation((callback) => {
     callback()
+  })
+  ModbusRTU.prototype.getTimeout.mockImplementation(() => {
+    return 1000
   })
   Controller.prototype.connect.mockResolvedValue({})
   Controller.prototype.destroy.mockImplementation(() => {})
@@ -107,7 +111,7 @@ test('create scan class without authorization headers returns error', async () =
     }
   }`
   expect(await request(host, mutation).catch((e) => e)).toMatchInlineSnapshot(
-    `[Error: Your are not authorized.: {"response":{"data":{"createScanClass":null},"errors":[{"message":"Your are not authorized.","locations":[{"line":2,"column":5}],"path":["createScanClass"]}],"status":200},"request":{"query":"mutation {\\n    createScanClass(name: \\"default\\", rate: 1000) {\\n      id\\n      rate\\n    }\\n  }"}}]`
+    `[Error: You are not authorized.: {"response":{"data":{"createScanClass":null},"errors":[{"message":"You are not authorized.","locations":[{"line":2,"column":5}],"path":["createScanClass"]}],"status":200},"request":{"query":"mutation {\\n    createScanClass(name: \\"default\\", rate: 1000) {\\n      id\\n      rate\\n    }\\n  }"}}]`
   )
 })
 test('scan class query returns a list of scan classes', async () => {
@@ -168,7 +172,7 @@ test('create tag without authorization headers returns error', async () => {
   expect(
     await request(host, mutation.createTag, tagFields).catch((e) => e)
   ).toMatchInlineSnapshot(
-    `[Error: Your are not authorized.: {"response":{"data":{"createTag":null},"errors":[{"message":"Your are not authorized.","locations":[{"line":9,"column":5}],"path":["createTag"]}],"status":200},"request":{"query":"\\n  mutation CreateTag(\\n      $name: String!\\n      $description: String!\\n      $value: String!\\n      $datatype: Datatype!\\n      $scanClassId: ID!\\n    ) {\\n    createTag(\\n      name: $name\\n      description: $description\\n      value: $value\\n      datatype: $datatype\\n      scanClassId: $scanClassId\\n    ) {\\n      ...FullTag\\n    }\\n  }\\n  \\n  fragment FullTag on Tag {\\n    ...ScalarTag\\n    scanClass {\\n      ...ScalarScanClass\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n  \\nfragment ScalarScanClass on ScanClass {\\n  id\\n  rate\\n}\\n\\n\\n","variables":{"name":"aTag","description":"A Description","value":"123","datatype":"FLOAT","scanClassId":"1"}}}]`
+    `[Error: You are not authorized.: {"response":{"data":{"createTag":null},"errors":[{"message":"You are not authorized.","locations":[{"line":9,"column":5}],"path":["createTag"]}],"status":200},"request":{"query":"\\n  mutation CreateTag(\\n      $name: String!\\n      $description: String!\\n      $value: String!\\n      $datatype: Datatype!\\n      $scanClassId: ID!\\n    ) {\\n    createTag(\\n      name: $name\\n      description: $description\\n      value: $value\\n      datatype: $datatype\\n      scanClassId: $scanClassId\\n    ) {\\n      ...FullTag\\n    }\\n  }\\n  \\n  fragment FullTag on Tag {\\n    ...ScalarTag\\n    scanClass {\\n      ...ScalarScanClass\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n  \\nfragment ScalarScanClass on ScanClass {\\n  id\\n  rate\\n}\\n\\n\\n","variables":{"name":"aTag","description":"A Description","value":"123","datatype":"FLOAT","scanClassId":"1"}}}]`
   )
 })
 test('tag query returns a list of tags', async () => {
@@ -179,7 +183,7 @@ test('tag query returns a list of tags', async () => {
 })
 test('tag query without authorization headers returns error', async () => {
   expect(await request(host, query.tags).catch((e) => e)).toMatchInlineSnapshot(
-    `[Error: Your are not authorized.: {"response":{"data":null,"errors":[{"message":"Your are not authorized.","locations":[{"line":3,"column":5}],"path":["tags"]}],"status":200},"request":{"query":"\\n  query Tags {\\n    tags {\\n      ...FullTag\\n    }\\n  }\\n  \\n  fragment FullTag on Tag {\\n    ...ScalarTag\\n    scanClass {\\n      ...ScalarScanClass\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n  \\nfragment ScalarScanClass on ScanClass {\\n  id\\n  rate\\n}\\n\\n\\n"}}]`
+    `[Error: You are not authorized.: {"response":{"data":null,"errors":[{"message":"You are not authorized.","locations":[{"line":3,"column":5}],"path":["tags"]}],"status":200},"request":{"query":"\\n  query Tags {\\n    tags {\\n      ...FullTag\\n    }\\n  }\\n  \\n  fragment FullTag on Tag {\\n    ...ScalarTag\\n    scanClass {\\n      ...ScalarScanClass\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n  \\nfragment ScalarScanClass on ScanClass {\\n  id\\n  rate\\n}\\n\\n\\n"}}]`
   )
 })
 test('updateTag updates the tag values', async () => {
@@ -197,7 +201,7 @@ test('updateTag updates the tag values', async () => {
   expect(
     await request(host, mutation.updateTag, { id: tag.id }).catch((e) => e)
   ).toMatchInlineSnapshot(
-    `[Error: Your are not authorized.: {"response":{"data":{"updateTag":null},"errors":[{"message":"Your are not authorized.","locations":[{"line":7,"column":3}],"path":["updateTag"]}],"status":200},"request":{"query":"mutation UpdateTag(\\n  $id: ID!, \\n  $name: String\\n  $description: String\\n  $value: String\\n) {\\n  updateTag(\\n    id: $id, \\n    name: $name\\n    description: $description\\n    value: $value\\n  ) {\\n    ...FullTag\\n  }\\n}\\n\\n  fragment FullTag on Tag {\\n    ...ScalarTag\\n    scanClass {\\n      ...ScalarScanClass\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n  \\nfragment ScalarScanClass on ScanClass {\\n  id\\n  rate\\n}\\n\\n","variables":{"id":"1"}}}]`
+    `[Error: You are not authorized.: {"response":{"data":{"updateTag":null},"errors":[{"message":"You are not authorized.","locations":[{"line":7,"column":3}],"path":["updateTag"]}],"status":200},"request":{"query":"mutation UpdateTag(\\n  $id: ID!, \\n  $name: String\\n  $description: String\\n  $value: String\\n) {\\n  updateTag(\\n    id: $id, \\n    name: $name\\n    description: $description\\n    value: $value\\n  ) {\\n    ...FullTag\\n  }\\n}\\n\\n  fragment FullTag on Tag {\\n    ...ScalarTag\\n    scanClass {\\n      ...ScalarScanClass\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n  \\nfragment ScalarScanClass on ScanClass {\\n  id\\n  rate\\n}\\n\\n","variables":{"id":"1"}}}]`
   )
 })
 let modbus = undefined
@@ -210,7 +214,8 @@ test('create modbus with the proper headers and fields returns valid results', a
     port: 502,
     reverseBits: true,
     reverseWords: true,
-    zeroBased: true
+    zeroBased: true,
+    timeout: 1000
   }
   const { createModbus } = await client
     .request(mutation.createModbus, modbusFields)
@@ -241,7 +246,7 @@ test('create modbus without authorization headers returns error', async () => {
   expect(
     await request(host, mutation.createModbus, modbusFields).catch((e) => e)
   ).toMatchInlineSnapshot(
-    `[Error: Your are not authorized.: {"response":{"data":{"createModbus":null},"errors":[{"message":"Your are not authorized.","locations":[{"line":10,"column":3}],"path":["createModbus"]}],"status":200},"request":{"query":"mutation CreateModbus (\\n  $name: String!\\n  $description: String!\\n  $host: String!\\n  $port: Int!\\n  $reverseBits: Boolean!\\n  $reverseWords: Boolean!\\n  $zeroBased: Boolean!\\n){\\n  createModbus(\\n    name: $name\\n    description: $description\\n    host: $host\\n    port: $port\\n    reverseBits: $reverseBits\\n    reverseWords: $reverseWords\\n    zeroBased: $zeroBased\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n","variables":{"name":"aModbus","description":"A Modbus","host":"localhost","port":502,"reverseBits":true,"reverseWords":true,"zeroBased":true}}}]`
+    `[Error: You are not authorized.: {"response":{"data":{"createModbus":null},"errors":[{"message":"You are not authorized.","locations":[{"line":11,"column":3}],"path":["createModbus"]}],"status":200},"request":{"query":"mutation CreateModbus (\\n  $name: String!\\n  $description: String!\\n  $host: String!\\n  $port: Int!\\n  $reverseBits: Boolean!\\n  $reverseWords: Boolean!\\n  $zeroBased: Boolean!\\n  $timeout: Int!\\n){\\n  createModbus(\\n    name: $name\\n    description: $description\\n    host: $host\\n    port: $port\\n    reverseBits: $reverseBits\\n    reverseWords: $reverseWords\\n    zeroBased: $zeroBased\\n    timeout: $timeout\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        timeout\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n","variables":{"name":"aModbus","description":"A Modbus","host":"localhost","port":502,"reverseBits":true,"reverseWords":true,"zeroBased":true,"timeout":1000}}}]`
   )
   expect(ModbusRTU.prototype.connectTCP).toBeCalledTimes(0)
   expect(ModbusRTU.prototype.close).toBeCalledTimes(0)
@@ -286,7 +291,7 @@ test('updateModbus without authorization headers returns error', async () => {
       (e) => e
     )
   ).toMatchInlineSnapshot(
-    `[Error: Your are not authorized.: {"response":{"data":{"updateModbus":null},"errors":[{"message":"Your are not authorized.","locations":[{"line":11,"column":3}],"path":["updateModbus"]}],"status":200},"request":{"query":"mutation UpdateModbus (\\n  $id: ID!\\n  $name: String\\n  $description: String\\n  $host: String\\n  $port: Int\\n  $reverseBits: Boolean\\n  $reverseWords: Boolean\\n  $zeroBased: Boolean\\n){\\n  updateModbus(\\n    id: $id\\n    name: $name\\n    description: $description\\n    host: $host\\n    port: $port\\n    reverseBits: $reverseBits\\n    reverseWords: $reverseWords\\n    zeroBased: $zeroBased\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n","variables":{"id":"1"}}}]`
+    `[Error: Variable "$timeout" of required type "Int!" was not provided.: {"response":{"errors":[{"message":"Variable \\"$timeout\\" of required type \\"Int!\\" was not provided.","locations":[{"line":10,"column":3}]}],"status":400},"request":{"query":"mutation UpdateModbus (\\n  $id: ID!\\n  $name: String\\n  $description: String\\n  $host: String\\n  $port: Int\\n  $reverseBits: Boolean\\n  $reverseWords: Boolean\\n  $zeroBased: Boolean\\n  $timeout: Int!\\n){\\n  updateModbus(\\n    id: $id\\n    name: $name\\n    description: $description\\n    host: $host\\n    port: $port\\n    reverseBits: $reverseBits\\n    reverseWords: $reverseWords\\n    zeroBased: $zeroBased\\n    timeout: $timeout\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        timeout\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n","variables":{"id":"1"}}}]`
   )
   expect(ModbusRTU.prototype.connectTCP).toBeCalledTimes(0)
   expect(ModbusRTU.prototype.close).toBeCalledTimes(0)
@@ -331,7 +336,7 @@ test('create ethernetip without authorization headers returns error', async () =
       (e) => e
     )
   ).toMatchInlineSnapshot(
-    `[Error: Your are not authorized.: {"response":{"data":{"createEthernetIP":null},"errors":[{"message":"Your are not authorized.","locations":[{"line":7,"column":3}],"path":["createEthernetIP"]}],"status":200},"request":{"query":"mutation CreateEthernetIP (\\n  $name: String!\\n  $description: String!\\n  $host: String!\\n  $slot: Int!\\n){\\n  createEthernetIP(\\n    name: $name\\n    description: $description\\n    host: $host\\n    slot: $slot\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n","variables":{"name":"aEthernetIP","description":"A EthernetIP","host":"localhost","slot":0}}}]`
+    `[Error: You are not authorized.: {"response":{"data":{"createEthernetIP":null},"errors":[{"message":"You are not authorized.","locations":[{"line":7,"column":3}],"path":["createEthernetIP"]}],"status":200},"request":{"query":"mutation CreateEthernetIP (\\n  $name: String!\\n  $description: String!\\n  $host: String!\\n  $slot: Int!\\n){\\n  createEthernetIP(\\n    name: $name\\n    description: $description\\n    host: $host\\n    slot: $slot\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        timeout\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n","variables":{"name":"aEthernetIP","description":"A EthernetIP","host":"localhost","slot":0}}}]`
   )
   expect(Controller.prototype.connect).toBeCalledTimes(0)
   expect(Controller.prototype.destroy).toBeCalledTimes(0)
@@ -375,7 +380,7 @@ test('updateEthernetIP without authorization headers returns error', async () =>
       (e) => e
     )
   ).toMatchInlineSnapshot(
-    `[Error: Variable "$name" of required type "String!" was not provided.: {"response":{"errors":[{"message":"Variable \\"$name\\" of required type \\"String!\\" was not provided.","locations":[{"line":3,"column":3}]},{"message":"Variable \\"$description\\" of required type \\"String!\\" was not provided.","locations":[{"line":4,"column":3}]},{"message":"Variable \\"$host\\" of required type \\"String!\\" was not provided.","locations":[{"line":5,"column":3}]},{"message":"Variable \\"$slot\\" of required type \\"Int!\\" was not provided.","locations":[{"line":6,"column":3}]}],"status":400},"request":{"query":"mutation UpdateEthernetIP (\\n  $id: ID!\\n  $name: String!\\n  $description: String!\\n  $host: String!\\n  $slot: Int!\\n){\\n  updateEthernetIP(\\n    id: $id\\n    name: $name\\n    description: $description\\n    host: $host\\n    slot: $slot\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n","variables":{"id":"2"}}}]`
+    `[Error: Variable "$name" of required type "String!" was not provided.: {"response":{"errors":[{"message":"Variable \\"$name\\" of required type \\"String!\\" was not provided.","locations":[{"line":3,"column":3}]},{"message":"Variable \\"$description\\" of required type \\"String!\\" was not provided.","locations":[{"line":4,"column":3}]},{"message":"Variable \\"$host\\" of required type \\"String!\\" was not provided.","locations":[{"line":5,"column":3}]},{"message":"Variable \\"$slot\\" of required type \\"Int!\\" was not provided.","locations":[{"line":6,"column":3}]}],"status":400},"request":{"query":"mutation UpdateEthernetIP (\\n  $id: ID!\\n  $name: String!\\n  $description: String!\\n  $host: String!\\n  $slot: Int!\\n){\\n  updateEthernetIP(\\n    id: $id\\n    name: $name\\n    description: $description\\n    host: $host\\n    slot: $slot\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        timeout\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n","variables":{"id":"2"}}}]`
   )
   expect(Controller.prototype.connect).toBeCalledTimes(0)
   expect(Controller.prototype.destroy).toBeCalledTimes(0)
@@ -390,7 +395,7 @@ test('device query without authorization headers returns error', async () => {
   expect(
     await request(host, query.devices).catch((e) => e)
   ).toMatchInlineSnapshot(
-    `[Error: Your are not authorized.: {"response":{"data":null,"errors":[{"message":"Your are not authorized.","locations":[{"line":3,"column":5}],"path":["devices"]}],"status":200},"request":{"query":"\\n  query Devices {\\n    devices {\\n      ...FullDevice\\n    }\\n  }\\n  \\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n\\n"}}]`
+    `[Error: You are not authorized.: {"response":{"data":null,"errors":[{"message":"You are not authorized.","locations":[{"line":3,"column":5}],"path":["devices"]}],"status":200},"request":{"query":"\\n  query Devices {\\n    devices {\\n      ...FullDevice\\n    }\\n  }\\n  \\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        timeout\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n\\n"}}]`
   )
 })
 mqttFields = undefined
@@ -407,7 +412,8 @@ test('create mqtt with the proper headers and fields returns valid results', asy
     password: 'aPassword',
     devices: [1],
     rate: 1000,
-    encrypt: true
+    encrypt: true,
+    primaryHosts: ['aPrimaryHost']
   }
   const { createMqtt } = await client
     .request(mutation.createMqtt, mqttFields)
@@ -416,7 +422,7 @@ test('create mqtt with the proper headers and fields returns valid results', asy
     })
   expect(setInterval).toBeCalledTimes(1)
   expect(clearInterval).toBeCalledTimes(0)
-  expect(mockSparkplug.on).toBeCalledTimes(1)
+  expect(mockSparkplug.on).toBeCalledTimes(7)
   expect(mockSparkplug.publishNodeBirth).toBeCalledTimes(1)
   expect(mockSparkplug.publishDeviceBirth).toBeCalledTimes(1)
   expect(mockSparkplug.publishDeviceDeath).toBeCalledTimes(0)
@@ -426,7 +432,20 @@ test('create mqtt with the proper headers and fields returns valid results', asy
     ..._.pick(mqttFields, ['name', 'description']),
     config: {
       id: '1',
-      ..._.omit(mqttFields, ['name', 'description', 'port', 'devices']),
+      ..._.omit(mqttFields, [
+        'name',
+        'description',
+        'port',
+        'devices',
+        'primaryHosts'
+      ]),
+      primaryHosts: mqttFields.primaryHosts.map((host) => {
+        return {
+          id: expect.any(String),
+          name: host,
+          status: 'UNKNOWN'
+        }
+      }),
       port: `${mqttFields.port}`,
       sources: [
         {
@@ -448,7 +467,7 @@ test('create mqtt without authorization headers returns error', async () => {
   expect(
     await request(host, mutation.createMqtt, mqttFields).catch((e) => e)
   ).toMatchInlineSnapshot(
-    `[Error: Your are not authorized.: {"response":{"data":{"createMqtt":null},"errors":[{"message":"Your are not authorized.","locations":[{"line":14,"column":3}],"path":["createMqtt"]}],"status":200},"request":{"query":"mutation CreateMqtt (\\n    $name: String!\\n    $description: String!\\n    $host: String! \\n    $port: Int!\\n    $group: String!\\n    $node: String!\\n    $username: String!\\n    $password: String!\\n    $devices: [Int!]!\\n    $rate: Int!\\n    $encrypt: Boolean!\\n){\\n  createMqtt(\\n    name: $name\\n    description: $description\\n    host: $host \\n    port: $port\\n    group: $group\\n    node: $node\\n    username: $username\\n    password: $password\\n    devices: $devices\\n    rate: $rate\\n    encrypt: $encrypt\\n  ) {\\n    ... FullService\\n  }\\n}\\n\\n  fragment FullService on Service {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Mqtt {\\n        id\\n        host\\n        port\\n        group\\n        node\\n        username\\n        password\\n        rate\\n        encrypt\\n        sources {\\n          device {\\n            id\\n          }\\n        }\\n      }\\n    }\\n  }\\n","variables":{"name":"aMqtt","description":"A Mqtt","host":"localhost","port":1883,"group":"aGroup","node":"aNode","username":"aUsername","password":"aPassword","devices":[1],"rate":1000,"encrypt":true}}}]`
+    `[Error: You are not authorized.: {"response":{"data":{"createMqtt":null},"errors":[{"message":"You are not authorized.","locations":[{"line":15,"column":3}],"path":["createMqtt"]}],"status":200},"request":{"query":"mutation CreateMqtt (\\n    $name: String!\\n    $description: String!\\n    $host: String! \\n    $port: Int!\\n    $group: String!\\n    $node: String!\\n    $username: String!\\n    $password: String!\\n    $devices: [Int!]!\\n    $rate: Int!\\n    $encrypt: Boolean!\\n    $primaryHosts: [String!]\\n){\\n  createMqtt(\\n    name: $name\\n    description: $description\\n    host: $host \\n    port: $port\\n    group: $group\\n    node: $node\\n    username: $username\\n    password: $password\\n    devices: $devices\\n    rate: $rate\\n    encrypt: $encrypt\\n    primaryHosts: $primaryHosts\\n  ) {\\n    ... FullService\\n  }\\n}\\n\\n  fragment FullService on Service {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Mqtt {\\n        id\\n        host\\n        port\\n        group\\n        node\\n        username\\n        password\\n        rate\\n        encrypt\\n        primaryHosts {\\n          id\\n          name\\n          status\\n        }\\n        sources {\\n          device {\\n            id\\n          }\\n        }\\n      }\\n    }\\n  }\\n","variables":{"name":"aMqtt","description":"A Mqtt","host":"localhost","port":1883,"group":"aGroup","node":"aNode","username":"aUsername","password":"aPassword","devices":[1],"rate":1000,"encrypt":true,"primaryHosts":["aPrimaryHost"]}}}]`
   )
   expect(setInterval).toBeCalledTimes(0)
   expect(clearInterval).toBeCalledTimes(0)
@@ -479,7 +498,7 @@ test('update mqtt with the proper headers and fields returns valid results', asy
     })
   expect(setInterval).toBeCalledTimes(1)
   expect(clearInterval).toBeCalledTimes(1)
-  expect(mockSparkplug.on).toBeCalledTimes(1)
+  expect(mockSparkplug.on).toBeCalledTimes(7)
   expect(mockSparkplug.publishNodeBirth).toBeCalledTimes(1)
   expect(mockSparkplug.publishDeviceBirth).toBeCalledTimes(1)
   expect(mockSparkplug.publishDeviceDeath).toBeCalledTimes(1)
@@ -489,7 +508,14 @@ test('update mqtt with the proper headers and fields returns valid results', asy
     ..._.pick(mqttFields, ['name', 'description']),
     config: {
       id: '1',
-      ..._.omit(mqttFields, ['name', 'description', 'port', 'devices']),
+      ..._.omit(mqttFields, [
+        'name',
+        'description',
+        'port',
+        'devices',
+        'primaryHosts'
+      ]),
+      primaryHosts: mqtt.config.primaryHosts,
       port: `${mqttFields.port}`,
       sources: [
         {
@@ -511,7 +537,7 @@ test('update mqtt without authorization headers returns error', async () => {
   expect(
     await request(host, mutation.updateMqtt, mqttFields).catch((e) => e)
   ).toMatchInlineSnapshot(
-    `[Error: Your are not authorized.: {"response":{"data":{"updateMqtt":null},"errors":[{"message":"Your are not authorized.","locations":[{"line":14,"column":3}],"path":["updateMqtt"]}],"status":200},"request":{"query":"mutation UpdateMqtt (\\n  $id: ID!\\n  $name: String\\n  $description: String\\n  $host: String \\n  $port: Int\\n  $group: String\\n  $node: String\\n  $username: String\\n  $password: String\\n  $rate: Int\\n  $encrypt: Boolean\\n){\\n  updateMqtt(\\n    id: $id\\n    name: $name\\n    description: $description\\n    host: $host \\n    port: $port\\n    group: $group\\n    node: $node\\n    username: $username\\n    password: $password\\n    rate: $rate\\n    encrypt: $encrypt\\n  ) {\\n    ... FullService\\n  }\\n}\\n\\n  fragment FullService on Service {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Mqtt {\\n        id\\n        host\\n        port\\n        group\\n        node\\n        username\\n        password\\n        rate\\n        encrypt\\n        sources {\\n          device {\\n            id\\n          }\\n        }\\n      }\\n    }\\n  }\\n","variables":{"id":"1","name":"anotherMqtt","description":"Another Mqtt","host":"mqtt.jarautomation.io","port":31112,"group":"anotherGroup","node":"anotherNode","username":"anotherUsername","password":"anotherPassword","rate":2000,"encrypt":false}}}]`
+    `[Error: You are not authorized.: {"response":{"data":{"updateMqtt":null},"errors":[{"message":"You are not authorized.","locations":[{"line":14,"column":3}],"path":["updateMqtt"]}],"status":200},"request":{"query":"mutation UpdateMqtt (\\n  $id: ID!\\n  $name: String\\n  $description: String\\n  $host: String \\n  $port: Int\\n  $group: String\\n  $node: String\\n  $username: String\\n  $password: String\\n  $rate: Int\\n  $encrypt: Boolean\\n){\\n  updateMqtt(\\n    id: $id\\n    name: $name\\n    description: $description\\n    host: $host \\n    port: $port\\n    group: $group\\n    node: $node\\n    username: $username\\n    password: $password\\n    rate: $rate\\n    encrypt: $encrypt\\n  ) {\\n    ... FullService\\n  }\\n}\\n\\n  fragment FullService on Service {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Mqtt {\\n        id\\n        host\\n        port\\n        group\\n        node\\n        username\\n        password\\n        rate\\n        encrypt\\n        primaryHosts {\\n          id\\n          name\\n          status\\n        }\\n        sources {\\n          device {\\n            id\\n          }\\n        }\\n      }\\n    }\\n  }\\n","variables":{"id":"1","name":"anotherMqtt","description":"Another Mqtt","host":"mqtt.jarautomation.io","port":31112,"group":"anotherGroup","node":"anotherNode","username":"anotherUsername","password":"anotherPassword","rate":2000,"encrypt":false}}}]`
   )
   expect(setInterval).toBeCalledTimes(0)
   expect(clearInterval).toBeCalledTimes(0)
@@ -536,7 +562,7 @@ test('service query without authorization headers returns error', async () => {
   expect(
     await request(host, query.services).catch((e) => e)
   ).toMatchInlineSnapshot(
-    `[Error: Your are not authorized.: {"response":{"data":null,"errors":[{"message":"Your are not authorized.","locations":[{"line":3,"column":5}],"path":["services"]}],"status":200},"request":{"query":"\\n  query Services {\\n    services {\\n      ...FullService\\n    }\\n  }\\n  \\n  fragment FullService on Service {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Mqtt {\\n        id\\n        host\\n        port\\n        group\\n        node\\n        username\\n        password\\n        rate\\n        encrypt\\n        sources {\\n          device {\\n            id\\n          }\\n        }\\n      }\\n    }\\n  }\\n\\n"}}]`
+    `[Error: You are not authorized.: {"response":{"data":null,"errors":[{"message":"You are not authorized.","locations":[{"line":3,"column":5}],"path":["services"]}],"status":200},"request":{"query":"\\n  query Services {\\n    services {\\n      ...FullService\\n    }\\n  }\\n  \\n  fragment FullService on Service {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Mqtt {\\n        id\\n        host\\n        port\\n        group\\n        node\\n        username\\n        password\\n        rate\\n        encrypt\\n        primaryHosts {\\n          id\\n          name\\n          status\\n        }\\n        sources {\\n          device {\\n            id\\n          }\\n        }\\n      }\\n    }\\n  }\\n\\n"}}]`
   )
   expect(mockSparkplug.on).toBeCalledTimes(0)
   expect(mockSparkplug.publishNodeBirth).toBeCalledTimes(0)
@@ -548,7 +574,7 @@ test('delete service without authorization headers returns error', async () => {
   expect(
     await request(host, mutation.deleteMqtt, { id: mqtt.id }).catch((e) => e)
   ).toMatchInlineSnapshot(
-    `[Error: Your are not authorized.: {"response":{"data":{"deleteMqtt":null},"errors":[{"message":"Your are not authorized.","locations":[{"line":4,"column":3}],"path":["deleteMqtt"]}],"status":200},"request":{"query":"mutation DeleteMqtt (\\n  $id: ID!\\n){\\n  deleteMqtt(\\n    id: $id\\n  ) {\\n    ... FullService\\n  }\\n}\\n\\n  fragment FullService on Service {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Mqtt {\\n        id\\n        host\\n        port\\n        group\\n        node\\n        username\\n        password\\n        rate\\n        encrypt\\n        sources {\\n          device {\\n            id\\n          }\\n        }\\n      }\\n    }\\n  }\\n","variables":{"id":"1"}}}]`
+    `[Error: You are not authorized.: {"response":{"data":{"deleteMqtt":null},"errors":[{"message":"You are not authorized.","locations":[{"line":4,"column":3}],"path":["deleteMqtt"]}],"status":200},"request":{"query":"mutation DeleteMqtt (\\n  $id: ID!\\n){\\n  deleteMqtt(\\n    id: $id\\n  ) {\\n    ... FullService\\n  }\\n}\\n\\n  fragment FullService on Service {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Mqtt {\\n        id\\n        host\\n        port\\n        group\\n        node\\n        username\\n        password\\n        rate\\n        encrypt\\n        primaryHosts {\\n          id\\n          name\\n          status\\n        }\\n        sources {\\n          device {\\n            id\\n          }\\n        }\\n      }\\n    }\\n  }\\n","variables":{"id":"1"}}}]`
   )
 })
 test('delete mqtt with valid arguments and credentials returns deleted service', async () => {
@@ -579,7 +605,7 @@ test('delete modbus without authorization headers returns error', async () => {
       (e) => e
     )
   ).toMatchInlineSnapshot(
-    `[Error: Your are not authorized.: {"response":{"data":{"deleteModbus":null},"errors":[{"message":"Your are not authorized.","locations":[{"line":4,"column":3}],"path":["deleteModbus"]}],"status":200},"request":{"query":"mutation DeleteModbus (\\n  $id: ID!\\n){\\n  deleteModbus(\\n    id: $id\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n","variables":{"id":"1"}}}]`
+    `[Error: You are not authorized.: {"response":{"data":{"deleteModbus":null},"errors":[{"message":"You are not authorized.","locations":[{"line":4,"column":3}],"path":["deleteModbus"]}],"status":200},"request":{"query":"mutation DeleteModbus (\\n  $id: ID!\\n){\\n  deleteModbus(\\n    id: $id\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        timeout\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n","variables":{"id":"1"}}}]`
   )
 })
 test('delete modbus with valid arguments and credentials returns deleted device', async () => {
@@ -605,7 +631,7 @@ test('delete ethernetip without authorization headers returns error', async () =
       (e) => e
     )
   ).toMatchInlineSnapshot(
-    `[Error: Your are not authorized.: {"response":{"data":{"deleteEthernetIP":null},"errors":[{"message":"Your are not authorized.","locations":[{"line":4,"column":3}],"path":["deleteEthernetIP"]}],"status":200},"request":{"query":"mutation DeleteEthernetIP (\\n  $id: ID!\\n){\\n  deleteEthernetIP(\\n    id: $id\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n","variables":{"id":"2"}}}]`
+    `[Error: You are not authorized.: {"response":{"data":{"deleteEthernetIP":null},"errors":[{"message":"You are not authorized.","locations":[{"line":4,"column":3}],"path":["deleteEthernetIP"]}],"status":200},"request":{"query":"mutation DeleteEthernetIP (\\n  $id: ID!\\n){\\n  deleteEthernetIP(\\n    id: $id\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        timeout\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n","variables":{"id":"2"}}}]`
   )
 })
 test('delete ethernetip with valid arguments and credentials returns deleted device', async () => {
@@ -629,7 +655,7 @@ test('delete tag without authorization headers returns error', async () => {
   expect(
     await request(host, mutation.deleteTag, { id: tag.id }).catch((e) => e)
   ).toMatchInlineSnapshot(
-    `[Error: Your are not authorized.: {"response":{"data":{"deleteTag":null},"errors":[{"message":"Your are not authorized.","locations":[{"line":4,"column":3}],"path":["deleteTag"]}],"status":200},"request":{"query":"mutation DeleteTag(\\n  $id: ID!, \\n) {\\n  deleteTag(\\n    id: $id, \\n  ) {\\n    ...FullTag\\n  }\\n}\\n\\n  fragment FullTag on Tag {\\n    ...ScalarTag\\n    scanClass {\\n      ...ScalarScanClass\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n  \\nfragment ScalarScanClass on ScanClass {\\n  id\\n  rate\\n}\\n\\n","variables":{"id":"1"}}}]`
+    `[Error: You are not authorized.: {"response":{"data":{"deleteTag":null},"errors":[{"message":"You are not authorized.","locations":[{"line":4,"column":3}],"path":["deleteTag"]}],"status":200},"request":{"query":"mutation DeleteTag(\\n  $id: ID!, \\n) {\\n  deleteTag(\\n    id: $id, \\n  ) {\\n    ...FullTag\\n  }\\n}\\n\\n  fragment FullTag on Tag {\\n    ...ScalarTag\\n    scanClass {\\n      ...ScalarScanClass\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n  }\\n\\n  \\nfragment ScalarScanClass on ScanClass {\\n  id\\n  rate\\n}\\n\\n","variables":{"id":"1"}}}]`
   )
 })
 test('delete tag with valid arguments and credentials returns deleted device', async () => {
@@ -660,7 +686,7 @@ test('delete scanClass without authorization headers returns error', async () =>
       { id: scanClass.id }
     ).catch((e) => e)
   ).toMatchInlineSnapshot(
-    `[Error: Your are not authorized.: {"response":{"data":{"deleteScanClass":null},"errors":[{"message":"Your are not authorized.","locations":[{"line":2,"column":7}],"path":["deleteScanClass"]}],"status":200},"request":{"query":"mutation DeleteScanClass($id: ID!){\\n      deleteScanClass(id: $id) {\\n        id\\n        rate\\n      }\\n    }","variables":{"id":"1"}}}]`
+    `[Error: You are not authorized.: {"response":{"data":{"deleteScanClass":null},"errors":[{"message":"You are not authorized.","locations":[{"line":2,"column":7}],"path":["deleteScanClass"]}],"status":200},"request":{"query":"mutation DeleteScanClass($id: ID!){\\n      deleteScanClass(id: $id) {\\n        id\\n        rate\\n      }\\n    }","variables":{"id":"1"}}}]`
   )
 })
 test('delete scanClass with valid credentials deletes a scan class', async () => {

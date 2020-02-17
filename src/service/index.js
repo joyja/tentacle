@@ -1,8 +1,9 @@
 const { Service } = require('./service')
-const { Mqtt, MqttSource } = require('./mqtt')
+const { Mqtt, MqttSource, MqttHistory } = require('./mqtt')
 
 module.exports = {
   Service,
   Mqtt,
-  MqttSource
+  MqttSource,
+  MqttHistory
 }

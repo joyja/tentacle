@@ -16,25 +16,19 @@ const {
 } = require('../../relations')
 const fromUnixTime = require('date-fns/fromUnixTime')
 
-const dbFilename = `test-device-spread-edge.db`
 const pubsub = {}
 let db = undefined
 beforeAll(async () => {
-  db = await createTestDb(dbFilename).catch((error) => {
-    throw error
-  })
-  await User.initialize(db, pubsub).catch((error) => {
-    throw error
-  })
-  await Tag.initialize(db, pubsub).catch((error) => {
-    throw error
+  db = await createTestDb()
+  await User.initialize(db, pubsub)
+  await Tag.initialize(db, pubsub)
+  ModbusRTU.prototype.getTimeout.mockImplementation(() => {
+    return 1000
   })
 })
 
 afterAll(async () => {
-  await deleteTestDb(db).catch((error) => {
-    throw error
-  })
+  await deleteTestDb(db)
 })
 
 test(`Initializing Device, also initializes Modbus, ModbusSource and EthernetIP.`, async () => {
@@ -56,6 +50,7 @@ test(`Modbus: create creates a device with modbus config`, async () => {
   const reverseBits = true
   const reverseWords = true
   const zeroBased = true
+  const timeout = 1000
   const createdBy = user.id
   const modbus = await Modbus.create(
     name,
@@ -65,6 +60,7 @@ test(`Modbus: create creates a device with modbus config`, async () => {
     reverseBits,
     reverseWords,
     zeroBased,
+    timeout,
     createdBy
   )
   device = modbus.device
@@ -76,6 +72,7 @@ test(`Modbus: create creates a device with modbus config`, async () => {
   expect(modbus.reverseBits).toBe(reverseBits)
   expect(modbus.reverseWords).toBe(reverseWords)
   expect(modbus.zeroBased).toBe(zeroBased)
+  expect(modbus.timeout).toBe(timeout)
   expect(modbus.device.createdBy.id).toBe(user.id)
 })
 describe(`Device: `, () => {

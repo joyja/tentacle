@@ -37,22 +37,18 @@ class Tag extends Model {
     return this._name
   }
   setName(value) {
-    return this.update(this.id, 'name', value, Tag)
-      .then((result) => (this._name = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'name', value, Tag).then(
+      (result) => (this._name = result)
+    )
   }
   get description() {
     this.checkInit()
     return this._description
   }
   setDescription(value) {
-    return this.update(this.id, 'description', value, Tag)
-      .then((result) => (this._description = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'description', value, Tag).then(
+      (result) => (this._description = result)
+    )
   }
   get value() {
     this.checkInit()
@@ -64,23 +60,9 @@ class Tag extends Model {
   }
   setValue(value) {
     this.checkInit()
-    return this.update(this.id, 'value', value, Tag)
-      .then((result) => (this._value = result))
-      .catch((error) => {
-        throw error
-      })
-  }
-  get datatype() {
-    this.checkInit()
-    return this._datatype
-  }
-  setDatatype(datatype) {
-    this.checkInit()
-    return this.update(this.id, 'datatype', datatype, Tag)
-      .then((result) => (this._value = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'value', value, Tag).then(
+      (result) => (this._value = result)
+    )
   }
   get createdOn() {
     this.checkInit()
@@ -92,11 +74,9 @@ class Tag extends Model {
   }
   setDatatype(datatype) {
     this.checkInit()
-    return this.update(this.id, 'datatype', datatype, Tag)
-      .then((result) => (this._datatype = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'datatype', datatype, Tag).then(
+      (result) => (this._datatype = result)
+    )
   }
 }
 Tag.table = `tag`
@@ -120,10 +100,7 @@ class ScanClass extends Model {
       createdOn,
       createdBy
     }
-    return super.create(fields, ScanClass)
-  }
-  constructor(selector, checkExists = true) {
-    super(selector, ScanClass, checkExists)
+    return super.create(fields)
   }
   async init() {
     const result = await super.init(ScanClass)
@@ -131,15 +108,6 @@ class ScanClass extends Model {
     this._createdBy = result.createdBy
     this._createdOn = result.createdOn
     this.scanCount = 0
-  }
-  async scan() {
-    for (const tag of this.tags) {
-      if (tag.source) {
-        await tag.source.read().catch((error) => {
-          throw error
-        })
-      }
-    }
   }
   startScan() {
     this.interval = setInterval(async () => {
@@ -158,11 +126,9 @@ class ScanClass extends Model {
     return this._rate
   }
   setRate(value) {
-    return this.update(this.id, 'rate', value, ScanClass)
-      .then((result) => (this._rate = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'rate', value, ScanClass).then(
+      (result) => (this._rate = result)
+    )
   }
   get createdOn() {
     this.checkInit()

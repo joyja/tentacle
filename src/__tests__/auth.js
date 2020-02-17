@@ -1,20 +1,17 @@
 const { createTestDb, deleteTestDb } = require('../../test/db')
 const { User } = require('../relations')
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
 const dbFilename = `test-auth-spread-edge.db`
 
 let db = undefined
 beforeAll(async () => {
-  db = await createTestDb(dbFilename).catch((error) => {
-    throw error
-  })
+  db = await createTestDb(dbFilename)
 })
 
 afterAll(async () => {
-  await deleteTestDb(db).catch((error) => {
-    throw error
-  })
+  await deleteTestDb(db)
 })
 
 describe(`User:`, () => {
@@ -68,6 +65,19 @@ describe(`User:`, () => {
     expect(user.username).toBe(`admin`)
     expect(await bcrypt.compare(`password`, user.password)).toBe(true)
   })
+  test(`authorization works with subscription authorization headers.`, async () => {
+    const { token } = await User.login(`admin`, `password`)
+    const context = {
+      connection: {
+        context: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    }
+    const user = await User.getUserFromContext(context)
+    expect(user.username).toBe(`admin`)
+    expect(await bcrypt.compare(`password`, user.password)).toBe(true)
+  })
   test(`init gives us the _username and _password fields.`, async () => {
     const { id, username, password } = User.instances[0]
     User.instances = [] // clear out instances to avoid `instance exists error`
@@ -90,5 +100,52 @@ describe(`User:`, () => {
     expect(await bcrypt.compare(`newPassword`, user.password)).toBe(true)
     await user.setUsername(`admin`)
     await user.setPassword(`password`)
+  })
+  test(`change password with invalid old password throws error.`, async () => {
+    const { token } = await User.login(`admin`, `password`)
+    const context = {
+      request: {
+        headers: {
+          authorization: `Bearer ${token}`
+        }
+      }
+    }
+    expect(
+      await User.changePassword(
+        context,
+        'incorrectPassword',
+        'newPassword'
+      ).catch((e) => e)
+    ).toMatchInlineSnapshot(`[Error: Invalid old password.]`)
+  })
+  test(`change password with valid old password returns valid user.`, async () => {
+    const { token } = await User.login(`admin`, `password`)
+    const context = {
+      request: {
+        headers: {
+          authorization: `Bearer ${token}`
+        }
+      }
+    }
+    const user = await User.changePassword(context, 'password', 'newPassword')
+    expect(await bcrypt.compare(`newPassword`, user.password)).toBe(true)
+  })
+  test(`getUserFromContext without valid token returns an error.`, async () => {
+    const token = jwt.sign(
+      {
+        userId: 123
+      },
+      `aSecret`
+    )
+    const context = {
+      request: {
+        headers: {
+          authorization: `Bearer ${token}`
+        }
+      }
+    }
+    expect(
+      await User.getUserFromContext(context).catch((e) => e)
+    ).toMatchInlineSnapshot(`[Error: You are not authorized.]`)
   })
 })

@@ -2,8 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const sqlite3 = require('sqlite3')
 
-async function createTestDb(filename) {
-  const filePath = path.join(__dirname, '..', 'database', filename)
+async function createTestDb() {
   const db = await new Promise((resolve, reject) => {
     // const database = new sqlite3.cached.Database(
     //   filePath,

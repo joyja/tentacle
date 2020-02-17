@@ -8,16 +8,12 @@ const APP_SECRET =
 
 class User extends Model {
   static async initialize(db, pubsub) {
-    const result = await super.initialize(db, pubsub).catch((error) => {
-      throw error
-    })
+    const result = await super.initialize(db, pubsub)
     const rootUser = User.instances.find((user) => {
       return user.username === `admin`
     })
     if (!rootUser) {
-      await User.create(`admin`, `password`).catch((error) => {
-        throw error
-      })
+      await User.create(`admin`, `password`)
     }
     return result
   }
@@ -56,16 +52,16 @@ class User extends Model {
   }
   static async getUserFromContext(context) {
     const secret = APP_SECRET
-    const errorMessage = `Your are not authorized.`
+    const errorMessage = `You are not authorized.`
     const authorization = context.request
       ? context.request.headers.authorization
       : context.connection.context.Authorization
     if (authorization) {
       const token = authorization.replace('Bearer ', '')
-      const { userId } = await jwt.verify(token, secret)
-      if (userId) {
+      try {
+        const { userId } = jwt.verify(token, secret)
         return User.get(userId)
-      } else {
+      } catch (error) {
         throw new Error(errorMessage)
       }
     } else {
@@ -74,16 +70,12 @@ class User extends Model {
   }
   static async changePassword(context, oldPassword, newPassword) {
     const user = await User.getUserFromContext(context)
-    if (user) {
-      const valid = await bcrypt.compare(oldPassword, user.password)
-      if (!valid) {
-        throw new Error('Invalid old password.')
-      } else {
-        await user.setPassword(newPassword)
-        return user
-      }
+    const valid = await bcrypt.compare(oldPassword, user.password)
+    if (!valid) {
+      throw new Error('Invalid old password.')
     } else {
-      throw new Error('Please login before trying to change your password.')
+      await user.setPassword(newPassword)
+      return user
     }
   }
   async init() {
@@ -96,13 +88,9 @@ class User extends Model {
     return this._username
   }
   setUsername(newValue) {
-    return this.update(this.id, `username`, newValue)
-      .then((result) => {
-        this._username = newValue
-      })
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, `username`, newValue).then((result) => {
+      this._username = newValue
+    })
   }
   get password() {
     this.checkInit()
@@ -110,13 +98,9 @@ class User extends Model {
   }
   async setPassword(newValue) {
     const password = await bcrypt.hash(newValue, 10)
-    return this.update(this.id, `password`, password, User)
-      .then((result) => {
-        this._password = password
-      })
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, `password`, password, User).then((result) => {
+      this._password = password
+    })
   }
 }
 User.table = `user`

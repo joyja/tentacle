@@ -3,18 +3,14 @@ const ModbusRTU = require(`modbus-serial`)
 
 class Modbus extends Model {
   static async initialize(db, pubsub) {
-    await ModbusSource.initialize(db, pubsub).catch((error) => {
-      throw error
-    })
-    return super.initialize(db, pubsub).catch((error) => {
-      throw error
-    })
+    await ModbusSource.initialize(db, pubsub)
+    return super.initialize(db, pubsub)
   }
   static _createModel(fields) {
     return super.create(fields)
   }
   static async delete(selector) {
-    const deleted = super.deldeleteete(selector)
+    const deleted = super.delete(selector)
     ModbusSource.getAll()
     return deleted
   }
@@ -55,8 +51,6 @@ class Modbus extends Model {
       this.client.close(() => {
         resolve()
       })
-    }).catch((error) => {
-      throw error
     })
     this.connected = false
   }
@@ -64,79 +58,55 @@ class Modbus extends Model {
     this.checkInit()
     return this._host
   }
-  createSource(tag, config, createdBy) {
-    if (this.type === `modbus`) {
-      return ModbusSource.create(
-        this.id,
-        tag,
-        config.register,
-        config.registerType
-      )
-    }
-  }
   setHost(value) {
-    return this.update(this.id, 'host', value)
-      .then((result) => (this._host = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'host', value).then(
+      (result) => (this._host = result)
+    )
   }
   get port() {
     this.checkInit()
     return this._port
   }
   setPort(value) {
-    return this.update(this.id, 'port', value)
-      .then((result) => (this._port = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'port', value).then(
+      (result) => (this._port = result)
+    )
   }
   get reverseBits() {
     this.checkInit()
     return Boolean(this._reverseBits)
   }
   setReverseBits(value) {
-    return this.update(this.id, 'reverseBits', value)
-      .then((result) => {
-        this._reverseBits = result
-      })
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'reverseBits', value).then((result) => {
+      this._reverseBits = result
+    })
   }
   get reverseWords() {
     this.checkInit()
     return Boolean(this._reverseWords)
   }
   setReverseWords(value) {
-    return this.update(this.id, 'reverseWords', value)
-      .then((result) => (this._reverseWords = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'reverseWords', value).then(
+      (result) => (this._reverseWords = result)
+    )
   }
   get zeroBased() {
     this.checkInit()
     return Boolean(this._zeroBased)
   }
   setZeroBased(value) {
-    return this.update(this.id, 'zeroBased', value)
-      .then((result) => (this._zeroBased = result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'zeroBased', value).then(
+      (result) => (this._zeroBased = result)
+    )
   }
   get timeout() {
     this.checkInit()
     return this.client.getTimeout()
   }
   setTimeout(value) {
-    return this.update(this.id, 'timeout', value)
-      .then((result) => this.client.setTimeout(result))
-      .catch((error) => {
-        throw error
-      })
+    return this.update(this.id, 'timeout', value).then((result) =>
+      this.client.setTimeout(result)
+    )
   }
   get status() {
     if (this.connected) {
@@ -225,18 +195,11 @@ class ModbusSource extends Model {
                 return
               }
               if (data) {
-                await this.tag
-                  .setValue(this.formatValue(data.data))
-                  .catch((error) => {
-                    reject(error)
-                    return
-                  })
+                await this.tag.setValue(this.formatValue(data.data))
               }
               resolve()
             }
           )
-        }).catch((error) => {
-          throw error
         })
       } else if (this.registerType === 'HOLDING_REGISTER') {
         const quantity = this.format === 'INT16' ? 1 : 2
@@ -255,8 +218,6 @@ class ModbusSource extends Model {
               resolve()
             }
           )
-        }).catch((error) => {
-          throw error
         })
       } else if (this.registerType === 'DISCRETE_INPUT') {
         return new Promise((resolve, reject) => {
@@ -268,16 +229,11 @@ class ModbusSource extends Model {
                 reject(error)
                 return
               } else {
-                await this.tag.setValue(data.data[0]).catch((error) => {
-                  reject(error)
-                  return
-                })
+                await this.tag.setValue(data.data[0])
                 resolve()
               }
             }
           )
-        }).catch((error) => {
-          throw error
         })
       }
     }
@@ -287,18 +243,18 @@ class ModbusSource extends Model {
     return this._register
   }
   setRegister(value) {
-    return this.update(this.id, 'register', value)
-      .then((result) => (this._register = result))
-      .catch((error) => console.error(error))
+    return this.update(this.id, 'register', value).then(
+      (result) => (this._register = result)
+    )
   }
   get registerType() {
     this.checkInit()
     return this._registerType
   }
   setRegisterType(value) {
-    return this.update(this.id, 'registerType', value)
-      .then((result) => (this._registerType = result))
-      .catch((error) => console.error(error))
+    return this.update(this.id, 'registerType', value).then(
+      (result) => (this._registerType = result)
+    )
   }
 }
 ModbusSource.table = `modbusSource`
