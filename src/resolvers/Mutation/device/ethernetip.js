@@ -82,7 +82,7 @@ async function createEthernetIPSource(root, args, context, info) {
       )
     }
   } else {
-    throw Error(`There is no device with id ${args.id}`)
+    throw Error(`There is no device with id ${args.deviceId}`)
   }
 }
 

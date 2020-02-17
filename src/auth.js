@@ -58,10 +58,10 @@ class User extends Model {
       : context.connection.context.Authorization
     if (authorization) {
       const token = authorization.replace('Bearer ', '')
-      const { userId } = await jwt.verify(token, secret)
-      if (userId) {
+      try {
+        const { userId } = jwt.verify(token, secret)
         return User.get(userId)
-      } else {
+      } catch (error) {
         throw new Error(errorMessage)
       }
     } else {
@@ -70,16 +70,12 @@ class User extends Model {
   }
   static async changePassword(context, oldPassword, newPassword) {
     const user = await User.getUserFromContext(context)
-    if (user) {
-      const valid = await bcrypt.compare(oldPassword, user.password)
-      if (!valid) {
-        throw new Error('Invalid old password.')
-      } else {
-        await user.setPassword(newPassword)
-        return user
-      }
+    const valid = await bcrypt.compare(oldPassword, user.password)
+    if (!valid) {
+      throw new Error('Invalid old password.')
     } else {
-      throw new Error('Please login before trying to change your password.')
+      await user.setPassword(newPassword)
+      return user
     }
   }
   async init() {

@@ -364,6 +364,21 @@ describe(`Mutations: `, () => {
     })
     expect(Tag.instances.length).toBe(prevCount)
   })
+  test(`updateTag without args (other than id still completes successfully).`, async () => {
+    prevCount = Tag.instances.length
+    const args = {
+      id: tag.id
+    }
+    updatedTag = await resolvers.Mutation.updateTag(
+      {},
+      args,
+      context,
+      {}
+    ).catch((error) => {
+      throw error
+    })
+    expect(Tag.instances.length).toBe(prevCount)
+  })
   test(`updateTag updates with invalid id throws an error.`, async () => {
     prevCount = Tag.instances.length
     const args = {
@@ -460,6 +475,34 @@ describe(`Mutations: `, () => {
     expect(updatedDevice.config.reversWords).toBe(args.reversWords)
     expect(updatedDevice.config.zeroBased).toBe(args.zeroBased)
   })
+  test(`updateModbus updates a modbus device with the selected settings.`, async () => {
+    prevCount = Modbus.instances.length
+    const args = {
+      id: device.id
+    }
+    const updatedDevice = await resolvers.Mutation.updateModbus(
+      {},
+      args,
+      context,
+      {}
+    ).catch((error) => {
+      throw error
+    })
+    expect(Modbus.instances.length).toBe(prevCount)
+    expect(updatedDevice.id).toBe(args.id)
+  })
+  test(`updateModbus with invalid id throws error.`, async () => {
+    prevCount = Modbus.instances.length
+    const args = {
+      id: 1234567
+    }
+    expect(
+      await resolvers.Mutation.updateModbus({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(`[Error: Device with id 1234567 does not exist.]`)
+    expect(Modbus.instances.length).toBe(prevCount)
+  })
   test(`deleteModbus deletes a modbus device with the selected settings.`, async () => {
     prevCount = Modbus.instances.length
     const args = {
@@ -475,6 +518,18 @@ describe(`Mutations: `, () => {
     })
     expect(Modbus.instances.length).toBe(prevCount - 1)
     expect(deletedDevice.id).toBe(args.id)
+  })
+  test(`deleteModbus with invalid id throws error.`, async () => {
+    prevCount = Modbus.instances.length
+    const args = {
+      id: 1234567
+    }
+    expect(
+      await resolvers.Mutation.deleteModbus({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(`[Error: Device with id 1234567 does not exist.]`)
+    expect(Modbus.instances.length).toBe(prevCount)
   })
   test(`createModbusSource creates a modbus device with the selected settings.`, async () => {
     prevCount = ModbusSource.instances.length
@@ -497,6 +552,63 @@ describe(`Mutations: `, () => {
     expect(modbusSource.tag).toBe(Tag.instances[0])
     expect(modbusSource.register).toBe(args.register)
     expect(modbusSource.registerType).toBe(args.registerType)
+  })
+  test(`Source resolver returns it's parents type`, async () => {
+    expect(await resolvers.Source.__resolveType(modbusSource)).toBe(
+      `ModbusSource`
+    )
+  })
+  test(`createModbusSource creates with invalid tag id throws error.`, async () => {
+    const args = {
+      deviceId: Modbus.instances[0].device.id,
+      tagId: 1234567,
+      register: 12345,
+      registerType: `BOOLEAN`
+    }
+    expect(
+      await resolvers.Mutation.createModbusSource({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(`[Error: There is no tag with id 1234567]`)
+  })
+  test(`createModbusSource creates with invalid device id throws error.`, async () => {
+    const args = {
+      deviceId: 1234567,
+      tagId: Tag.instances[0].id,
+      register: 12345,
+      registerType: `BOOLEAN`
+    }
+    expect(
+      await resolvers.Mutation.createModbusSource({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(`[Error: There is no device with id 1234567]`)
+  })
+  test(`Source resolver returns it's parents type`, async () => {
+    expect(await resolvers.Source.__resolveType(modbusSource)).toBe(
+      `ModbusSource`
+    )
+  })
+  test(`createModbusSource with the id of a service that isn't modbus throws an error.`, async () => {
+    const nonModbusDevice = await Device.create(
+      `aDevice`,
+      `A device`,
+      `notEthernetIP`,
+      User.instances[0].id
+    )
+    const args = {
+      deviceId: nonModbusDevice.id,
+      tagId: Tag.instances[0].id,
+      register: 12345,
+      registerType: `BOOLEAN`
+    }
+    expect(
+      await resolvers.Mutation.createModbusSource({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(
+      `[Error: The device named aDevice is not a modbus device.]`
+    )
   })
   test(`Source resolver returns it's parents type`, async () => {
     expect(await resolvers.Source.__resolveType(modbusSource)).toBe(
@@ -529,6 +641,33 @@ describe(`Mutations: `, () => {
     expect(updatedModbusSource.register).toBe(args.register)
     expect(updatedModbusSource.registerType).toBe(args.registerType)
   })
+  test(`updateModbusSource updates a modbus device with the selected settings.`, async () => {
+    prevCount = ModbusSource.instances.length
+    const args = {
+      tagId: Tag.instances[0].id
+    }
+    const updatedModbusSource = await resolvers.Mutation.updateModbusSource(
+      {},
+      args,
+      context,
+      {}
+    ).catch((error) => {
+      throw error
+    })
+    expect(ModbusSource.instances.length).toBe(prevCount)
+  })
+  test(`updateModbusSource with invalid id throws error.`, async () => {
+    prevCount = Modbus.instances.length
+    const args = {
+      tagId: 1234567
+    }
+    expect(
+      await resolvers.Mutation.updateModbusSource({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(`[Error: Tag with id 1234567 does not exist.]`)
+    expect(Modbus.instances.length).toBe(prevCount)
+  })
   test(`deleteModbusSource deletes a modbus device with the selected settings.`, async () => {
     prevCount = ModbusSource.instances.length
     const args = {
@@ -544,6 +683,18 @@ describe(`Mutations: `, () => {
     })
     expect(ModbusSource.instances.length).toBe(prevCount - 1)
     expect(deletedModbusSource.id).toBe(args.tagId)
+  })
+  test(`deleteModbusSource with invalid id throws error.`, async () => {
+    prevCount = Modbus.instances.length
+    const args = {
+      tagId: 1234567
+    }
+    expect(
+      await resolvers.Mutation.deleteModbusSource({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(`[Error: Tag with id 1234567 does not exist.]`)
+    expect(Modbus.instances.length).toBe(prevCount)
   })
   test(`createEthernetIP creates a ethernetip device with the selected settings.`, async () => {
     prevCount = EthernetIP.instances.length
@@ -591,6 +742,33 @@ describe(`Mutations: `, () => {
     expect(updatedDevice.config.host).toBe(args.host)
     expect(updatedDevice.config.slot)
   })
+  test(`updateEthernetIP without arguments is valid.`, async () => {
+    prevCount = EthernetIP.instances.length
+    const args = {
+      id: device.id
+    }
+    const updatedDevice = await resolvers.Mutation.updateEthernetIP(
+      {},
+      args,
+      context,
+      {}
+    ).catch((error) => {
+      throw error
+    })
+    expect(EthernetIP.instances.length).toBe(prevCount)
+    expect(updatedDevice.id).toBe(args.id)
+  })
+  test(`updateEthernetIP with invalid id throws error.`, async () => {
+    prevCount = EthernetIP.instances.length
+    const args = {
+      id: 1234567
+    }
+    expect(
+      await resolvers.Mutation.updateEthernetIP({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(`[Error: Device with id 1234567 does not exist.]`)
+  })
   test(`deleteEthernetIP deletes a ethernetip device with the selected settings.`, async () => {
     prevCount = EthernetIP.instances.length
     const args = {
@@ -607,7 +785,77 @@ describe(`Mutations: `, () => {
     expect(EthernetIP.instances.length).toBe(prevCount - 1)
     expect(deletedDevice.id).toBe(args.id)
   })
+  test(`deleteEthernetIP with invalid id throws error.`, async () => {
+    prevCount = EthernetIP.instances.length
+    const args = {
+      id: 1234567
+    }
+    expect(
+      await resolvers.Mutation.deleteEthernetIP({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(`[Error: Device with id 1234567 does not exist.]`)
+  })
   let ethernetipSource = undefined
+  test(`createEthernetIPSource with invalid tag ID throws error.`, async () => {
+    prevCount = EthernetIPSource.instances.length
+    const args = {
+      deviceId: EthernetIP.instances[0].device.id,
+      tagId: 1234567,
+      tagname: `Tagname`
+    }
+    expect(
+      await resolvers.Mutation.createEthernetIPSource(
+        {},
+        args,
+        context,
+        {}
+      ).catch((error) => error)
+    ).toMatchInlineSnapshot(`[Error: There is no tag with id 1234567]`)
+    expect(EthernetIPSource.instances.length).toBe(prevCount)
+  })
+  test(`createEthernetIPSource with invalid device ID throws error.`, async () => {
+    prevCount = EthernetIPSource.instances.length
+    const args = {
+      deviceId: 1234567,
+      tagId: Tag.instances[0].id,
+      tagname: `Tagname`
+    }
+    expect(
+      await resolvers.Mutation.createEthernetIPSource(
+        {},
+        args,
+        context,
+        {}
+      ).catch((error) => error)
+    ).toMatchInlineSnapshot(`[Error: There is no device with id 1234567]`)
+    expect(EthernetIPSource.instances.length).toBe(prevCount)
+  })
+  test(`createEthernetIPSource with invalid device ID throws error.`, async () => {
+    prevCount = EthernetIPSource.instances.length
+    const nonEthernetIPDevice = await Device.create(
+      'aDevice',
+      'aDescription',
+      'notEthernetIP',
+      User.instances[0].id
+    )
+    const args = {
+      deviceId: nonEthernetIPDevice.id,
+      tagId: Tag.instances[0].id,
+      tagname: `Tagname`
+    }
+    expect(
+      await resolvers.Mutation.createEthernetIPSource(
+        {},
+        args,
+        context,
+        {}
+      ).catch((error) => error)
+    ).toMatchInlineSnapshot(
+      `[Error: The device named aDevice is not an ethernetip device.]`
+    )
+    expect(EthernetIPSource.instances.length).toBe(prevCount)
+  })
   test(`createEthernetIPSource creates a ethernetip source with the selected settings.`, async () => {
     prevCount = EthernetIPSource.instances.length
     const args = {
@@ -651,6 +899,37 @@ describe(`Mutations: `, () => {
     expect(updatedEthernetIPSource.tag).toBe(Tag.instances[0])
     expect(updatedEthernetIPSource.tagname).toBe(args.tagname)
   })
+  test(`updateEthernetIPSource update without args still works.`, async () => {
+    prevCount = EthernetIPSource.instances.length
+    const args = {
+      tagId: Tag.instances[0].id
+    }
+    const updatedEthernetIPSource = await resolvers.Mutation.updateEthernetIPSource(
+      {},
+      args,
+      context,
+      {}
+    ).catch((error) => {
+      throw error
+    })
+    expect(EthernetIPSource.instances.length).toBe(prevCount)
+    expect(updatedEthernetIPSource.ethernetip.device).toBe(
+      EthernetIP.instances[0].device
+    )
+  })
+  test(`updateEthernetIPSource with invalid id throws error.`, async () => {
+    const args = {
+      id: 1234567
+    }
+    expect(
+      await resolvers.Mutation.updateEthernetIPSource(
+        {},
+        args,
+        context,
+        {}
+      ).catch((error) => error)
+    ).toMatchInlineSnapshot(`[Error: Tag with id 1234567 does not exist.]`)
+  })
   test(`Source resolver returns it's parents type`, async () => {
     expect(await resolvers.Source.__resolveType(ethernetipSource)).toBe(
       `EthernetIPSource`
@@ -676,6 +955,19 @@ describe(`Mutations: `, () => {
     })
     expect(EthernetIPSource.instances.length).toBe(prevCount - 1)
     expect(deletedEthernetIPSource.id).toBe(args.tagId)
+  })
+  test(`deleteEthernetIPSource with invalid id throws error.`, async () => {
+    const args = {
+      id: 1234567
+    }
+    expect(
+      await resolvers.Mutation.deleteEthernetIPSource(
+        {},
+        args,
+        context,
+        {}
+      ).catch((error) => error)
+    ).toMatchInlineSnapshot(`[Error: Tag with id 1234567 does not exist.]`)
   })
   let service = undefined
   test(`createMqtt creates a mqtt service with the selected settings.`, async () => {
@@ -744,6 +1036,141 @@ describe(`Mutations: `, () => {
     expect(updatedService.config.password).toBe(args.password)
     expect(updatedService.config.rate).toBe(args.rate)
   })
+  test(`updateMqtt without args still returns.`, async () => {
+    prevCount = Mqtt.instances.length
+    const args = {
+      id: service.id
+    }
+    const updatedService = await resolvers.Mutation.updateMqtt(
+      {},
+      args,
+      context,
+      {}
+    ).catch((error) => {
+      throw error
+    })
+    expect(Mqtt.instances.length).toBe(prevCount)
+  })
+  test(`updateMqtt with invalid id throws an error.`, async () => {
+    prevCount = Mqtt.instances.length
+    const args = {
+      id: 1234567
+    }
+    expect(
+      await resolvers.Mutation.updateMqtt({}, args, context, {}).catch((e) => e)
+    ).toMatchInlineSnapshot(`[Error: Service with id 1234567 does not exist.]`)
+    expect(Mqtt.instances.length).toBe(prevCount)
+  })
+  test(`addMqttPrimaryHost with invalid id throws error.`, async () => {
+    const prevLength = service.config.primaryHosts.length
+    const args = {
+      id: 1234567,
+      name: 'yetAnotherPrimaryHost'
+    }
+    expect(
+      await resolvers.Mutation.addMqttPrimaryHost({}, args, context, {}).catch(
+        (e) => e
+      )
+    ).toMatchInlineSnapshot(`[Error: Service with id 1234567 does not exist.]`)
+    expect(service.config.primaryHosts.length).toBe(prevLength)
+    expect(
+      service.config.primaryHosts.some((host) => host.name === args.name)
+    ).toBe(false)
+  })
+  test(`addMqttPrimaryHost with valid id adds a primary host.`, async () => {
+    const prevLength = service.config.primaryHosts.length
+    const args = {
+      id: service.id,
+      name: 'yetAnotherPrimaryHost'
+    }
+    await resolvers.Mutation.addMqttPrimaryHost({}, args, context, {})
+    expect(service.config.primaryHosts.length).toBe(prevLength + 1)
+    expect(
+      service.config.primaryHosts.some((host) => host.name === args.name)
+    ).toBe(true)
+  })
+  test(`addMqttPrimaryHost with a service that isn't mqtt throws an error`, async () => {
+    const nonMqttService = await Service.create(
+      'aService',
+      'aDescription',
+      'notMqtt',
+      User.instances[0].id
+    )
+    const args = {
+      id: nonMqttService.id,
+      name: 'yetAnotherPrimaryHost'
+    }
+    expect(
+      await resolvers.Mutation.addMqttPrimaryHost({}, args, context, {}).catch(
+        (e) => e
+      )
+    ).toMatchInlineSnapshot(
+      `[Error: Service with id 2 is not an mqtt service. It's type notMqtt]`
+    )
+  })
+  test(`deleteMqttPrimaryHost with valid id and name deletes a primary host.`, async () => {
+    const prevLength = service.config.primaryHosts.length
+    const args = {
+      id: 1234567,
+      name: 'yetAnotherPrimaryHost'
+    }
+    expect(
+      await resolvers.Mutation.deleteMqttPrimaryHost(
+        {},
+        args,
+        context,
+        {}
+      ).catch((e) => e)
+    ).toMatchInlineSnapshot(`[Error: Service with id 1234567 does not exist.]`)
+    expect(service.config.primaryHosts.length).toBe(prevLength)
+    expect(
+      service.config.primaryHosts.some((host) => host.name === args.name)
+    ).toBe(true)
+  })
+  test(`deleteMqttPrimaryHost with valid id and name deletes a primary host.`, async () => {
+    const prevLength = service.config.primaryHosts.length
+    const args = {
+      id: service.id,
+      name: 'yetAnotherPrimaryHost'
+    }
+    await resolvers.Mutation.deleteMqttPrimaryHost({}, args, context, {})
+    expect(service.config.primaryHosts.length).toBe(prevLength - 1)
+    expect(
+      service.config.primaryHosts.some((host) => host.name === args.name)
+    ).toBe(false)
+  })
+  test(`deleteMqttPrimaryHost with a service that isn't mqtt throws an error`, async () => {
+    const nonMqttService = await Service.create(
+      'aService',
+      'aDescription',
+      'notMqtt',
+      User.instances[0].id
+    )
+    const args = {
+      id: nonMqttService.id,
+      name: 'yetAnotherPrimaryHost'
+    }
+    expect(
+      await resolvers.Mutation.deleteMqttPrimaryHost(
+        {},
+        args,
+        context,
+        {}
+      ).catch((e) => e)
+    ).toMatchInlineSnapshot(
+      `[Error: Service with id 3 is not an mqtt service. It's type notMqtt]`
+    )
+  })
+  test(`updateMqtt with invalid id throws an error.`, async () => {
+    prevCount = Mqtt.instances.length
+    const args = {
+      id: 1234567
+    }
+    expect(
+      await resolvers.Mutation.updateMqtt({}, args, context, {}).catch((e) => e)
+    ).toMatchInlineSnapshot(`[Error: Service with id 1234567 does not exist.]`)
+    expect(Mqtt.instances.length).toBe(prevCount)
+  })
   test(`deleteMqtt deletes a mqtt service with the selected settings.`, async () => {
     prevCount = Mqtt.instances.length
     const args = {
@@ -759,5 +1186,15 @@ describe(`Mutations: `, () => {
     })
     expect(Mqtt.instances.length).toBe(prevCount - 1)
     expect(deletedService.id).toBe(args.id)
+  })
+  test(`deleteMqtt with invalid id throws an error.`, async () => {
+    prevCount = Mqtt.instances.length
+    const args = {
+      id: 1234567
+    }
+    expect(
+      await resolvers.Mutation.deleteMqtt({}, args, context, {}).catch((e) => e)
+    ).toMatchInlineSnapshot(`[Error: Service with id 1234567 does not exist.]`)
+    expect(Mqtt.instances.length).toBe(prevCount)
   })
 })

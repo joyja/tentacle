@@ -107,6 +107,11 @@ const service = `
         password
         rate
         encrypt
+        primaryHosts {
+          id
+          name
+          status
+        }
         sources {
           device {
             id

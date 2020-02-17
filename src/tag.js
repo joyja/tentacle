@@ -64,16 +64,6 @@ class Tag extends Model {
       (result) => (this._value = result)
     )
   }
-  get datatype() {
-    this.checkInit()
-    return this._datatype
-  }
-  setDatatype(datatype) {
-    this.checkInit()
-    return this.update(this.id, 'datatype', datatype, Tag).then(
-      (result) => (this._value = result)
-    )
-  }
   get createdOn() {
     this.checkInit()
     return fromUnixTime(this._createdOn)

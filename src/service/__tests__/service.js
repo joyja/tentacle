@@ -25,8 +25,7 @@ const mockSparkplug = {
   publishDeviceData: jest.fn(),
   publishDeviceDeath: jest.fn(),
   stop: jest.fn(),
-  on: jest.fn(),
-  subscribePrimaryHost: jest.fn()
+  on: jest.fn()
 }
 
 const pubsub = {}

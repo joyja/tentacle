@@ -15,7 +15,8 @@ async function createMqtt(root, args, context, info) {
     args.devices,
     args.rate,
     args.encrypt,
-    createdBy
+    createdBy,
+    args.primaryHosts ? args.primaryHosts : []
   )
   await mqtt.connect()
   return mqtt.service
@@ -48,9 +49,6 @@ async function updateMqtt(root, args, context, info) {
     }
     if (args.password) {
       await service.config.setPassword(args.password)
-    }
-    if (args.devices) {
-      await service.config.setDevices(args.devices)
     }
     if (args.rate) {
       await service.config.setRate(args.rate)

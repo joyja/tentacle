@@ -44,10 +44,13 @@ Object.defineProperties(ScanClass.prototype, {
   }
 })
 
-Tag.prototype.setScanClass = function(id) {
+Tag.prototype.setScanClass = async function(id) {
   const scanClass = ScanClass.findById(id)
   if (scanClass) {
     this.scanClass = scanClass
+    return this.update(this.id, 'scanClass', scanClass.id, Tag).then(
+      (result) => (this._scanClass = result)
+    )
   } else {
     throw Error(`Scan Class with ${id} does not exist.`)
   }

@@ -97,7 +97,7 @@ async function createModbusSource(root, args, context, info) {
       throw Error(`The device named ${device.name} is not a modbus device.`)
     }
   } else {
-    throw Error(`There is no device with id ${args.id}`)
+    throw Error(`There is no device with id ${args.deviceId}`)
   }
 }
 

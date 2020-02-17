@@ -171,6 +171,7 @@ const createMqtt = `mutation CreateMqtt (
     $devices: [Int!]!
     $rate: Int!
     $encrypt: Boolean!
+    $primaryHosts: [String!]
 ){
   createMqtt(
     name: $name
@@ -184,6 +185,7 @@ const createMqtt = `mutation CreateMqtt (
     devices: $devices
     rate: $rate
     encrypt: $encrypt
+    primaryHosts: $primaryHosts
   ) {
     ... FullService
   }

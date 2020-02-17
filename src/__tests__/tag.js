@@ -133,6 +133,11 @@ describe('Tag:', () => {
     expect(tag.value).toBe(value)
     expect(tag.datatype).toBe(datatype)
   })
+  test(`setScanClass with invalid scan class id throws error`, async () => {
+    expect(await tag.setScanClass(12345).catch((e) => e)).toMatchInlineSnapshot(
+      `[Error: Scan Class with 12345 does not exist.]`
+    )
+  })
 })
 test(`ScanClass: tags returns the tags we've assigned this scan class to.`, () => {
   const scanClass = ScanClass.instances[0]
