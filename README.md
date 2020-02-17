@@ -91,6 +91,7 @@ The easiest way is to use [PM2](https://github.com/Unitech/pm2).
     * [Modbus](#modbus)
     * [ModbusSource](#modbussource)
     * [Mqtt](#mqtt)
+    * [MqttPrimaryHost](#mqttprimaryhost)
     * [MqttSource](#mqttsource)
     * [ScanClass](#scanclass)
     * [Service](#service)
@@ -401,6 +402,11 @@ Requires a valid authorization token. Creates a modbus device, and automatically
 <td></td>
 </tr>
 <tr>
+<td colspan="2" align="right" valign="top">timeout</td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>updateModbus</strong></td>
 <td valign="top"><a href="#device">Device</a></td>
 <td>
@@ -447,6 +453,11 @@ Requires a valid authorization token. Updates an existing modbus device and refr
 <tr>
 <td colspan="2" align="right" valign="top">zeroBased</td>
 <td valign="top"><a href="#boolean">Boolean</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">timeout</td>
+<td valign="top"><a href="#int">Int</a></td>
 <td></td>
 </tr>
 <tr>
@@ -731,6 +742,11 @@ Requires a valid authorization token. Creates an MQTT Sparkplug B service (tied 
 <td></td>
 </tr>
 <tr>
+<td colspan="2" align="right" valign="top">primaryHosts</td>
+<td valign="top">[<a href="#string">String</a>!]</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>updateMqtt</strong></td>
 <td valign="top"><a href="#service">Service</a></td>
 <td>
@@ -830,6 +846,44 @@ Requires a valid authorization token. Deletes a device from an MQTT service. The
 <tr>
 <td colspan="2" align="right" valign="top">deviceId</td>
 <td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>addMqttPrimaryHost</strong></td>
+<td valign="top"><a href="#mqttprimaryhost">MqttPrimaryHost</a></td>
+<td>
+
+Requires a valid authorization token. Adds a primary host id to monitor (for store & forward)
+
+</td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">id</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">name</td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>deleteMqttPrimaryHost</strong></td>
+<td valign="top"><a href="#mqttprimaryhost">MqttPrimaryHost</a></td>
+<td>
+
+Requires a valid authorization token. Deletes a primary host id to monitor (for store & forward)
+
+</td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">id</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">name</td>
+<td valign="top"><a href="#string">String</a></td>
 <td></td>
 </tr>
 <tr>
@@ -1134,6 +1188,15 @@ Whether multiregister sources should use the lowest register first (false) or th
 </td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>timeout</strong></td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td>
+
+How long to wait to for connection with the device to complete before throwing an error.
+
+</td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>sources</strong></td>
 <td valign="top">[<a href="#modbussource">ModbusSource</a>!]!</td>
 <td>
@@ -1321,6 +1384,64 @@ True if ssl:// is to be used, otherwise tcp:// will be used.
 
 </td>
 </tr>
+<tr>
+<td colspan="2" valign="top"><strong>primaryHosts</strong></td>
+<td valign="top">[<a href="#mqttprimaryhost">MqttPrimaryHost</a>!]!</td>
+<td>
+
+Primary host IDs. This is used for store and forward to detect if the consumers are online. The gateway will store data if any consumer is offline.
+
+</td>
+</tr>
+</tbody>
+</table>
+
+##### MqttPrimaryHost
+
+MQTT is a service that allows for publishing tag values to an MQTT broker using the sparkplug B specification, which will server data to other subscribing nodes. One broker per service.
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>id</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>name</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td>
+
+Primary Host ID, used to verify primary host state for store and forward
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>status</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td>
+
+UKNOWN before STATE has been received from broker, ONLINE/OFFLINE otherwise, indicating status
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>recordCount</strong></td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td>
+
+Number of historical records stored, awaiting forwarding
+
+</td>
+</tr>
 </tbody>
 </table>
 
@@ -1358,6 +1479,15 @@ MQTT service (broker)
 <td>
 
 Source device. All tags updating their values from this device will be published at the MQTT services configured scan rate.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>recordCount</strong></td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td>
+
+Number of historical records stored, awaiting forwarding
 
 </td>
 </tr>
