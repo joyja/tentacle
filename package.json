@@ -16,7 +16,7 @@
   },
   "main": "src/index.js",
   "author": "",
-  "license": "ISC",
+  "license": "GPL-3.0",
   "devDependencies": {
     "coveralls": "^3.0.9",
     "eslint": "^6.6.0",
