@@ -209,6 +209,8 @@ type AuthPayload {
 
 """Read only queries"""
 type Query {
+  """Gets user based on authentication header and returns relevant data"""
+  user: User
   """Requires a valid authorization token. List of all tags configured in this gateway"""
   tags: [Tag!]!
   """Requires a valid authorization token. ist of all scan classes configured in this gateway"""
