@@ -54,7 +54,7 @@ class Model {
       }
     })
     sql = `${sql});`
-    return executeUpdate(this.db, sql)
+    return this.executeUpdate(sql)
   }
   static async initialize(db, pubsub) {
     this.initialized = true
@@ -117,8 +117,7 @@ class Model {
     )}") VALUES (${Array(Object.keys(fields).length)
       .fill(`?`)
       .join(',')})`
-    const result = await executeUpdate(
-      this.db,
+    const result = await this.executeUpdate(
       sql,
       Object.keys(fields).map((key) => fields[key])
     )
@@ -127,7 +126,7 @@ class Model {
   static async delete(selector) {
     this.checkInitialized()
     const sql = `DELETE FROM ${this.table} WHERE id=?`
-    await executeUpdate(this.db, sql, [selector])
+    await this.executeUpdate(sql, [selector])
     this.instances = this.instances.filter((instance) => {
       return instance._id !== selector
     })
@@ -196,7 +195,7 @@ class Model {
   update(selector, field, value) {
     const sql = `UPDATE ${this.constructor.table} SET "${field}"=? WHERE id=?`
     const params = [value, selector]
-    return executeUpdate(this.db, sql, params).then((result) => value)
+    return this.constructor.executeUpdate(sql, params).then((result) => value)
   }
   async delete() {
     await this.constructor.delete(this.id)
