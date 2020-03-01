@@ -120,7 +120,7 @@ class Tag extends Model {
     this.checkInit()
     return this._min
   }
-  setMin(min) {
+  setMin(value) {
     this.checkInit()
     return this.update(this.id, 'min', value, Tag).then(
       (result) => (this._min = result)

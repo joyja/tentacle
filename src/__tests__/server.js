@@ -193,6 +193,9 @@ test('updateTag updates the tag values', async () => {
   tag.name = 'anotherTag'
   tag.description = 'Another Tag'
   tag.value = '321'
+  tag.max = 500
+  tag.min = 100
+  tag.units = 'tiddlywinks'
   const { updateTag } = await client
     .request(mutation.updateTag, tag)
     .catch((error) => {
@@ -200,11 +203,11 @@ test('updateTag updates the tag values', async () => {
     })
   expect(updateTag).toEqual(tag)
 })
-test('updateTag updates the tag values', async () => {
+test('updateTag without authorization headers throws error', async () => {
   expect(
     await request(host, mutation.updateTag, { id: tag.id }).catch((e) => e)
   ).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":{"updateTag":null},"errors":[{"message":"You are not authorized.","locations":[{"line":7,"column":3}],"path":["updateTag"]}],"status":200},"request":{"query":"mutation UpdateTag(\\n  $id: ID!, \\n  $name: String\\n  $description: String\\n  $value: String\\n) {\\n  updateTag(\\n    id: $id, \\n    name: $name\\n    description: $description\\n    value: $value\\n  ) {\\n    ...FullTag\\n  }\\n}\\n\\n  fragment FullTag on Tag {\\n    ...ScalarTag\\n    scanClass {\\n      ...ScalarScanClass\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    max\\n    min\\n    units\\n  }\\n\\n  \\nfragment ScalarScanClass on ScanClass {\\n  id\\n  rate\\n}\\n\\n","variables":{"id":"1"}}}]`
+    `[Error: You are not authorized.: {"response":{"data":{"updateTag":null},"errors":[{"message":"You are not authorized.","locations":[{"line":10,"column":3}],"path":["updateTag"]}],"status":200},"request":{"query":"mutation UpdateTag(\\n  $id: ID!, \\n  $name: String\\n  $description: String\\n  $value: String\\n  $max: Float\\n  $min: Float\\n  $units: String\\n) {\\n  updateTag(\\n    id: $id, \\n    name: $name\\n    description: $description\\n    value: $value\\n    max: $max\\n    min: $min\\n    units: $units\\n  ) {\\n    ...FullTag\\n  }\\n}\\n\\n  fragment FullTag on Tag {\\n    ...ScalarTag\\n    scanClass {\\n      ...ScalarScanClass\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    max\\n    min\\n    units\\n  }\\n\\n  \\nfragment ScalarScanClass on ScanClass {\\n  id\\n  rate\\n}\\n\\n","variables":{"id":"1"}}}]`
   )
 })
 let modbus = undefined

@@ -32,12 +32,18 @@ const updateTag = `mutation UpdateTag(
   $name: String
   $description: String
   $value: String
+  $max: Float
+  $min: Float
+  $units: String
 ) {
   updateTag(
     id: $id, 
     name: $name
     description: $description
     value: $value
+    max: $max
+    min: $min
+    units: $units
   ) {
     ...FullTag
   }
