@@ -10,7 +10,6 @@ class Tag extends Model {
     if (this.tableExisted && this.version === 0) {
       const newColumns = [
         { colName: 'units', colType: 'TEXT' },
-        { colName: 'quality', colType: 'TEXT' },
         { colName: 'max', colType: 'REAL' },
         { colName: 'min', colType: 'REAL' }
       ]

@@ -5,7 +5,7 @@ const sqlite3 = require('sqlite3').verbose()
 const { GraphQLServer, PubSub } = require('graphql-yoga')
 const resolvers = require('./resolvers')
 const { User, Tag, ScanClass, Device, Service } = require('./relations')
-const { executeUpdate, executeQuery } = require('./database/model')
+const { executeQuery } = require('./database/model')
 const fs = require('fs')
 
 const desiredUserVersion = 1
