@@ -7,7 +7,7 @@ const dbFilename = `test-auth-spread-edge.db`
 
 let db = undefined
 beforeAll(async () => {
-  db = await createTestDb(dbFilename)
+  db = await createTestDb()
 })
 
 afterAll(async () => {

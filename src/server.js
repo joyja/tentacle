@@ -15,9 +15,6 @@ let httpServer = undefined
 let server = undefined
 start = async function(dbFilename) {
   let fileExisted = false
-  if (fs.existsSync(`./${dbFilename}`)) {
-    fileExisted = true
-  }
   // Create database
   if (dbFilename === `:memory:`) {
     db = new sqlite3.Database(`:memory:`, (error) => {
@@ -26,6 +23,9 @@ start = async function(dbFilename) {
       }
     })
   } else {
+    if (fs.existsSync(`./${dbFilename}`)) {
+      fileExisted = true
+    }
     db = new sqlite3.cached.Database(`./${dbFilename}`, (error) => {
       if (error) {
         throw error
@@ -58,7 +58,11 @@ start = async function(dbFilename) {
         [],
         true
       )
-      if (fileExisted && userVersion !== desiredUserVersion) {
+      if (
+        dbFilename !== ':memory:' &&
+        fileExisted &&
+        userVersion !== desiredUserVersion
+      ) {
         fs.copyFileSync(
           `./spread-edge.db`,
           `./spread-edge-backup-${new Date().toISOString()}.db`

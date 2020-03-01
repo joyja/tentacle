@@ -7,6 +7,9 @@ const createTag = `
       $value: String!
       $datatype: Datatype!
       $scanClassId: ID!
+      $max: Float
+      $min: Float
+      $units: String
     ) {
     createTag(
       name: $name
@@ -14,6 +17,9 @@ const createTag = `
       value: $value
       datatype: $datatype
       scanClassId: $scanClassId
+      max: $max
+      min: $min
+      units: $units
     ) {
       ...FullTag
     }
@@ -83,7 +89,7 @@ const updateModbus = `mutation UpdateModbus (
   $reverseBits: Boolean
   $reverseWords: Boolean
   $zeroBased: Boolean
-  $timeout: Int!
+  $timeout: Int
 ){
   updateModbus(
     id: $id
@@ -131,10 +137,10 @@ ${fragment.device}`
 
 const updateEthernetIP = `mutation UpdateEthernetIP (
   $id: ID!
-  $name: String!
-  $description: String!
-  $host: String!
-  $slot: Int!
+  $name: String
+  $description: String
+  $host: String
+  $slot: Int
 ){
   updateEthernetIP(
     id: $id

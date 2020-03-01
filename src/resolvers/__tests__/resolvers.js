@@ -60,7 +60,7 @@ beforeAll(async () => {
   sparkplug.newClient.mockImplementation(() => {
     return mockSparkplug
   })
-  db = await createTestDb(dbFilename).catch((error) => {
+  db = await createTestDb().catch((error) => {
     throw error
   })
   await User.initialize(db, pubsub).catch((error) => {

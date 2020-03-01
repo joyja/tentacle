@@ -10,6 +10,9 @@ const scalarTag = `
       username
     }
     createdOn
+    max
+    min
+    units
   }
 `
 
