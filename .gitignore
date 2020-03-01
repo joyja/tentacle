@@ -90,4 +90,4 @@ sw.*
 *.swp
 
 # production database
-/spread-edge.db
+/spread-edge*.db

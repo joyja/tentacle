@@ -4,9 +4,22 @@ const getUnixTime = require('date-fns/getUnixTime')
 const fromUnixTime = require('date-fns/fromUnixTime')
 
 class Tag extends Model {
-  static initialize(db, pubsub) {
+  static async initialize(db, pubsub) {
     ScanClass.initialize(db, pubsub)
-    return super.initialize(db, pubsub)
+    const result = await super.initialize(db, pubsub)
+    if (this.tableExisted && this.version === 0) {
+      const newColumns = [
+        { colName: 'units', colType: 'TEXT' },
+        { colName: 'quality', colType: 'TEXT' },
+        { colName: 'max', colType: 'REAL' },
+        { colName: 'min', colType: 'REAL' }
+      ]
+      for (const column of newColumns) {
+        let sql = `ALTER TABLE "${this.table}" ADD "${column.colName}" ${column.colType}`
+        await this.executeUpdate(sql)
+      }
+    }
+    return result
   }
   static create(name, description, value, scanClass, createdBy, datatype) {
     const createdOn = getUnixTime(new Date())
@@ -87,7 +100,11 @@ Tag.fields = [
   { colName: 'value', colType: 'TEXT' },
   { colName: 'createdBy', colRef: 'user', onDelete: 'SET NULL' },
   { colName: 'createdOn', colType: 'INTEGER' },
-  { colName: 'datatype', colType: 'TEXT' }
+  { colName: 'datatype', colType: 'TEXT' },
+  { colName: 'units', colType: 'TEXT' },
+  { colName: 'quality', colType: 'TEXT' },
+  { colName: 'max', colType: 'REAL' },
+  { colName: 'min', colType: 'REAL' }
 ]
 Tag.instances = []
 Tag.initialized = false

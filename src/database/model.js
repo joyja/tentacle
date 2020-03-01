@@ -1,13 +1,17 @@
-const executeQuery = function(db, sql, params) {
-  params = typeof params === 'undefined' ? [] : params
+const executeQuery = function(db, sql, params = [], firstRowOnly = false) {
   return new Promise((resolve, reject) => {
-    db.all(sql, params, (error, rows) => {
+    const callback = (error, rows) => {
       if (error) {
         reject(error)
       } else {
         resolve(rows)
       }
-    })
+    }
+    if (firstRowOnly) {
+      db.get(sql, params, callback)
+    } else {
+      db.all(sql, params, callback)
+    }
   })
 }
 
@@ -25,6 +29,12 @@ const executeUpdate = function(db, sql, params) {
 }
 
 class Model {
+  static executeUpdate(sql, params) {
+    return executeUpdate(this.db, sql, params)
+  }
+  static executeQuery(sql, params, firstRowOnly) {
+    return executeQuery(this.db, sql, params, firstRowOnly)
+  }
   static createTable() {
     // fields should be formatted { colName, colType } for typical columns
     // fields should be formatted { colName, colRef, onDelete } for foreign key
@@ -50,6 +60,17 @@ class Model {
     this.initialized = true
     this.db = db
     this.pubsub = pubsub
+    const { user_version } = await executeQuery(
+      db,
+      'PRAGMA user_version',
+      [],
+      true
+    )
+    this.version = user_version
+    let sql = `SELECT name FROM sqlite_master WHERE type='table' AND name=?`
+    let params = [this.table]
+    const result = await this.executeQuery(sql, params, true)
+    this.tableExisted = result ? result.name === this.table : false
     await this.createTable()
     return this.getAll()
   }
