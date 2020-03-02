@@ -2,7 +2,7 @@
 
 [![GitHub](https://img.shields.io/github/license/joyja/tentacle)](https://github.com/joyja/tentacle/blob/master/LICENSE)
 ![Travis (.com)](https://img.shields.io/travis/com/joyja/tentacle)
-[![Coverage Status](https://coveralls.io/repos/github/joyja/tentacle/badge.svg?branch=master)](https://coveralls.io/github/joyja/tentacle?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/joyja/tentacle/badge.svg?branch=master&kill-cache=1)](https://coveralls.io/github/joyja/tentacle?branch=master)
 [![Known Vulnerabilities](https://snyk.io/test/github/joyja/tentacle/badge.svg?targetFile=package.json)](https://snyk.io/test/github/joyja/tentacle?targetFile=package.json)
 
 A nodejs industrial automation edge gateway with a GraphQL API.
