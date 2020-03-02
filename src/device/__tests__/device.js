@@ -264,12 +264,12 @@ describe(`Modbus Source: `, () => {
   test('read with register type INPUT_REGISTER calls readHoldingRegister', async () => {
     ModbusRTU.prototype.readInputRegisters.mockImplementation(
       async (register, quantity, callback) => {
-        await callback()
+        const data = { data: [0, 0] }
+        await callback(undefined, data)
       }
     )
     ModbusSource.instances[0].modbus.connected = true
     await ModbusSource.instances[0].read()
-    // console.log(ModbusRTU.prototype.readInputRegister)
     expect(ModbusRTU.prototype.readInputRegisters).toBeCalledTimes(1)
     expect(ModbusRTU.prototype.readHoldingRegisters).toBeCalledTimes(0)
     expect(ModbusRTU.prototype.readDiscreteInputs).toBeCalledTimes(0)
@@ -277,13 +277,14 @@ describe(`Modbus Source: `, () => {
   test('read with register type HOLDING_REGISTER calls readHoldingRegister', async () => {
     ModbusRTU.prototype.readHoldingRegisters.mockImplementation(
       async (register, quantity, callback) => {
-        await callback()
+        const data = { data: [0, 0] }
+        await callback(undefined, data)
       }
     )
+    ModbusSource.instances[0].tag.setDatatype(`INT32`)
     ModbusSource.instances[0].modbus.connected = true
     await ModbusSource.instances[0].setRegisterType('HOLDING_REGISTER')
     await ModbusSource.instances[0].read()
-    // console.log(ModbusRTU.prototype.readInputRegister)
     expect(ModbusRTU.prototype.readInputRegisters).toBeCalledTimes(0)
     expect(ModbusRTU.prototype.readHoldingRegisters).toBeCalledTimes(1)
     expect(ModbusRTU.prototype.readDiscreteInputs).toBeCalledTimes(0)
@@ -291,13 +292,13 @@ describe(`Modbus Source: `, () => {
   test('read with register type DISCRETE_INPUT calls readDiscreteInputs', async () => {
     ModbusRTU.prototype.readDiscreteInputs.mockImplementation(
       async (register, quantity, callback) => {
-        await callback()
+        const data = { data: [0] }
+        await callback(undefined, data)
       }
     )
     ModbusSource.instances[0].modbus.connected = true
     await ModbusSource.instances[0].setRegisterType('DISCRETE_INPUT')
     await ModbusSource.instances[0].read()
-    // console.log(ModbusRTU.prototype.readInputRegister)
     expect(ModbusRTU.prototype.readInputRegisters).toBeCalledTimes(0)
     expect(ModbusRTU.prototype.readHoldingRegisters).toBeCalledTimes(0)
     expect(ModbusRTU.prototype.readDiscreteInputs).toBeCalledTimes(1)
