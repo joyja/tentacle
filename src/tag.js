@@ -88,9 +88,11 @@ class Tag extends Model {
   }
   setValue(value) {
     this.checkInit()
-    return this.update(this.id, 'value', value, Tag).then(
-      (result) => (this._value = result)
-    )
+    return this.update(this.id, 'value', value, Tag).then((result) => {
+      this._value = result
+      console.log(this.pubsub)
+      this.pubsub.publish('tagUpdate', { tagUpdate: this })
+    })
   }
   get createdOn() {
     this.checkInit()
