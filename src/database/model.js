@@ -138,7 +138,7 @@ class Model {
       return instance.id === parseInt(id)
     })
   }
-  constructor(selector, checkExists = true) {
+  constructor(selector) {
     const Subclass = this.constructor
     Subclass.checkInitialized()
     this.db = Subclass.db
@@ -149,17 +149,15 @@ class Model {
     } else {
       throw new Error('Must provide an id (Type of Number) as selector.')
     }
-    if (checkExists) {
-      const exists = Subclass.instances.some((instance) => {
-        return instance._id === selector
-      })
-      if (!exists) {
-        Subclass.instances.push(this)
-      } else {
-        throw new Error(
-          `A ${Subclass.table} with this id already exists. Use get() method to get the existing instance.`
-        )
-      }
+    const exists = Subclass.instances.some((instance) => {
+      return instance._id === selector
+    })
+    if (!exists) {
+      Subclass.instances.push(this)
+    } else {
+      throw new Error(
+        `A ${Subclass.table} with this id already exists. Use get() method to get the existing instance.`
+      )
     }
   }
   async init() {
