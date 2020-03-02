@@ -166,8 +166,10 @@ class Model {
     try {
       result = await executeQuery(this.db, sql, [this._id])
       if (result.length < 1) {
-        throw new Error(
-          `There is no ${this.constructor.table} with id# ${this._id}.`
+        console.error(
+          new Error(
+            `There is no ${this.constructor.table} with id# ${this._id}.`
+          )
         )
       } else {
         this.initialized = true
