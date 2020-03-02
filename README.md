@@ -103,6 +103,7 @@ The easiest way is to use [PM2](https://github.com/Unitech/pm2).
   * [Scalars](#scalars)
     * [Boolean](#boolean)
     * [DateTime](#datetime)
+    * [Float](#float)
     * [ID](#id)
     * [Int](#int)
     * [String](#string)
@@ -122,6 +123,15 @@ Read only queries
 </tr>
 </thead>
 <tbody>
+<tr>
+<td colspan="2" valign="top"><strong>user</strong></td>
+<td valign="top"><a href="#user">User</a></td>
+<td>
+
+Gets user based on authentication header and returns relevant data
+
+</td>
+</tr>
 <tr>
 <td colspan="2" valign="top"><strong>tags</strong></td>
 <td valign="top">[<a href="#tag">Tag</a>!]!</td>
@@ -310,6 +320,21 @@ Requires a valid authorization token. Creates a new tag
 <td></td>
 </tr>
 <tr>
+<td colspan="2" align="right" valign="top">min</td>
+<td valign="top"><a href="#float">Float</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">max</td>
+<td valign="top"><a href="#float">Float</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">units</td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>updateTag</strong></td>
 <td valign="top"><a href="#tag">Tag</a></td>
 <td>
@@ -341,6 +366,21 @@ Requires a valid authorization token. Updates an existing tag
 <tr>
 <td colspan="2" align="right" valign="top">scanClassId</td>
 <td valign="top"><a href="#id">ID</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">min</td>
+<td valign="top"><a href="#float">Float</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">max</td>
+<td valign="top"><a href="#float">Float</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">units</td>
+<td valign="top"><a href="#string">String</a></td>
 <td></td>
 </tr>
 <tr>
@@ -1701,6 +1741,33 @@ Source from which this tag value is updated.
 
 </td>
 </tr>
+<tr>
+<td colspan="2" valign="top"><strong>max</strong></td>
+<td valign="top"><a href="#float">Float</a></td>
+<td>
+
+Maximum tag value (meant for use if the tag is numeric). Can be used to generate out of range indication and for graphical displays
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>min</strong></td>
+<td valign="top"><a href="#float">Float</a></td>
+<td>
+
+Minimum tag value (meant for use if the tag is numeric). Can be used to generate out of range indication and for graphical displays
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>units</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td>
+
+Engineering units of the tag. Meant to be used for user displays to give context to a numerical value.
+
+</td>
+</tr>
 </tbody>
 </table>
 
@@ -1800,6 +1867,10 @@ The `Boolean` scalar type represents `true` or `false`.
 ##### DateTime
 
 Used to deliver timestamp values.
+
+##### Float
+
+The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).
 
 ##### ID
 
