@@ -5,11 +5,16 @@ const sqlite3 = require('sqlite3').verbose()
 const { GraphQLServer, PubSub } = require('graphql-yoga')
 const resolvers = require('./resolvers')
 const { User, Tag, ScanClass, Device, Service } = require('./relations')
+const { executeQuery } = require('./database/model')
+const fs = require('fs')
+
+const desiredUserVersion = 1
 
 let db = undefined
 let httpServer = undefined
 let server = undefined
 start = async function(dbFilename) {
+  let fileExisted = false
   // Create database
   if (dbFilename === `:memory:`) {
     db = new sqlite3.Database(`:memory:`, (error) => {
@@ -18,6 +23,9 @@ start = async function(dbFilename) {
       }
     })
   } else {
+    if (fs.existsSync(`./${dbFilename}`)) {
+      fileExisted = true
+    }
     db = new sqlite3.cached.Database(`./${dbFilename}`, (error) => {
       if (error) {
         throw error
@@ -43,7 +51,23 @@ start = async function(dbFilename) {
   await new Promise(async (resolve, reject) => {
     httpServer = await server.start(async () => {
       const context = server.context()
-      await context.db.get('PRAGMA foreign_keys = ON')
+      await executeQuery(context.db, 'PRAGMA foreign_keys = ON', [], true)
+      const { user_version: userVersion } = await executeQuery(
+        context.db,
+        'PRAGMA user_version',
+        [],
+        true
+      )
+      if (
+        dbFilename !== ':memory:' &&
+        fileExisted &&
+        userVersion !== desiredUserVersion
+      ) {
+        fs.copyFileSync(
+          `./spread-edge.db`,
+          `./spread-edge-backup-${new Date().toISOString()}.db`
+        )
+      }
       //Check for administrator account and initialize one if it doesn't exist.
       await User.initialize(context.db, context.pubsub)
       await Tag.initialize(context.db, context.pubsub)
@@ -58,6 +82,7 @@ start = async function(dbFilename) {
       for (scanClass of ScanClass.instances) {
         await scanClass.startScan()
       }
+      await context.db.get('PRAGMA user_version = 1')
       resolve()
     })
   })

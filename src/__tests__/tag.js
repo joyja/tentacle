@@ -13,7 +13,7 @@ const dbFilename = `test-tag-spread-edge.db`
 const pubsub = {}
 let db = undefined
 beforeAll(async () => {
-  db = await createTestDb(dbFilename).catch((error) => {
+  db = await createTestDb().catch((error) => {
     throw error
   })
 })

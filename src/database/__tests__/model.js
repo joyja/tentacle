@@ -5,7 +5,7 @@ const dbFilename = `test-model-spread-edge.db`
 
 let db = undefined
 beforeAll(async () => {
-  db = await createTestDb(dbFilename).catch((error) => {
+  db = await createTestDb().catch((error) => {
     throw error
   })
 })

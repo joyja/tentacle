@@ -135,6 +135,12 @@ type Tag {
   createdOn: DateTime!
   """Source from which this tag value is updated."""
   source: Source
+  """Maximum tag value (meant for use if the tag is numeric). Can be used to generate out of range indication and for graphical displays"""
+  max: Float
+  """Minimum tag value (meant for use if the tag is numeric). Can be used to generate out of range indication and for graphical displays"""
+  min: Float
+  """Engineering units of the tag. Meant to be used for user displays to give context to a numerical value."""
+  units: String
 }
 
 """A service makes data available to external services by acting as a server or publishing the data as is done with MQTT."""
@@ -235,9 +241,9 @@ type Mutation {
   """Requires a valid authorization token. Deletes a scan class. Will not be successfully if there are tags currently assigned to this scan class."""
   deleteScanClass(id: ID!): ScanClass
   """Requires a valid authorization token. Creates a new tag"""
-  createTag(name: String!, description: String!, datatype: Datatype!, value: String!, scanClassId: ID!): Tag
+  createTag(name: String!, description: String!, datatype: Datatype!, value: String!, scanClassId: ID!, min: Float, max: Float, units: String): Tag
   """Requires a valid authorization token. Updates an existing tag"""
-  updateTag(id: ID!, name: String, description: String, value: String, scanClassId: ID): Tag
+  updateTag(id: ID!, name: String, description: String, value: String, scanClassId: ID, min: Float, max: Float, units: String): Tag
   """Requires a valid authorization token. Deletes a tag. Will delete any source assigned to this tag, and tag will no longer be scanned."""
   deleteTag(id: ID!): Tag
   """Requires a valid authorization token. Creates a modbus device, and automatically starts a connection."""

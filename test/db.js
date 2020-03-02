@@ -1,20 +1,10 @@
 const fs = require('fs')
 const path = require('path')
 const sqlite3 = require('sqlite3')
+const { executeQuery } = require('../src/database/model')
 
-async function createTestDb() {
+async function createTestDb(user_version = 1) {
   const db = await new Promise((resolve, reject) => {
-    // const database = new sqlite3.cached.Database(
-    //   filePath,
-    //   sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
-    //   (error) => {
-    //     if (error) {
-    //       throw error
-    //     } else {
-    //       resolve(database)
-    //     }
-    //   }
-    // )
     const database = new sqlite3.Database(':memory:', (error) => {
       if (error) {
         throw error
@@ -23,18 +13,8 @@ async function createTestDb() {
       }
     })
   })
-  await new Promise((resolve, reject) => {
-    const database = db
-    database.get('PRAGMA foreign_keys = ON', (error) => {
-      if (error) {
-        throw error
-      } else {
-        resolve()
-      }
-    })
-  }).catch((error) => {
-    throw error
-  })
+  await executeQuery(db, 'PRAGMA foreign_keys = ON')
+  await executeQuery(db, `PRAGMA user_version = ${user_version}`)
   return db
 }
 

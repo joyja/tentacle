@@ -4,11 +4,33 @@ const getUnixTime = require('date-fns/getUnixTime')
 const fromUnixTime = require('date-fns/fromUnixTime')
 
 class Tag extends Model {
-  static initialize(db, pubsub) {
+  static async initialize(db, pubsub) {
     ScanClass.initialize(db, pubsub)
-    return super.initialize(db, pubsub)
+    const result = await super.initialize(db, pubsub)
+    if (this.tableExisted && this.version === 0) {
+      const newColumns = [
+        { colName: 'units', colType: 'TEXT' },
+        { colName: 'max', colType: 'REAL' },
+        { colName: 'min', colType: 'REAL' }
+      ]
+      for (const column of newColumns) {
+        let sql = `ALTER TABLE "${this.table}" ADD "${column.colName}" ${column.colType}`
+        await this.executeUpdate(sql)
+      }
+    }
+    return result
   }
-  static create(name, description, value, scanClass, createdBy, datatype) {
+  static create(
+    name,
+    description,
+    value,
+    scanClass,
+    createdBy,
+    datatype,
+    max,
+    min,
+    units
+  ) {
     const createdOn = getUnixTime(new Date())
     const fields = {
       name,
@@ -17,7 +39,10 @@ class Tag extends Model {
       scanClass,
       createdBy,
       createdOn,
-      datatype
+      datatype,
+      max,
+      min,
+      units
     }
     return super.create(fields, Tag)
   }
@@ -31,6 +56,9 @@ class Tag extends Model {
     this._createdBy = result.createdBy
     this._createdOn = result.createdOn
     this._datatype = result.datatype
+    this._max = result.max
+    this._min = result.min
+    this._units = result.units
   }
   get name() {
     this.checkInit()
@@ -78,6 +106,36 @@ class Tag extends Model {
       (result) => (this._datatype = result)
     )
   }
+  get max() {
+    this.checkInit()
+    return this._max
+  }
+  setMax(value) {
+    this.checkInit()
+    return this.update(this.id, 'max', value, Tag).then(
+      (result) => (this._max = result)
+    )
+  }
+  get min() {
+    this.checkInit()
+    return this._min
+  }
+  setMin(value) {
+    this.checkInit()
+    return this.update(this.id, 'min', value, Tag).then(
+      (result) => (this._min = result)
+    )
+  }
+  get units() {
+    this.checkInit()
+    return this._units
+  }
+  setUnits(value) {
+    this.checkInit()
+    return this.update(this.id, 'units', value, Tag).then(
+      (result) => (this._units = result)
+    )
+  }
 }
 Tag.table = `tag`
 Tag.fields = [
@@ -87,7 +145,11 @@ Tag.fields = [
   { colName: 'value', colType: 'TEXT' },
   { colName: 'createdBy', colRef: 'user', onDelete: 'SET NULL' },
   { colName: 'createdOn', colType: 'INTEGER' },
-  { colName: 'datatype', colType: 'TEXT' }
+  { colName: 'datatype', colType: 'TEXT' },
+  { colName: 'units', colType: 'TEXT' },
+  { colName: 'quality', colType: 'TEXT' },
+  { colName: 'max', colType: 'REAL' },
+  { colName: 'min', colType: 'REAL' }
 ]
 Tag.instances = []
 Tag.initialized = false

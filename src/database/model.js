@@ -1,13 +1,17 @@
-const executeQuery = function(db, sql, params) {
-  params = typeof params === 'undefined' ? [] : params
+const executeQuery = function(db, sql, params = [], firstRowOnly = false) {
   return new Promise((resolve, reject) => {
-    db.all(sql, params, (error, rows) => {
+    const callback = (error, rows) => {
       if (error) {
         reject(error)
       } else {
         resolve(rows)
       }
-    })
+    }
+    if (firstRowOnly) {
+      db.get(sql, params, callback)
+    } else {
+      db.all(sql, params, callback)
+    }
   })
 }
 
@@ -25,6 +29,12 @@ const executeUpdate = function(db, sql, params) {
 }
 
 class Model {
+  static executeUpdate(sql, params) {
+    return executeUpdate(this.db, sql, params)
+  }
+  static executeQuery(sql, params, firstRowOnly) {
+    return executeQuery(this.db, sql, params, firstRowOnly)
+  }
   static createTable() {
     // fields should be formatted { colName, colType } for typical columns
     // fields should be formatted { colName, colRef, onDelete } for foreign key
@@ -44,12 +54,23 @@ class Model {
       }
     })
     sql = `${sql});`
-    return executeUpdate(this.db, sql)
+    return this.executeUpdate(sql)
   }
   static async initialize(db, pubsub) {
     this.initialized = true
     this.db = db
     this.pubsub = pubsub
+    const { user_version } = await executeQuery(
+      db,
+      'PRAGMA user_version',
+      [],
+      true
+    )
+    this.version = user_version
+    let sql = `SELECT name FROM sqlite_master WHERE type='table' AND name=?`
+    let params = [this.table]
+    const result = await this.executeQuery(sql, params, true)
+    this.tableExisted = result ? result.name === this.table : false
     await this.createTable()
     return this.getAll()
   }
@@ -96,8 +117,7 @@ class Model {
     )}") VALUES (${Array(Object.keys(fields).length)
       .fill(`?`)
       .join(',')})`
-    const result = await executeUpdate(
-      this.db,
+    const result = await this.executeUpdate(
       sql,
       Object.keys(fields).map((key) => fields[key])
     )
@@ -106,7 +126,7 @@ class Model {
   static async delete(selector) {
     this.checkInitialized()
     const sql = `DELETE FROM ${this.table} WHERE id=?`
-    await executeUpdate(this.db, sql, [selector])
+    await this.executeUpdate(sql, [selector])
     this.instances = this.instances.filter((instance) => {
       return instance._id !== selector
     })
@@ -118,7 +138,7 @@ class Model {
       return instance.id === parseInt(id)
     })
   }
-  constructor(selector, checkExists = true) {
+  constructor(selector) {
     const Subclass = this.constructor
     Subclass.checkInitialized()
     this.db = Subclass.db
@@ -129,17 +149,15 @@ class Model {
     } else {
       throw new Error('Must provide an id (Type of Number) as selector.')
     }
-    if (checkExists) {
-      const exists = Subclass.instances.some((instance) => {
-        return instance._id === selector
-      })
-      if (!exists) {
-        Subclass.instances.push(this)
-      } else {
-        throw new Error(
-          `A ${Subclass.table} with this id already exists. Use get() method to get the existing instance.`
-        )
-      }
+    const exists = Subclass.instances.some((instance) => {
+      return instance._id === selector
+    })
+    if (!exists) {
+      Subclass.instances.push(this)
+    } else {
+      throw new Error(
+        `A ${Subclass.table} with this id already exists. Use get() method to get the existing instance.`
+      )
     }
   }
   async init() {
@@ -175,7 +193,7 @@ class Model {
   update(selector, field, value) {
     const sql = `UPDATE ${this.constructor.table} SET "${field}"=? WHERE id=?`
     const params = [value, selector]
-    return executeUpdate(this.db, sql, params).then((result) => value)
+    return this.constructor.executeUpdate(sql, params).then((result) => value)
   }
   async delete() {
     await this.constructor.delete(this.id)

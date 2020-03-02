@@ -43,7 +43,10 @@ async function createTag(root, args, context, info) {
     args.value,
     args.scanClassId,
     createdBy,
-    args.datatype
+    args.datatype,
+    args.max,
+    args.min,
+    args.units
   )
   return tag
 }
@@ -63,6 +66,15 @@ async function updateTag(root, args, context, info) {
     }
     if (args.scanClassId) {
       await tag.setScanClass(args.scanClassId)
+    }
+    if (args.min) {
+      await tag.setMin(args.min)
+    }
+    if (args.max) {
+      await tag.setMax(args.max)
+    }
+    if (args.units) {
+      await tag.setUnits(args.units)
     }
     return tag
   } else {
