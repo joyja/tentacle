@@ -90,7 +90,6 @@ class Tag extends Model {
     this.checkInit()
     return this.update(this.id, 'value', value, Tag).then((result) => {
       this._value = result
-      console.log(this.pubsub)
       this.pubsub.publish('tagUpdate', { tagUpdate: this })
     })
   }
