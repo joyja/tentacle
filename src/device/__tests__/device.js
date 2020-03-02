@@ -31,6 +31,10 @@ afterAll(async () => {
   await deleteTestDb(db)
 })
 
+afterEach(async () => {
+  jest.clearAllMocks()
+})
+
 test(`Initializing Device, also initializes Modbus, ModbusSource and EthernetIP.`, async () => {
   await Device.initialize(db, pubsub)
   expect(Device.initialized).toBe(true)
@@ -115,7 +119,7 @@ describe(`Modbus: `, () => {
     const modbusId = device.config.id
     Modbus.instances = []
     modbus = new Modbus(modbusId)
-    expect(ModbusRTU).toHaveBeenCalledTimes(2)
+    expect(ModbusRTU).toHaveBeenCalledTimes(1)
     expect(modbus.client.constructor.name).toBe(`ModbusRTU`)
   })
   test(`check that init sets the appropriate underscore fields.`, async () => {
@@ -257,8 +261,48 @@ describe(`Modbus Source: `, () => {
     expect(modbusSource._registerType).toBe(registerType)
     await ModbusSource.getAll()
   })
+  test('read with register type INPUT_REGISTER calls readHoldingRegister', async () => {
+    ModbusRTU.prototype.readInputRegisters.mockImplementation(
+      async (register, quantity, callback) => {
+        await callback()
+      }
+    )
+    ModbusSource.instances[0].modbus.connected = true
+    await ModbusSource.instances[0].read()
+    // console.log(ModbusRTU.prototype.readInputRegister)
+    expect(ModbusRTU.prototype.readInputRegisters).toBeCalledTimes(1)
+    expect(ModbusRTU.prototype.readHoldingRegisters).toBeCalledTimes(0)
+    expect(ModbusRTU.prototype.readDiscreteInputs).toBeCalledTimes(0)
+  })
+  test('read with register type HOLDING_REGISTER calls readHoldingRegister', async () => {
+    ModbusRTU.prototype.readHoldingRegisters.mockImplementation(
+      async (register, quantity, callback) => {
+        await callback()
+      }
+    )
+    ModbusSource.instances[0].modbus.connected = true
+    await ModbusSource.instances[0].setRegisterType('HOLDING_REGISTER')
+    await ModbusSource.instances[0].read()
+    // console.log(ModbusRTU.prototype.readInputRegister)
+    expect(ModbusRTU.prototype.readInputRegisters).toBeCalledTimes(0)
+    expect(ModbusRTU.prototype.readHoldingRegisters).toBeCalledTimes(1)
+    expect(ModbusRTU.prototype.readDiscreteInputs).toBeCalledTimes(0)
+  })
+  test('read with register type DISCRETE_INPUT calls readDiscreteInputs', async () => {
+    ModbusRTU.prototype.readDiscreteInputs.mockImplementation(
+      async (register, quantity, callback) => {
+        await callback()
+      }
+    )
+    ModbusSource.instances[0].modbus.connected = true
+    await ModbusSource.instances[0].setRegisterType('DISCRETE_INPUT')
+    await ModbusSource.instances[0].read()
+    // console.log(ModbusRTU.prototype.readInputRegister)
+    expect(ModbusRTU.prototype.readInputRegisters).toBeCalledTimes(0)
+    expect(ModbusRTU.prototype.readHoldingRegisters).toBeCalledTimes(0)
+    expect(ModbusRTU.prototype.readDiscreteInputs).toBeCalledTimes(1)
+  })
   test.todo(`Test formatValue`)
-  test.todo(`Test read`)
   test(`Getters all return their underscore values`, () => {
     expect(modbusSource.register).toBe(modbusSource._register)
     expect(modbusSource.registerType).toBe(modbusSource._registerType)

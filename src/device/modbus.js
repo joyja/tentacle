@@ -229,7 +229,9 @@ class ModbusSource extends Model {
                 reject(error)
                 return
               } else {
-                await this.tag.setValue(data.data[0])
+                if (data) {
+                  await this.tag.setValue(data.data[0])
+                }
                 resolve()
               }
             }
