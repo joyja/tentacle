@@ -86,6 +86,21 @@ test('login with default username/password returns appropriate results.', async 
     }
   })
 })
+test('user query returns currently logged in user', async () => {
+  const query = `query {
+    user {
+      id
+      username
+    }
+  }`
+  const { user } = await client.request(query).catch((error) => {
+    throw error
+  })
+  expect(user).toEqual({
+    id: '1',
+    username: 'admin'
+  })
+})
 let scanClass = undefined
 test('create scan class with the proper headers and fields returns valid results', async () => {
   const mutation = `mutation {
