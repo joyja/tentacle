@@ -119,6 +119,7 @@ class Model {
       .join(',')})`
     if (this.name === 'MqttPrimaryHostHistory') {
       console.log(sql)
+      console.log(Object.keys(fields).map((key) => fields[key]))
     }
     const result = await this.executeUpdate(
       sql,
