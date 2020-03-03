@@ -117,10 +117,16 @@ class Model {
     )}") VALUES (${Array(Object.keys(fields).length)
       .fill(`?`)
       .join(',')})`
+    if (typeof this === 'mqttPrimaryHostHistory') {
+      console.log(sql)
+    }
     const result = await this.executeUpdate(
       sql,
       Object.keys(fields).map((key) => fields[key])
     )
+    if (typeof this === 'mqttPrimaryHostHistory') {
+      console.log(result)
+    }
     return this.get(result.lastID, false)
   }
   static async delete(selector) {
