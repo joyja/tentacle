@@ -81,7 +81,7 @@ class Model {
       )
     }
   }
-  static async get(selector, ignoreExisting = false) {
+  static async get(selector, ignoreExisting = false, createResults) {
     this.checkInitialized()
     let model = this.instances.find((instance) => {
       if (!ignoreExisting) {
@@ -94,6 +94,7 @@ class Model {
     })
     if (!model) {
       model = new this(selector)
+      model.createResults = createResults
       await model.init(this)
     }
     return model
@@ -117,18 +118,14 @@ class Model {
     )}") VALUES (${Array(Object.keys(fields).length)
       .fill(`?`)
       .join(',')})`
-    if (this.name === 'MqttPrimaryHostHistory') {
-      console.log(sql)
-      console.log(Object.keys(fields).map((key) => fields[key]))
-    }
-    const result = await this.executeUpdate(
+    const params = Object.keys(fields).map((key) => fields[key])
+    const result = await this.executeUpdate(sql, params)
+    const createResults = {
       sql,
-      Object.keys(fields).map((key) => fields[key])
-    )
-    if (this.name === 'MqttPrimaryHostHistory') {
-      console.log(result)
+      params,
+      result
     }
-    return this.get(result.lastID, false)
+    return this.get(result.lastID, false, createResults)
   }
   static async delete(selector) {
     this.checkInitialized()
@@ -187,6 +184,7 @@ class Model {
         }
       )
       console.error(error)
+      console.log(createResults)
     }
     return result[0]
   }
