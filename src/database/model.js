@@ -184,7 +184,7 @@ class Model {
         }
       )
       console.error(error)
-      console.log(createResults)
+      console.log(this.createResults)
     }
     return result[0]
   }
