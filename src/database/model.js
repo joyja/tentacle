@@ -117,15 +117,14 @@ class Model {
     )}") VALUES (${Array(Object.keys(fields).length)
       .fill(`?`)
       .join(',')})`
-    console.log(typeof this)
-    if (typeof this === 'MqttPrimaryHostHistory') {
+    if (this.name === 'MqttPrimaryHostHistory') {
       console.log(sql)
     }
     const result = await this.executeUpdate(
       sql,
       Object.keys(fields).map((key) => fields[key])
     )
-    if (typeof this === 'MqttPrimaryHostHistory') {
+    if (this.name === 'MqttPrimaryHostHistory') {
       console.log(result)
     }
     return this.get(result.lastID, false)
