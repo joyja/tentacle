@@ -117,6 +117,7 @@ class Model {
     )}") VALUES (${Array(Object.keys(fields).length)
       .fill(`?`)
       .join(',')})`
+    console.log(typeof this)
     if (typeof this === 'MqttPrimaryHostHistory') {
       console.log(sql)
     }
