@@ -461,8 +461,12 @@ class MqttPrimaryHostHistory extends Model {
   }
   async init() {
     const result = await super.init()
-    this._mqttPrimaryHost = result.mqttPrimaryHost
-    this._mqttHistory = result.mqttHistory
+    try {
+      this._mqttPrimaryHost = result.mqttPrimaryHost
+      this._mqttHistory = result.mqttHistory
+    } catch (error) {
+      console.log(error)
+    }
   }
 }
 MqttPrimaryHostHistory.table = `mqttPrimaryHostHistory`
