@@ -113,19 +113,23 @@ class Model {
   }
   static async create(fields, postquery) {
     this.checkInitialized()
-    const sql = `INSERT INTO ${this.table} ("${Object.keys(fields).join(
-      `","`
-    )}") VALUES (${Array(Object.keys(fields).length)
-      .fill(`?`)
-      .join(',')})`
-    const params = Object.keys(fields).map((key) => fields[key])
-    const result = await this.executeUpdate(sql, params)
-    const createResults = {
-      sql,
-      params,
-      result
-    }
-    return this.get(result.lastID, false, createResults)
+    return new Promise((resolve, reject) => {
+      this.db.serialize(async () => {
+        const sql = `INSERT INTO ${this.table} ("${Object.keys(fields).join(
+          `","`
+        )}") VALUES (${Array(Object.keys(fields).length)
+          .fill(`?`)
+          .join(',')})`
+        const params = Object.keys(fields).map((key) => fields[key])
+        const result = await this.executeUpdate(sql, params)
+        const createResults = {
+          sql,
+          params,
+          result
+        }
+        resolve(await this.get(result.lastID, false, createResults))
+      })
+    })
   }
   static async delete(selector) {
     this.checkInitialized()
