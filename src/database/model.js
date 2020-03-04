@@ -188,7 +188,7 @@ class Model {
           return instance._id !== this._id
         }
       )
-      this.errors.append(error)
+      this.errors.push(error)
     }
     return result[0]
   }
