@@ -152,6 +152,7 @@ class Model {
     this.db = Subclass.db
     this.pubsub = Subclass.pubsub
     this.initialized = false
+    this.errors = []
     if (typeof selector === 'number') {
       this._id = selector
     } else {
@@ -171,14 +172,23 @@ class Model {
   async init() {
     const sql = `SELECT * FROM ${this.constructor.table} WHERE id=?`
     let result
-    result = await executeQuery(this.db, sql, [this._id])
-    if (result.length < 1) {
-      throw new Error(
-        `There is no ${this.constructor.table} with id# ${this._id}.`
+    try {
+      result = await executeQuery(this.db, sql, [this._id])
+      if (result.length < 1) {
+        throw new Error(
+          `There is no ${this.constructor.table} with id# ${this._id}.`
+        )
+      } else {
+        this.initialized = true
+        this._id = result[0].id
+      }
+    } catch (error) {
+      this.constructor.instances = this.constructor.instances.filter(
+        (instance) => {
+          return instance._id !== this._id
+        }
       )
-    } else {
-      this.initialized = true
-      this._id = result[0].id
+      this.errors.append(error)
     }
     return result[0]
   }
