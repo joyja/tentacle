@@ -342,3 +342,7 @@ type Mutation {
   """Requires a valid authorization token. Deletes an MQTT Service. All devices assigned to this service will no longer have their tags published."""
   deleteMqtt(id: ID!): Service
 }
+
+type Subscription {
+  tagUpdate: Tag
+}

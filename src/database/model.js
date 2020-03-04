@@ -81,12 +81,12 @@ class Model {
       )
     }
   }
-  static async get(selector, ignoreExisting = false) {
+  static async get(selector, ignoreExisting = false, createResults) {
     this.checkInitialized()
     let model = this.instances.find((instance) => {
       if (!ignoreExisting) {
         if (typeof selector === 'number') {
-          return instance.id === selector
+          return instance._id === selector
         } else {
           throw new Error('Must provide an id (Type of Number) as selector.')
         }
@@ -94,6 +94,7 @@ class Model {
     })
     if (!model) {
       model = new this(selector)
+      model.createResults = createResults
       await model.init(this)
     }
     return model
@@ -112,16 +113,23 @@ class Model {
   }
   static async create(fields, postquery) {
     this.checkInitialized()
-    const sql = `INSERT INTO ${this.table} ("${Object.keys(fields).join(
-      `","`
-    )}") VALUES (${Array(Object.keys(fields).length)
-      .fill(`?`)
-      .join(',')})`
-    const result = await this.executeUpdate(
-      sql,
-      Object.keys(fields).map((key) => fields[key])
-    )
-    return this.get(result.lastID, false)
+    return new Promise((resolve, reject) => {
+      this.db.serialize(async () => {
+        const sql = `INSERT INTO ${this.table} ("${Object.keys(fields).join(
+          `","`
+        )}") VALUES (${Array(Object.keys(fields).length)
+          .fill(`?`)
+          .join(',')})`
+        const params = Object.keys(fields).map((key) => fields[key])
+        const result = await this.executeUpdate(sql, params)
+        const createResults = {
+          sql,
+          params,
+          result
+        }
+        resolve(await this.get(result.lastID, false, createResults))
+      })
+    })
   }
   static async delete(selector) {
     this.checkInitialized()
@@ -144,6 +152,7 @@ class Model {
     this.db = Subclass.db
     this.pubsub = Subclass.pubsub
     this.initialized = false
+    this.errors = []
     if (typeof selector === 'number') {
       this._id = selector
     } else {
@@ -179,7 +188,7 @@ class Model {
           return instance._id !== this._id
         }
       )
-      throw error
+      this.errors.push(error)
     }
     return result[0]
   }
