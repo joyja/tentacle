@@ -86,7 +86,7 @@ class Model {
     let model = this.instances.find((instance) => {
       if (!ignoreExisting) {
         if (typeof selector === 'number') {
-          return instance.id === selector
+          return instance._id === selector
         } else {
           throw new Error('Must provide an id (Type of Number) as selector.')
         }
