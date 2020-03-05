@@ -465,7 +465,7 @@ class MqttPrimaryHostHistory extends Model {
       this._mqttPrimaryHost = result.mqttPrimaryHost
       this._mqttHistory = result.mqttHistory
     } catch (error) {
-      console.log(error)
+      this.errors.push(error)
     }
   }
 }
