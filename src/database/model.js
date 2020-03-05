@@ -83,16 +83,19 @@ class Model {
   }
   static async get(selector, ignoreExisting = false, createResults) {
     this.checkInitialized()
-    let model = this.instances.find((instance) => {
-      if (!ignoreExisting) {
-        if (typeof selector === 'number') {
-          return instance._id === selector
-        } else {
-          throw new Error('Must provide an id (Type of Number) as selector.')
+    let model = undefined
+    if (!this.cold) {
+      model = this.instances.find((instance) => {
+        if (!ignoreExisting) {
+          if (typeof selector === 'number') {
+            return instance._id === selector
+          } else {
+            throw new Error('Must provide an id (Type of Number) as selector.')
+          }
         }
-      }
-    })
-    if (!model) {
+      })
+    }
+    if (!model || this.cold) {
       model = new this(selector)
       model.createResults = createResults
       await model.init(this)
@@ -104,12 +107,15 @@ class Model {
     let sql = `SELECT id FROM ${this.table}`
     this.instances = []
     const result = await executeQuery(this.db, sql)
-    this.instances = await Promise.all(
+    const instances = await Promise.all(
       result.map((row) => {
         return this.get(row.id, true)
       })
     )
-    return this.instances
+    if (!this.cold) {
+      this.instances = instances
+    }
+    return instances
   }
   static async create(fields, postquery) {
     this.checkInitialized()
@@ -158,15 +164,19 @@ class Model {
     } else {
       throw new Error('Must provide an id (Type of Number) as selector.')
     }
-    const exists = Subclass.instances.some((instance) => {
-      return instance._id === selector
-    })
-    if (!exists) {
-      Subclass.instances.push(this)
-    } else {
-      throw new Error(
-        `A ${Subclass.table} with this id already exists. Use get() method to get the existing instance.`
-      )
+    if (!Subclass.cold) {
+      const exists = Subclass.instances.some((instance) => {
+        return instance._id === selector
+      })
+      if (!exists) {
+        Subclass.instances.push(this)
+      } else {
+        logger.error(
+          new Error(
+            `A ${Subclass.table} with this id already exists. Use get() method to get the existing instance.`
+          )
+        )
+      }
     }
   }
   async init() {
@@ -183,11 +193,13 @@ class Model {
         this._id = result[0].id
       }
     } catch (error) {
-      this.constructor.instances = this.constructor.instances.filter(
-        (instance) => {
-          return instance._id !== this._id
-        }
-      )
+      if (!this.constructor.cold) {
+        this.constructor.instances = this.constructor.instances.filter(
+          (instance) => {
+            return instance._id !== this._id
+          }
+        )
+      }
       this.errors.push(error)
     }
     return result[0]

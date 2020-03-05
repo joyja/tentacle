@@ -52,6 +52,7 @@
     "sparkplug-client": "^3.2.2",
     "sparkplug-client-jar": "^3.2.2",
     "sqlite3": "^4.1.1",
-    "tentacle-sparkplug-client": "0.0.2"
+    "tentacle-sparkplug-client": "0.0.2",
+    "winston": "^3.2.1"
   }
 }
