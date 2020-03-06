@@ -156,9 +156,11 @@ Tag.instances = []
 Tag.initialized = false
 
 class ScanClass extends Model {
-  static create(rate, createdBy) {
+  static create(name, description, rate, createdBy) {
     const createdOn = getUnixTime(new Date())
     const fields = {
+      name,
+      description,
       rate,
       createdOn,
       createdBy
@@ -167,6 +169,8 @@ class ScanClass extends Model {
   }
   async init() {
     const result = await super.init(ScanClass)
+    this._name = result.name
+    this._description = result.description
     this._rate = result.rate
     this._createdBy = result.createdBy
     this._createdOn = result.createdOn
@@ -193,6 +197,24 @@ class ScanClass extends Model {
       (result) => (this._rate = result)
     )
   }
+  get name() {
+    this.checkInit()
+    return this._name
+  }
+  setName(value) {
+    return this.update(this.id, 'name', value, ScanClass).then(
+      (result) => (this._name = result)
+    )
+  }
+  get description() {
+    this.checkInit()
+    return this._description
+  }
+  setDescription(value) {
+    return this.update(this.id, 'description', value, ScanClass).then(
+      (result) => (this._description = result)
+    )
+  }
   get createdOn() {
     this.checkInit()
     return fromUnixTime(this._createdOn)
@@ -200,6 +222,8 @@ class ScanClass extends Model {
 }
 ScanClass.table = `scanClass`
 ScanClass.fields = [
+  { colName: 'name', colType: 'TEXT' },
+  { colName: 'description', colType: 'TEXT' },
   { colName: 'rate', colType: 'INTEGER' },
   { colName: 'createdBy', colRef: 'user', onDelete: 'SET NULL' },
   { colName: 'createdOn', colType: 'INTEGER' }

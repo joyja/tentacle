@@ -1,6 +1,8 @@
 jest.mock(`tentacle-sparkplug-client`)
 jest.mock(`modbus-serial`)
 jest.mock(`ethernet-ip`)
+jest.mock(`graphql-yoga`)
+const { PubSub } = require(`graphql-yoga`)
 const ModbusRTU = require(`modbus-serial`)
 const { Controller } = require(`ethernet-ip`)
 const sparkplug = require(`tentacle-sparkplug-client`)
@@ -43,7 +45,7 @@ let db = undefined
 let user = undefined
 let context = {}
 let unauthorizedContext = {}
-const pubsub = {}
+const pubsub = new PubSub()
 beforeAll(async () => {
   ModbusRTU.prototype.connectTCP.mockResolvedValue({})
   ModbusRTU.prototype.close.mockImplementation((callback) => {

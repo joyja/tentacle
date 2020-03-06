@@ -7,6 +7,7 @@ const resolvers = require('./resolvers')
 const { User, Tag, ScanClass, Device, Service } = require('./relations')
 const { executeQuery } = require('./database/model')
 const fs = require('fs')
+const logger = require('./logger')
 
 const desiredUserVersion = 1
 

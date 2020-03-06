@@ -104,8 +104,10 @@ test('user query returns currently logged in user', async () => {
 let scanClass = undefined
 test('create scan class with the proper headers and fields returns valid results', async () => {
   const mutation = `mutation {
-    createScanClass(name: "default", rate: 1000) {
+    createScanClass(name: "default", description: "default scan class", rate: 1000) {
       id
+      name
+      description
       rate
     }
   }`
@@ -114,25 +116,29 @@ test('create scan class with the proper headers and fields returns valid results
   })
   expect(createScanClass).toEqual({
     id: expect.any(String),
+    name: 'default',
+    description: 'default scan class',
     rate: 1000
   })
   scanClass = createScanClass
 })
 test('create scan class without authorization headers returns error', async () => {
   const mutation = `mutation {
-    createScanClass(name: "default", rate: 1000) {
+    createScanClass(name: "default", description: "default scan class" ,rate: 1000) {
       id
       rate
     }
   }`
   expect(await request(host, mutation).catch((e) => e)).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":{"createScanClass":null},"errors":[{"message":"You are not authorized.","locations":[{"line":2,"column":5}],"path":["createScanClass"]}],"status":200},"request":{"query":"mutation {\\n    createScanClass(name: \\"default\\", rate: 1000) {\\n      id\\n      rate\\n    }\\n  }"}}]`
+    `[Error: You are not authorized.: {"response":{"data":{"createScanClass":null},"errors":[{"message":"You are not authorized.","locations":[{"line":2,"column":5}],"path":["createScanClass"]}],"status":200},"request":{"query":"mutation {\\n    createScanClass(name: \\"default\\", description: \\"default scan class\\" ,rate: 1000) {\\n      id\\n      rate\\n    }\\n  }"}}]`
   )
 })
 test('scan class query returns a list of scan classes', async () => {
   const query = `query {
     scanClasses {
       id
+      name
+      description
       rate
     }
   }`
@@ -141,11 +147,15 @@ test('scan class query returns a list of scan classes', async () => {
   })
   expect(scanClasses).toEqual([scanClass])
 })
-test('scan class query returns a list of scan classes', async () => {
+test('scan class update returns the scan class with the appropriately updated fields.', async () => {
+  scanClass.name = 'theOtherDefault'
+  scanClass.description = 'A different default than the first one'
   scanClass.rate = 1234
-  const mutation = `mutation UpdateScanClass($id: ID!, $rate: Int!){
-    updateScanClass(id: $id, rate: $rate) {
+  const mutation = `mutation UpdateScanClass($id: ID!, $name: String!, $description: String!, $rate: Int!){
+    updateScanClass(id: $id, name: $name, description: $description, rate: $rate) {
       id
+      name
+      description
       rate
     }
   }`
@@ -187,11 +197,10 @@ test('create tag with the proper headers and fields returns valid results', asyn
   tag = createTag
 })
 test('create tag without authorization headers returns error', async () => {
-  expect(
-    await request(host, mutation.createTag, tagFields).catch((e) => e)
-  ).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":{"createTag":null},"errors":[{"message":"You are not authorized.","locations":[{"line":12,"column":5}],"path":["createTag"]}],"status":200},"request":{"query":"\\n  mutation CreateTag(\\n      $name: String!\\n      $description: String!\\n      $value: String!\\n      $datatype: Datatype!\\n      $scanClassId: ID!\\n      $max: Float\\n      $min: Float\\n      $units: String\\n    ) {\\n    createTag(\\n      name: $name\\n      description: $description\\n      value: $value\\n      datatype: $datatype\\n      scanClassId: $scanClassId\\n      max: $max\\n      min: $min\\n      units: $units\\n    ) {\\n      ...FullTag\\n    }\\n  }\\n  \\n  fragment FullTag on Tag {\\n    ...ScalarTag\\n    scanClass {\\n      ...ScalarScanClass\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    max\\n    min\\n    units\\n  }\\n\\n  \\nfragment ScalarScanClass on ScanClass {\\n  id\\n  rate\\n}\\n\\n\\n","variables":{"name":"aTag","description":"A Description","value":"123","datatype":"FLOAT","scanClassId":"1","max":200,"min":0,"units":"thingies"}}}]`
+  const result = await request(host, mutation.createTag, tagFields).catch(
+    (e) => e
   )
+  expect(result.message).toContain('You are not authorized.')
 })
 test('tag query returns a list of tags', async () => {
   const { tags } = await client.request(query.tags).catch((error) => {
@@ -200,9 +209,8 @@ test('tag query returns a list of tags', async () => {
   expect(tags).toEqual([tag])
 })
 test('tag query without authorization headers returns error', async () => {
-  expect(await request(host, query.tags).catch((e) => e)).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":null,"errors":[{"message":"You are not authorized.","locations":[{"line":3,"column":5}],"path":["tags"]}],"status":200},"request":{"query":"\\n  query Tags {\\n    tags {\\n      ...FullTag\\n    }\\n  }\\n  \\n  fragment FullTag on Tag {\\n    ...ScalarTag\\n    scanClass {\\n      ...ScalarScanClass\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    max\\n    min\\n    units\\n  }\\n\\n  \\nfragment ScalarScanClass on ScanClass {\\n  id\\n  rate\\n}\\n\\n\\n"}}]`
-  )
+  const result = await request(host, query.tags).catch((e) => e)
+  expect(result.message).toContain('You are not authorized.')
 })
 test('updateTag updates the tag values', async () => {
   tag.name = 'anotherTag'
@@ -219,11 +227,10 @@ test('updateTag updates the tag values', async () => {
   expect(updateTag).toEqual(tag)
 })
 test('updateTag without authorization headers throws error', async () => {
-  expect(
-    await request(host, mutation.updateTag, { id: tag.id }).catch((e) => e)
-  ).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":{"updateTag":null},"errors":[{"message":"You are not authorized.","locations":[{"line":10,"column":3}],"path":["updateTag"]}],"status":200},"request":{"query":"mutation UpdateTag(\\n  $id: ID!, \\n  $name: String\\n  $description: String\\n  $value: String\\n  $max: Float\\n  $min: Float\\n  $units: String\\n) {\\n  updateTag(\\n    id: $id, \\n    name: $name\\n    description: $description\\n    value: $value\\n    max: $max\\n    min: $min\\n    units: $units\\n  ) {\\n    ...FullTag\\n  }\\n}\\n\\n  fragment FullTag on Tag {\\n    ...ScalarTag\\n    scanClass {\\n      ...ScalarScanClass\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    max\\n    min\\n    units\\n  }\\n\\n  \\nfragment ScalarScanClass on ScanClass {\\n  id\\n  rate\\n}\\n\\n","variables":{"id":"1"}}}]`
+  const result = await request(host, mutation.updateTag, { id: tag.id }).catch(
+    (e) => e
   )
+  expect(result.message).toContain('You are not authorized.')
 })
 let modbus = undefined
 let modbusFields = undefined
@@ -673,11 +680,10 @@ test('delete ethernetip with valid arguments and credentials returns deleted dev
   expect(isStillThere).toBe(false)
 })
 test('delete tag without authorization headers returns error', async () => {
-  expect(
-    await request(host, mutation.deleteTag, { id: tag.id }).catch((e) => e)
-  ).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":{"deleteTag":null},"errors":[{"message":"You are not authorized.","locations":[{"line":4,"column":3}],"path":["deleteTag"]}],"status":200},"request":{"query":"mutation DeleteTag(\\n  $id: ID!, \\n) {\\n  deleteTag(\\n    id: $id, \\n  ) {\\n    ...FullTag\\n  }\\n}\\n\\n  fragment FullTag on Tag {\\n    ...ScalarTag\\n    scanClass {\\n      ...ScalarScanClass\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    max\\n    min\\n    units\\n  }\\n\\n  \\nfragment ScalarScanClass on ScanClass {\\n  id\\n  rate\\n}\\n\\n","variables":{"id":"1"}}}]`
+  const result = await request(host, mutation.deleteTag, { id: tag.id }).catch(
+    (e) => e
   )
+  expect(result.message).toContain('You are not authorized.')
 })
 test('delete tag with valid arguments and credentials returns deleted device', async () => {
   const { deleteTag } = await client

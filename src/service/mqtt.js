@@ -1,10 +1,8 @@
 const { Model } = require(`../database`)
 const sparkplug = require(`tentacle-sparkplug-client`)
 const getTime = require('date-fns/getTime')
-const fromUnixTime = require('date-fns/fromUnixTime')
-const getMilliseconds = require('date-fns/getMilliseconds')
-const parseISO = require('date-fns/parseISO')
 const _ = require('lodash')
+const logger = require('../logger')
 
 class Mqtt extends Model {
   static async initialize(db, pubsub) {
@@ -465,7 +463,7 @@ class MqttPrimaryHostHistory extends Model {
       this._mqttPrimaryHost = result.mqttPrimaryHost
       this._mqttHistory = result.mqttHistory
     } catch (error) {
-      this.errors.push(error)
+      logger.error(error)
     }
   }
 }

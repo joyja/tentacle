@@ -1,3 +1,5 @@
+jest.mock('graphql-yoga')
+const { PubSub } = require('graphql-yoga')
 const { createTestDb, deleteTestDb } = require('../../test/db')
 const {
   User,
@@ -10,7 +12,7 @@ const {
 const fromUnixTime = require('date-fns/fromUnixTime')
 
 const dbFilename = `test-tag-spread-edge.db`
-const pubsub = {}
+const pubsub = new PubSub()
 let db = undefined
 beforeAll(async () => {
   db = await createTestDb().catch((error) => {
@@ -34,10 +36,14 @@ describe(`ScanClass:`, () => {
   test(`create creates a new ScanClass with the appropriate fields.`, async () => {
     await User.initialize(db, pubsub)
     const user = User.instances[0]
+    const name = 'default'
+    const description = 'Default Scan Class'
     const rate = 1000
-    const scanClass = await ScanClass.create(rate, user.id)
+    const scanClass = await ScanClass.create(name, description, rate, user.id)
     expect(ScanClass.instances.length).toBe(1)
     expect(scanClass.id).toEqual(expect.any(Number))
+    expect(scanClass.name).toBe(name)
+    expect(scanClass.description).toBe(description)
     expect(scanClass.rate).toBe(rate)
     expect(scanClass.createdBy.id).toBe(user.id)
   })

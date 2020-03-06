@@ -1,3 +1,5 @@
+jest.mock('../../logger')
+const logger = require('../../logger')
 const { createTestDb, deleteTestDb } = require('../../../test/db')
 const { executeQuery, executeUpdate, Model } = require('../../database')
 
@@ -14,6 +16,10 @@ afterAll(async () => {
   await deleteTestDb(db).catch((error) => {
     throw error
   })
+})
+
+afterEach(() => {
+  jest.clearAllMocks()
 })
 
 class TestModel extends Model {
@@ -149,9 +155,11 @@ describe(`Model:`, () => {
     )
   })
   test(`get throws error if the id doesn't existing in the database`, async () => {
-    expect(await TestModel.get(123).catch((e) => e)).toMatchInlineSnapshot(
+    const result = await TestModel.get(123).catch((e) => e)
+    expect(result.errors[0]).toMatchInlineSnapshot(
       `[Error: There is no test with id# 123.]`
     )
+    expect(logger.error).toBeCalledTimes(1)
   })
   test('update sets field to new value', async () => {
     const newValue = `newTestValue`
