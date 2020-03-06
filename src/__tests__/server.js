@@ -148,8 +148,8 @@ test('scan class query returns a list of scan classes', async () => {
   expect(scanClasses).toEqual([scanClass])
 })
 test('scan class update returns the scan class with the appropriately updated fields.', async () => {
-  scanClass.rate = 'theOtherDefault'
-  scanClass.rate = 'A different default than the first one'
+  scanClass.name = 'theOtherDefault'
+  scanClass.description = 'A different default than the first one'
   scanClass.rate = 1234
   const mutation = `mutation UpdateScanClass($id: ID!, $rate: Int!){
     updateScanClass(id: $id, rate: $rate) {
