@@ -108,6 +108,10 @@ type EthernetIPSource {
 """A scan class allows for groups of tags to be updated at the same pre-defined rate."""
 type ScanClass {
   id: ID!
+  """Identifier for the scan class, used as a brief descriptor"""
+  name: String!
+  """Description to allow for users to give the scan class more context."""
+  description: String!
   """Rate at which to update that tags assigned to this scan class from their device source."""
   rate: Int!
   """List of tags assigned to this scan class"""
@@ -235,9 +239,9 @@ type Mutation {
   """Allows the user to change their password"""
   changePassword(oldPassword: String!, newPassword: String!): User
   """Requires a valid authorization token. Creates a new scan class"""
-  createScanClass(name: String!, rate: Int!): ScanClass
+  createScanClass(name: String!, description: String!, rate: Int!): ScanClass
   """Requires a valid authorization token. Updates an existing scan class"""
-  updateScanClass(id: ID!, rate: Int!): ScanClass
+  updateScanClass(id: ID!, name: String, description: String, rate: Int!): ScanClass
   """Requires a valid authorization token. Deletes a scan class. Will not be successfully if there are tags currently assigned to this scan class."""
   deleteScanClass(id: ID!): ScanClass
   """Requires a valid authorization token. Creates a new tag"""

@@ -1,5 +1,7 @@
 jest.mock(`modbus-serial`)
 jest.mock(`ethernet-ip`)
+jest.mock('graphql-yoga')
+const { PubSub } = require('graphql-yoga')
 const ModbusRTU = require(`modbus-serial`)
 const { Controller } = require(`ethernet-ip`)
 
@@ -16,7 +18,7 @@ const {
 } = require('../../relations')
 const fromUnixTime = require('date-fns/fromUnixTime')
 
-const pubsub = {}
+const pubsub = new PubSub()
 let db = undefined
 beforeAll(async () => {
   db = await createTestDb()

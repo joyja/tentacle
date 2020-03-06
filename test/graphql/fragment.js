@@ -19,6 +19,8 @@ const scalarTag = `
 const scalarScanClass = `
 fragment ScalarScanClass on ScanClass {
   id
+  name
+  description
   rate
 }
 `

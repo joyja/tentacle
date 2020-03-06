@@ -1,3 +1,5 @@
+const logger = require('../logger')
+
 const executeQuery = function(db, sql, params = [], firstRowOnly = false) {
   return new Promise((resolve, reject) => {
     const callback = (error, rows) => {
@@ -201,6 +203,7 @@ class Model {
         )
       }
       this.errors.push(error)
+      logger.error(error)
     }
     return result[0]
   }

@@ -3,7 +3,12 @@ const { User, Tag, ScanClass } = require('../../relations')
 async function createScanClass(root, args, context, info) {
   const user = await User.getUserFromContext(context)
   const createdBy = user.id
-  const scanClass = await ScanClass.create(args.rate, createdBy)
+  const scanClass = await ScanClass.create(
+    args.name,
+    args.description,
+    args.rate,
+    createdBy
+  )
   scanClass.startScan()
   return scanClass
 }
@@ -12,6 +17,12 @@ async function updateScanClass(root, args, context, info) {
   const user = await User.getUserFromContext(context)
   const scanClass = ScanClass.findById(args.id)
   if (scanClass) {
+    if (args.name) {
+      await scanClass.setName(args.name)
+    }
+    if (args.description) {
+      await scanClass.setDescription(args.description)
+    }
     if (args.rate) {
       await scanClass.setRate(args.rate)
     }
