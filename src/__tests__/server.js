@@ -151,8 +151,8 @@ test('scan class update returns the scan class with the appropriately updated fi
   scanClass.name = 'theOtherDefault'
   scanClass.description = 'A different default than the first one'
   scanClass.rate = 1234
-  const mutation = `mutation UpdateScanClass($id: ID!, $rate: Int!){
-    updateScanClass(id: $id, rate: $rate) {
+  const mutation = `mutation UpdateScanClass($id: ID!, $name: String!, $description: String!, $rate: Int!){
+    updateScanClass(id: $id, name: $name, description: $description, rate: $rate) {
       id
       name
       description
