@@ -32,10 +32,14 @@ const executeUpdate = function(db, sql, params) {
 
 class Model {
   static executeUpdate(sql, params) {
-    return executeUpdate(this.db, sql, params)
+    return executeUpdate(this.db, sql, params).catch((error) => {
+      logger.error(error)
+    })
   }
   static executeQuery(sql, params, firstRowOnly) {
-    return executeQuery(this.db, sql, params, firstRowOnly)
+    return executeQuery(this.db, sql, params, firstRowOnly).catch((error) => {
+      logger.error(error)
+    })
   }
   static createTable() {
     // fields should be formatted { colName, colType } for typical columns
@@ -62,8 +66,7 @@ class Model {
     this.initialized = true
     this.db = db
     this.pubsub = pubsub
-    const { user_version } = await executeQuery(
-      db,
+    const { user_version } = await this.executeQuery(
       'PRAGMA user_version',
       [],
       true
@@ -86,29 +89,29 @@ class Model {
   static async get(selector, ignoreExisting = false, createResults) {
     this.checkInitialized()
     let model = undefined
-    if (!this.cold) {
-      model = this.instances.find((instance) => {
-        if (!ignoreExisting) {
-          if (typeof selector === 'number') {
-            return instance._id === selector
-          } else {
-            throw new Error('Must provide an id (Type of Number) as selector.')
-          }
-        }
-      })
+    if (typeof selector === 'number') {
+      if (!this.cold && !ignoreExisting) {
+        model = this.instances.find((instance) => {
+          return instance._id === selector
+        })
+      }
+      if (!model || this.cold) {
+        model = new this(selector)
+        model.createResults = createResults
+        await model.init(this)
+      }
+      return model
+    } else {
+      logger.error(
+        new Error('Must provide an id (Type of Number) as selector.')
+      )
     }
-    if (!model || this.cold) {
-      model = new this(selector)
-      model.createResults = createResults
-      await model.init(this)
-    }
-    return model
   }
   static async getAll() {
     this.checkInitialized()
     let sql = `SELECT id FROM ${this.table}`
     this.instances = []
-    const result = await executeQuery(this.db, sql)
+    const result = await this.executeQuery(sql)
     const instances = await Promise.all(
       result.map((row) => {
         return this.get(row.id, true)
@@ -163,29 +166,31 @@ class Model {
     this.errors = []
     if (typeof selector === 'number') {
       this._id = selector
-    } else {
-      throw new Error('Must provide an id (Type of Number) as selector.')
-    }
-    if (!Subclass.cold) {
-      const exists = Subclass.instances.some((instance) => {
-        return instance._id === selector
-      })
-      if (!exists) {
-        Subclass.instances.push(this)
-      } else {
-        logger.error(
-          new Error(
-            `A ${Subclass.table} with this id already exists. Use get() method to get the existing instance.`
+      if (!Subclass.cold) {
+        const exists = Subclass.instances.some((instance) => {
+          return instance._id === selector
+        })
+        if (!exists) {
+          Subclass.instances.push(this)
+        } else {
+          logger.error(
+            new Error(
+              `A ${Subclass.table} with this id already exists. Use get() method to get the existing instance.`
+            )
           )
-        )
+        }
       }
+    } else {
+      logger.error(
+        new Error('Must provide an id (Type of Number) as selector.')
+      )
     }
   }
   async init() {
     const sql = `SELECT * FROM ${this.constructor.table} WHERE id=?`
     let result
     try {
-      result = await executeQuery(this.db, sql, [this._id])
+      result = await this.constructor.executeQuery(sql, [this._id])
       if (result.length < 1) {
         throw new Error(
           `There is no ${this.constructor.table} with id# ${this._id}.`

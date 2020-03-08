@@ -118,24 +118,15 @@ describe(`Model:`, () => {
     expect(testInstance.initialized).toBe(true)
     testInstanceId = testInstance.id
   })
-  test(`Running the constructor with an id that's already been loaded into memory throws an error.`, () => {
+  test(`Running the constructor with an id that's already been logs an error.`, () => {
     let error = null
-    try {
-      const localInstance = new TestModel(testInstanceId)
-    } catch (e) {
-      error = e
-    }
+    new TestModel(testInstanceId)
+    expect(logger.error).toBeCalledTimes(1)
   })
   test(`Running the constructor with an id that's not a number throws an error.`, () => {
     let error = null
-    try {
-      const localInstance = new TestModel(`This isn't a number.`)
-    } catch (e) {
-      error = e
-    }
-    expect(error).toMatchInlineSnapshot(
-      `[Error: Must provide an id (Type of Number) as selector.]`
-    )
+    new TestModel(`This isn't a number.`)
+    expect(logger.error).toBeCalledTimes(1)
   })
   test(`findById returns the appropriate instance.`, () => {
     const localInstance = TestModel.findById(testInstanceId)
@@ -148,11 +139,8 @@ describe(`Model:`, () => {
     expect(TestModel.instances.length).toBe(1)
   })
   test('get throws error if the id is not a number', async () => {
-    expect(
-      await TestModel.get(`a bad id`).catch((e) => e)
-    ).toMatchInlineSnapshot(
-      `[Error: Must provide an id (Type of Number) as selector.]`
-    )
+    await TestModel.get(`a bad id`)
+    expect(logger.error).toBeCalledTimes(1)
   })
   test(`get throws error if the id doesn't existing in the database`, async () => {
     const result = await TestModel.get(123).catch((e) => e)
@@ -167,9 +155,8 @@ describe(`Model:`, () => {
     expect(result).toBe(newValue)
   })
   test('update throws exception on sqlite error', async () => {
-    expect(await testInstance.update().catch((e) => e)).toMatchInlineSnapshot(
-      `[Error: SQLITE_ERROR: no such column: undefined]`
-    )
+    await testInstance.update()
+    expect(logger.error).toBeCalledTimes(1)
   })
   test('delete removes the instance from constructor instances, deletes it from the database, and returns the deleted instance.', async () => {
     const localInstance = await testInstance.delete()
