@@ -83,7 +83,7 @@ start = async function(dbFilename) {
       for (scanClass of ScanClass.instances) {
         await scanClass.startScan()
       }
-      await context.db.get('PRAGMA user_version = 1')
+      await context.db.get('PRAGMA user_version = 2')
       resolve()
     })
   })

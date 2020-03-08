@@ -156,6 +156,20 @@ Tag.instances = []
 Tag.initialized = false
 
 class ScanClass extends Model {
+  static async initialize(db, pubsub) {
+    const result = await super.initialize(db, pubsub)
+    if (this.tableExisted && this.version < 2) {
+      const newColumns = [
+        { colName: 'name', colType: 'TEXT' },
+        { colName: 'description', colType: 'TEXT' }
+      ]
+      for (const column of newColumns) {
+        let sql = `ALTER TABLE "${this.table}" ADD "${column.colName}" ${column.colType}`
+        await this.executeUpdate(sql)
+      }
+    }
+    return result
+  }
   static create(name, description, rate, createdBy) {
     const createdOn = getUnixTime(new Date())
     const fields = {
