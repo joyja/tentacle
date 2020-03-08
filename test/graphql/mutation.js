@@ -31,6 +31,7 @@ const updateTag = `mutation UpdateTag(
   $id: ID!, 
   $name: String
   $description: String
+  $datatype: Datatype
   $value: String
   $max: Float
   $min: Float
@@ -40,6 +41,7 @@ const updateTag = `mutation UpdateTag(
     id: $id, 
     name: $name
     description: $description
+    datatype: $datatype
     value: $value
     max: $max
     min: $min

@@ -215,6 +215,7 @@ test('tag query without authorization headers returns error', async () => {
 test('updateTag updates the tag values', async () => {
   tag.name = 'anotherTag'
   tag.description = 'Another Tag'
+  tag.datatype = 'INT32'
   tag.value = '321'
   tag.max = 500
   tag.min = 100
