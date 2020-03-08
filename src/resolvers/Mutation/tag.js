@@ -72,6 +72,9 @@ async function updateTag(root, args, context, info) {
     if (args.description) {
       await tag.setDescription(args.description)
     }
+    if (args.datatype) {
+      await tag.setDatatype(args.datatype)
+    }
     if (args.value) {
       await tag.setValue(args.value)
     }

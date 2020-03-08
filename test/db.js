@@ -3,7 +3,7 @@ const path = require('path')
 const sqlite3 = require('sqlite3')
 const { executeQuery } = require('../src/database/model')
 
-async function createTestDb(user_version = 1) {
+async function createTestDb(user_version = 2) {
   const db = await new Promise((resolve, reject) => {
     const database = new sqlite3.Database(':memory:', (error) => {
       if (error) {
