@@ -7,6 +7,7 @@
     "dev": "cross-env NODE_ENV=development nodemon ./src/index.js -e js,graphql --watch src",
     "start": "cross-env node ./src/index.js",
     "test": "jest --watchAll",
+    "test:ci": "jest",
     "test:coverage": "jest --coverage",
     "fix": "eslint --ext .js,.vue --fix --ignore-path .gitignore .",
     "coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls"
