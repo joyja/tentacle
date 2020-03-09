@@ -126,6 +126,7 @@ class Model {
     this.checkInitialized()
     return new Promise((resolve, reject) => {
       this.db.serialize(async () => {
+        await this.executeQuery('BEGIN TRANSACTION')
         const sql = `INSERT INTO ${this.table} ("${Object.keys(fields).join(
           `","`
         )}") VALUES (${Array(Object.keys(fields).length)
@@ -138,7 +139,9 @@ class Model {
           params,
           result
         }
-        resolve(await this.get(result.lastID, false, createResults))
+        const instance = await this.get(result.lastID, false, createResults)
+        await this.executeQuery('END TRANSACTION')
+        resolve(instance)
       })
     })
   }
