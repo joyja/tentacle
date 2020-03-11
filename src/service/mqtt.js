@@ -207,6 +207,7 @@ class Mqtt extends Model {
       historyToPublish = [...historyToPublish, ...newRecords]
     }
     const payload = historyToPublish.map((record) => {
+      console.log(record)
       return {
         name: record.tag.name,
         value: record.value,
@@ -215,6 +216,7 @@ class Mqtt extends Model {
         isHistorical: true
       }
     })
+    console.log(historyToPublish.length)
     this.client.publishDeviceData(`${source.device.name}`, {
       timestamp: getTime(new Date()),
       metrics: [...payload]
