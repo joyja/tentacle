@@ -218,6 +218,7 @@ class Mqtt extends Model {
     for (const record of historyToPublish) {
       await record.delete()
     }
+    await MqttHistory.clearPublished()
   }
   get primaryHosts() {
     this.checkInit()
@@ -402,6 +403,15 @@ class MqttHistory extends Model {
       await instance.init()
     }
     return instances
+  }
+  static clearPublished() {
+    const sql = `DELETE FROM mqttHistory 
+                WHERE EXISTS 
+                  (	SELECT a.id 
+                    FROM mqttHistory AS a 
+                    LEFT JOIN mqttPrimaryHostHistory AS b ON a.id = b.mqttHistory 
+                    WHERE b.id IS NULL AND mqttHistory.id = a.id)`
+    return this.executeQuery(sql)
   }
   async init() {
     const result = await super.init()
