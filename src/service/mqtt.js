@@ -448,7 +448,6 @@ class MqttPrimaryHost extends Model {
     return this.getHistory().length
   }
   getHistory() {
-    console.log(MqttPrimaryHostHistory.getByPrimaryHostId(this.id))
     return MqttPrimaryHostHistory.getByPrimaryHostId(this.id)
   }
 }
