@@ -206,7 +206,7 @@ class Mqtt extends Model {
       })
       historyToPublish = [...historyToPublish, newRecords]
     }
-    console.log(historyToPublish.length)
+    console.log(historyToPublish)
   }
   get primaryHosts() {
     this.checkInit()
