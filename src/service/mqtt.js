@@ -9,7 +9,15 @@ class Mqtt extends Model {
     await MqttSource.initialize(db, pubsub)
     await MqttPrimaryHost.initialize(db, pubsub)
     await MqttPrimaryHostHistory.initialize(db, pubsub)
-    return super.initialize(db, pubsub)
+    const result = super.initialize(db, pubsub)
+    if (this.tableExisted && this.version < 3) {
+      const newColumns = [{ colName: 'recordLimit', colType: 'TEXT' }]
+      for (const column of newColumns) {
+        let sql = `ALTER TABLE "${this.table}" ADD "${column.colName}" ${column.colType}`
+        await this.executeUpdate(sql)
+      }
+    }
+    return result
   }
   static async _createModel(fields) {
     const mqtt = await super.create(_.omit(fields, 'primaryHosts'))
@@ -31,6 +39,7 @@ class Mqtt extends Model {
     this._password = result.password
     this._rate = result.rate
     this._encrypt = result.encrypt
+    this._recordLimit = result.recordLimit
     this.error = null
   }
   connect() {
@@ -332,7 +341,8 @@ Mqtt.fields = [
   { colName: 'password', colType: 'TEXT' },
   { colName: 'rate', colType: 'INTEGER' },
   { colName: 'encrypt', colType: 'INTEGER' },
-  { colName: 'primaryHost', colType: 'TEXT' }
+  { colName: 'primaryHost', colType: 'TEXT' },
+  { colName: 'recordLimit', colType: 'INTEGER' }
 ]
 Mqtt.instances = []
 Mqtt.initialized = false

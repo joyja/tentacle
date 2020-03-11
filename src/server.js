@@ -9,7 +9,7 @@ const { executeQuery } = require('./database/model')
 const fs = require('fs')
 const logger = require('./logger')
 
-const desiredUserVersion = 2
+const desiredUserVersion = 3
 
 let db = undefined
 let httpServer = undefined
@@ -83,7 +83,7 @@ start = async function(dbFilename) {
       for (scanClass of ScanClass.instances) {
         await scanClass.startScan()
       }
-      await context.db.get('PRAGMA user_version = 2')
+      await context.db.get(`PRAGMA user_version = ${desiredUserVersion}`)
       resolve()
     })
   })
