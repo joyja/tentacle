@@ -131,6 +131,7 @@ class Mqtt extends Model {
   startPublishing() {
     this.interval = setInterval(() => {
       this.publish()
+      this.publishHistory()
     }, this.rate)
   }
   stopPublishing() {
@@ -168,20 +169,9 @@ class Mqtt extends Model {
           timestamp: getTime(new Date())
         }
       })
-      const histPayload = source.history
-        .filter((record) => record.initialized)
-        .map((record) => {
-          return {
-            name: record.tag.name,
-            value: record.value,
-            timestamp: record._timestamp,
-            type: record.tag.datatype,
-            isHistorical: true
-          }
-        })
       this.client.publishDeviceData(`${source.device.name}`, {
         timestamp: getTime(new Date()),
-        metrics: [...payload, ...histPayload]
+        metrics: [...payload]
       })
       for (const host of this.primaryHosts) {
         if (host.readyForData) {
@@ -201,6 +191,22 @@ class Mqtt extends Model {
         }
       }
     }
+  }
+  async publishHistory() {
+    const hosts = this.primaryHosts.filter((host) => {
+      return host.readyForData
+    })
+    let historyToPublish = []
+    for (const host of hosts) {
+      const history = await host.getHistory(50)
+      const newRecords = history.filter((record) => {
+        return !historyToPublish.some((row) => {
+          return row.id === record.id
+        })
+      })
+      historyToPublish = [...historyToPublish, newRecords]
+    }
+    console.log(historyToPublish.length)
   }
   get primaryHosts() {
     this.checkInit()
@@ -341,8 +347,8 @@ class MqttSource extends Model {
     const history = await this.getHistory()
     return history.length
   }
-  getHistory() {
-    return MqttHistory.getBySourceId(this.id)
+  getHistory(limit) {
+    return MqttHistory.getBySourceId(this.id, limit)
   }
 }
 MqttSource.table = `mqttSource`
@@ -372,8 +378,11 @@ class MqttHistory extends Model {
       })
     })
   }
-  static async getBySourceId(mqttSourceId) {
-    const sql = `SELECT id FROM ${this.table} WHERE mqttSource=?`
+  static async getBySourceId(mqttSourceId, limit) {
+    let sql = `SELECT id FROM ${this.table} WHERE mqttSource=?`
+    if (limit) {
+      sql = sql + ` LIMIT ${limit}`
+    }
     const rows = await this.executeQuery(sql, [mqttSourceId])
     const instances = rows.map((row) => {
       return new this(row.id)
@@ -449,8 +458,8 @@ class MqttPrimaryHost extends Model {
     const history = await this.getHistory()
     return history.length
   }
-  getHistory() {
-    return MqttPrimaryHostHistory.getByPrimaryHostId(this.id)
+  getHistory(limit) {
+    return MqttPrimaryHostHistory.getByPrimaryHostId(this.id, limit)
   }
 }
 MqttPrimaryHost.table = `mqttPrimaryHost`
@@ -480,8 +489,11 @@ class MqttPrimaryHostHistory extends Model {
     }
     return instances
   }
-  static async getByHistoryId(mqttHistoryId) {
-    const sql = `SELECT id FROM ${this.table} WHERE mqttHistory=?`
+  static async getByHistoryId(mqttHistoryId, limit) {
+    let sql = `SELECT id FROM ${this.table} WHERE mqttHistory=?`
+    if (limit) {
+      sql = sql + ` LIMIT ${limit}`
+    }
     const rows = await this.executeQuery(sql, [mqttHistoryId])
     const instances = rows.map((row) => {
       return new this(row.id)
