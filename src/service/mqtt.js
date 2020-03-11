@@ -204,9 +204,9 @@ class Mqtt extends Model {
           return row.id === record.id
         })
       })
-      historyToPublish = [...historyToPublish, newRecords]
+      historyToPublish = [...historyToPublish, ...newRecords]
     }
-    console.log(historyToPublish)
+    console.log(historyToPublish.length)
   }
   get primaryHosts() {
     this.checkInit()
