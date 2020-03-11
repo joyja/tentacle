@@ -206,8 +206,19 @@ class Mqtt extends Model {
       })
       historyToPublish = [...historyToPublish, ...newRecords]
     }
-    console.log(historyToPublish.length)
-    //publish
+    const payload = historyToPublish.map((record) => {
+      return {
+        name: record.tag.name,
+        value: record.value,
+        timestamp: record._timestamp,
+        type: record.tag.datatype,
+        isHistorical: true
+      }
+    })
+    this.client.publishDeviceData(`${source.device.name}`, {
+      timestamp: getTime(new Date()),
+      metrics: [...payload]
+    })
     for (const record of historyToPublish) {
       await record.delete()
     }
