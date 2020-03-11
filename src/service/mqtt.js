@@ -478,8 +478,11 @@ class MqttPrimaryHostHistory extends Model {
     }
     return super.create(fields)
   }
-  static async getByPrimaryHostId(mqttPrimaryHostId) {
-    const sql = `SELECT id FROM ${this.table} WHERE mqttPrimaryHost=?`
+  static async getByPrimaryHostId(mqttPrimaryHostId, limit) {
+    let sql = `SELECT id FROM ${this.table} WHERE mqttPrimaryHost=?`
+    if (limit) {
+      sql = sql + ` LIMIT ${limit}`
+    }
     const rows = await this.executeQuery(sql, [mqttPrimaryHostId])
     const instances = rows.map((row) => {
       return new this(row.id)
