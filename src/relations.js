@@ -323,14 +323,9 @@ MqttSource.prototype.log = async function(scanClassId) {
       return false
     }
   })
-  return new Promise((resolve) => {
-    MqttHistory.db.serialize(async () => {
-      for (tag of tags) {
-        await MqttHistory.create(this.id, tag.id, tag.value)
-      }
-      resolve()
-    })
-  })
+  for (tag of tags) {
+    await MqttHistory.create(this.id, tag.id, tag.value)
+  }
 }
 
 Object.defineProperties(MqttSource.prototype, {

@@ -185,13 +185,16 @@ class Mqtt extends Model {
       })
       for (const host of this.primaryHosts) {
         if (host.readyForData) {
-          for (const record of host.history) {
+          const hostHistory = await host.getHistory()
+          for (const record of hostHistory) {
             await record.delete()
           }
         }
         for (const source of this.sources) {
-          for (const record of source.history) {
-            if (record.primaryHosts.length === 0) {
+          const sourceHistory = await source.getHistory()
+          for (const record of sourceHistory) {
+            const hosts = await record.getPrimaryHosts()
+            if (hosts.length === 0) {
               await record.delete()
             }
           }
@@ -334,15 +337,11 @@ class MqttSource extends Model {
     this._mqtt = result.mqtt
     this._device = result.device
   }
-  get recordCount() {
-    return MqttHistory.instances.filter((history) => {
-      return history._mqttSource === this._id
-    }).length
+  getRecordCount() {
+    return this.getHistory().length
   }
-  get history() {
-    return MqttHistory.instances.filter((history) => {
-      return history._mqttSource === this._id
-    })
+  getHistory() {
+    return MqttHistory.getBySourceId(this.id)
   }
 }
 MqttSource.table = `mqttSource`
@@ -362,11 +361,26 @@ class MqttHistory extends Model {
       timestamp,
       value
     }
-    const history = await super.create(fields)
-    for (const host of history.mqttSource.mqtt.primaryHosts) {
-      await MqttPrimaryHostHistory.create(host.id, history.id)
+    return new Promise((resolve) => {
+      this.db.serialize(async () => {
+        const history = await super.create(fields)
+        for (const host of history.mqttSource.mqtt.primaryHosts) {
+          await MqttPrimaryHostHistory.create(host.id, history.id)
+        }
+        resolve(history)
+      })
+    })
+  }
+  static async getBySourceId(mqttSourceId) {
+    const sql = `SELECT id FROM ${this.table} WHERE mqttSource=?`
+    const rows = await this.executeQuery(sql, [mqttSourceId])
+    const instances = rows.map((row) => {
+      return new this(row.id)
+    })
+    for (const instance of instances) {
+      await instance.init()
     }
-    return history
+    return instances
   }
   async init() {
     const result = await super.init()
@@ -383,16 +397,15 @@ class MqttHistory extends Model {
     this.checkInit()
     return new Date(this._timestamp)
   }
-  get primaryHosts() {
-    return MqttPrimaryHostHistory.instances
-      .filter((instance) => {
-        return instance._mqttHistory === this._id
+  async getPrimaryHosts() {
+    const primaryHostHistories = await MqttPrimaryHostHistory.getByHistoryId(
+      this.id
+    )
+    return primaryHostHistories.map((instance) => {
+      return MqttPrimaryHost.instances.find((host) => {
+        instance._mqttPrimaryHost === host._id
       })
-      .map((instance) => {
-        return MqttPrimaryHost.instances.find((host) => {
-          instance._mqttPrimaryHost === host._id
-        })
-      })
+    })
   }
 }
 MqttHistory.table = `mqttHistory`
@@ -404,6 +417,7 @@ MqttHistory.fields = [
 ]
 MqttHistory.instances = []
 MqttHistory.initialized = false
+MqttHistory.cold = true
 
 class MqttPrimaryHost extends Model {
   static create(mqtt, name) {
@@ -431,14 +445,10 @@ class MqttPrimaryHost extends Model {
     })
   }
   get recordCount() {
-    return MqttPrimaryHostHistory.instances.filter((history) => {
-      return history._mqttPrimaryHost === this._id
-    }).length
+    return this.getHistory().length
   }
-  get history() {
-    return MqttPrimaryHostHistory.instances.filter((history) => {
-      return history._mqttPrimaryHost === this._id
-    })
+  getHistory() {
+    return MqttPrimaryHostHistory.getByPrimaryHostId(this.id)
   }
 }
 MqttPrimaryHost.table = `mqttPrimaryHost`
@@ -456,6 +466,28 @@ class MqttPrimaryHostHistory extends Model {
       mqttHistory
     }
     return super.create(fields)
+  }
+  static async getByPrimaryHostId(mqttPrimaryHostId) {
+    const sql = `SELECT id FROM ${this.table} WHERE mqttPrimaryHost=?`
+    const rows = await this.executeQuery(sql, [mqttPrimaryHostId])
+    const instances = rows.map((row) => {
+      return new this(row.id)
+    })
+    for (const instance of instances) {
+      await instance.init()
+    }
+    return instances
+  }
+  static async getByHistoryId(mqttHistoryId) {
+    const sql = `SELECT id FROM ${this.table} WHERE mqttHistory=?`
+    const rows = await this.executeQuery(sql, [mqttHistoryId])
+    const instances = rows.map((row) => {
+      return new this(row.id)
+    })
+    for (const instance of instances) {
+      await instance.init()
+    }
+    return instances
   }
   async init() {
     const result = await super.init()
@@ -478,6 +510,7 @@ MqttPrimaryHostHistory.fields = [
 ]
 MqttPrimaryHostHistory.instances = []
 MqttPrimaryHostHistory.initialized = []
+MqttPrimaryHostHistory.cold = true
 
 module.exports = {
   Mqtt,
