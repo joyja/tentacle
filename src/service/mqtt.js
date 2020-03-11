@@ -202,7 +202,6 @@ class Mqtt extends Model {
           return device.id === record.mqttHistory.mqttSource.device.id
         })
         .map((record) => {
-          console.log(record)
           return {
             name: record.mqttHistory.tag.name,
             value: record.mqttHistory.value,
