@@ -173,23 +173,23 @@ class Mqtt extends Model {
         timestamp: getTime(new Date()),
         metrics: [...payload]
       })
-      for (const host of this.primaryHosts) {
-        if (host.readyForData) {
-          const hostHistory = await host.getHistory()
-          for (const record of hostHistory) {
-            await record.delete()
-          }
-        }
-        for (const source of this.sources) {
-          const sourceHistory = await source.getHistory()
-          for (const record of sourceHistory) {
-            const hosts = await record.getPrimaryHosts()
-            if (hosts.length === 0) {
-              await record.delete()
-            }
-          }
-        }
-      }
+      // for (const host of this.primaryHosts) {
+      //   if (host.readyForData) {
+      //     const hostHistory = await host.getHistory()
+      //     for (const record of hostHistory) {
+      //       await record.delete()
+      //     }
+      //   }
+      //   for (const source of this.sources) {
+      //     const sourceHistory = await source.getHistory()
+      //     for (const record of sourceHistory) {
+      //       const hosts = await record.getPrimaryHosts()
+      //       if (hosts.length === 0) {
+      //         await record.delete()
+      //       }
+      //     }
+      //   }
+      // }
     }
   }
   async publishHistory() {
