@@ -207,6 +207,10 @@ class Mqtt extends Model {
       historyToPublish = [...historyToPublish, ...newRecords]
     }
     console.log(historyToPublish.length)
+    //publish
+    for (record of historyToPublish) {
+      await record.delete()
+    }
   }
   get primaryHosts() {
     this.checkInit()
