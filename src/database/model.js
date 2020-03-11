@@ -1,4 +1,5 @@
 const logger = require('../logger')
+const { TaskEasy } = require('task-easy')
 
 const executeQuery = function(db, sql, params = [], firstRowOnly = false) {
   return new Promise((resolve, reject) => {
@@ -29,6 +30,13 @@ const executeUpdate = function(db, sql, params) {
     })
   })
 }
+
+const prioritize = (obj1, obj2) => {
+  return obj1.priority === obj2.priority
+    ? obj1.timestamp.getTime() < obj2.timestamp.getTime() // Return true if task 1 is older than task 2
+    : obj1.priority > obj2.priority // return true if task 1 is higher priority than task 2
+}
+const queue = new TaskEasy(prioritize, 1000)
 
 class Model {
   static executeUpdate(sql, params) {
@@ -122,7 +130,19 @@ class Model {
     }
     return instances
   }
-  static async create(fields, postquery) {
+  static async create(fields) {
+    return queue.schedule(
+      (fields) => {
+        return this._create(fields)
+      },
+      [fields],
+      {
+        priority: 1,
+        timestamp: new Date()
+      }
+    )
+  }
+  static async _create(fields) {
     this.checkInitialized()
     const sql = `INSERT INTO ${this.table} ("${Object.keys(fields).join(
       `","`
@@ -139,6 +159,18 @@ class Model {
     return this.get(result.lastID, false, createResults)
   }
   static async delete(selector) {
+    return queue.schedule(
+      (selector) => {
+        return this._delete(selector)
+      },
+      [selector],
+      {
+        priority: 1,
+        timestamp: new Date()
+      }
+    )
+  }
+  static async _delete(selector) {
     this.checkInitialized()
     const sql = `DELETE FROM ${this.table} WHERE id=?`
     await this.executeUpdate(sql, [selector])

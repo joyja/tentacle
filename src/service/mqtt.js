@@ -337,8 +337,9 @@ class MqttSource extends Model {
     this._mqtt = result.mqtt
     this._device = result.device
   }
-  getRecordCount() {
-    return this.getHistory().length
+  async getRecordCount() {
+    const history = await this.getHistory()
+    return history.length
   }
   getHistory() {
     return MqttHistory.getBySourceId(this.id)
