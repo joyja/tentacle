@@ -173,23 +173,6 @@ class Mqtt extends Model {
         timestamp: getTime(new Date()),
         metrics: [...payload]
       })
-      // for (const host of this.primaryHosts) {
-      //   if (host.readyForData) {
-      //     const hostHistory = await host.getHistory()
-      //     for (const record of hostHistory) {
-      //       await record.delete()
-      //     }
-      //   }
-      //   for (const source of this.sources) {
-      //     const sourceHistory = await source.getHistory()
-      //     for (const record of sourceHistory) {
-      //       const hosts = await record.getPrimaryHosts()
-      //       if (hosts.length === 0) {
-      //         await record.delete()
-      //       }
-      //     }
-      //   }
-      // }
     }
   }
   async publishHistory() {
@@ -209,10 +192,10 @@ class Mqtt extends Model {
     const payload = historyToPublish.map((record) => {
       console.log(record)
       return {
-        name: record.tag.name,
-        value: record.value,
-        timestamp: record._timestamp,
-        type: record.tag.datatype,
+        name: record.mqttHistory.tag.name,
+        value: record.mqttHistory.value,
+        timestamp: record.mqttHistory._timestamp,
+        type: record.mqttHistory.tag.datatype,
         isHistorical: true
       }
     })
@@ -527,10 +510,14 @@ class MqttPrimaryHostHistory extends Model {
     const result = await super.init()
     try {
       this._mqttPrimaryHost = result.mqttPrimaryHost
-      this._mqttHistory = result.mqttHistory
+      this._mqttHistory = await MqttHistory.get(result.mqttHistory)
     } catch (error) {
       logger.error(error)
     }
+  }
+  get mqttHistory() {
+    this.checkInit()
+    return this._mqttHistory
   }
 }
 MqttPrimaryHostHistory.table = `mqttPrimaryHostHistory`
