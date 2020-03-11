@@ -445,10 +445,10 @@ class MqttPrimaryHost extends Model {
     })
   }
   async getRecordCount() {
-    console.log(await this.getHistory())
     return this.getHistory().length
   }
   getHistory() {
+    console.log(MqttPrimaryHostHistory.getByPrimaryHostId(this.id))
     return MqttPrimaryHostHistory.getByPrimaryHostId(this.id)
   }
 }
@@ -474,7 +474,6 @@ class MqttPrimaryHostHistory extends Model {
     const instances = rows.map((row) => {
       return new this(row.id)
     })
-    console.log(instances)
     for (const instance of instances) {
       await instance.init()
     }
