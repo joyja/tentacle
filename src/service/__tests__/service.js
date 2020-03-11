@@ -86,6 +86,7 @@ test(`Mqtt: create creates a service with service config`, async () => {
   const devices = [1]
   const rate = 1000
   const encrypt = true
+  const recordLimit = 50
   const createdBy = user.id
   const primaryHosts = ['aPrimaryHost', 'AnotherPrimaryHost']
   const mqtt = await Mqtt.create(
@@ -100,6 +101,7 @@ test(`Mqtt: create creates a service with service config`, async () => {
     devices,
     rate,
     encrypt,
+    recordLimit,
     createdBy,
     primaryHosts
   )

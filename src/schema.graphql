@@ -194,6 +194,8 @@ type Mqtt {
   rate: Int!
   """True if ssl:// is to be used, otherwise tcp:// will be used."""
   encrypt: Boolean!
+  """Maximum number of records to publish at one time while forwarding historical data."""
+  recordLimit: Int!
   """Primary host IDs. This is used for store and forward to detect if the consumers are online. The gateway will store data if any consumer is offline."""
   primaryHosts: [MqttPrimaryHost!]!
 }
@@ -319,6 +321,7 @@ type Mutation {
     devices: [Int!]!,
     rate: Int!,
     encrypt: Boolean!,
+    recordLimit: Int!,
     primaryHosts: [String!]
   ): Service
   """Requires a valid authorization token. Updates an MQTT Sparkplug B service and restarts the connection."""
@@ -333,6 +336,7 @@ type Mutation {
     username: String,
     password: String,
     rate: Int,
+    recordLimit: Int,
     encrypt: Boolean
   ): Service
   """Requires a valid authorization token. Adds a device to an MQTT service. All the tags with sources from that device will be published at the rate of the MQTT service configuration."""

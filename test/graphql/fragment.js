@@ -112,6 +112,7 @@ const service = `
         password
         rate
         encrypt
+        recordLimit
         primaryHosts {
           id
           name

@@ -185,6 +185,7 @@ const createMqtt = `mutation CreateMqtt (
     $devices: [Int!]!
     $rate: Int!
     $encrypt: Boolean!
+    $recordLimit: Int!
     $primaryHosts: [String!]
 ){
   createMqtt(
@@ -199,6 +200,7 @@ const createMqtt = `mutation CreateMqtt (
     devices: $devices
     rate: $rate
     encrypt: $encrypt
+    recordLimit: $recordLimit
     primaryHosts: $primaryHosts
   ) {
     ... FullService
@@ -218,6 +220,7 @@ const updateMqtt = `mutation UpdateMqtt (
   $password: String
   $rate: Int
   $encrypt: Boolean
+  $recordLimit: Int
 ){
   updateMqtt(
     id: $id
@@ -231,6 +234,7 @@ const updateMqtt = `mutation UpdateMqtt (
     password: $password
     rate: $rate
     encrypt: $encrypt
+    recordLimit: $recordLimit
   ) {
     ... FullService
   }

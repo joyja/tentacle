@@ -442,6 +442,7 @@ test('create mqtt with the proper headers and fields returns valid results', asy
     devices: [1],
     rate: 1000,
     encrypt: true,
+    recordLimit: 50,
     primaryHosts: ['aPrimaryHost']
   }
   const { createMqtt } = await client
@@ -493,11 +494,10 @@ test('create mqtt with the proper headers and fields returns valid results', asy
   mqtt = createMqtt
 })
 test('create mqtt without authorization headers returns error', async () => {
-  expect(
-    await request(host, mutation.createMqtt, mqttFields).catch((e) => e)
-  ).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":{"createMqtt":null},"errors":[{"message":"You are not authorized.","locations":[{"line":15,"column":3}],"path":["createMqtt"]}],"status":200},"request":{"query":"mutation CreateMqtt (\\n    $name: String!\\n    $description: String!\\n    $host: String! \\n    $port: Int!\\n    $group: String!\\n    $node: String!\\n    $username: String!\\n    $password: String!\\n    $devices: [Int!]!\\n    $rate: Int!\\n    $encrypt: Boolean!\\n    $primaryHosts: [String!]\\n){\\n  createMqtt(\\n    name: $name\\n    description: $description\\n    host: $host \\n    port: $port\\n    group: $group\\n    node: $node\\n    username: $username\\n    password: $password\\n    devices: $devices\\n    rate: $rate\\n    encrypt: $encrypt\\n    primaryHosts: $primaryHosts\\n  ) {\\n    ... FullService\\n  }\\n}\\n\\n  fragment FullService on Service {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Mqtt {\\n        id\\n        host\\n        port\\n        group\\n        node\\n        username\\n        password\\n        rate\\n        encrypt\\n        primaryHosts {\\n          id\\n          name\\n          status\\n        }\\n        sources {\\n          device {\\n            id\\n          }\\n        }\\n      }\\n    }\\n  }\\n","variables":{"name":"aMqtt","description":"A Mqtt","host":"localhost","port":1883,"group":"aGroup","node":"aNode","username":"aUsername","password":"aPassword","devices":[1],"rate":1000,"encrypt":true,"primaryHosts":["aPrimaryHost"]}}}]`
+  const result = await request(host, mutation.createMqtt, mqttFields).catch(
+    (e) => e
   )
+  expect(result.message).toContain('You are not authorized.')
   expect(setInterval).toBeCalledTimes(0)
   expect(clearInterval).toBeCalledTimes(0)
   expect(mockSparkplug.on).toBeCalledTimes(0)
@@ -518,7 +518,8 @@ test('update mqtt with the proper headers and fields returns valid results', asy
     username: 'anotherUsername',
     password: 'anotherPassword',
     rate: 2000,
-    encrypt: false
+    encrypt: false,
+    recordLimit: 100
   }
   const { updateMqtt } = await client
     .request(mutation.updateMqtt, mqttFields)
@@ -563,11 +564,10 @@ test('update mqtt with the proper headers and fields returns valid results', asy
   mqtt = updateMqtt
 })
 test('update mqtt without authorization headers returns error', async () => {
-  expect(
-    await request(host, mutation.updateMqtt, mqttFields).catch((e) => e)
-  ).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":{"updateMqtt":null},"errors":[{"message":"You are not authorized.","locations":[{"line":14,"column":3}],"path":["updateMqtt"]}],"status":200},"request":{"query":"mutation UpdateMqtt (\\n  $id: ID!\\n  $name: String\\n  $description: String\\n  $host: String \\n  $port: Int\\n  $group: String\\n  $node: String\\n  $username: String\\n  $password: String\\n  $rate: Int\\n  $encrypt: Boolean\\n){\\n  updateMqtt(\\n    id: $id\\n    name: $name\\n    description: $description\\n    host: $host \\n    port: $port\\n    group: $group\\n    node: $node\\n    username: $username\\n    password: $password\\n    rate: $rate\\n    encrypt: $encrypt\\n  ) {\\n    ... FullService\\n  }\\n}\\n\\n  fragment FullService on Service {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Mqtt {\\n        id\\n        host\\n        port\\n        group\\n        node\\n        username\\n        password\\n        rate\\n        encrypt\\n        primaryHosts {\\n          id\\n          name\\n          status\\n        }\\n        sources {\\n          device {\\n            id\\n          }\\n        }\\n      }\\n    }\\n  }\\n","variables":{"id":"1","name":"anotherMqtt","description":"Another Mqtt","host":"mqtt.jarautomation.io","port":31112,"group":"anotherGroup","node":"anotherNode","username":"anotherUsername","password":"anotherPassword","rate":2000,"encrypt":false}}}]`
+  const result = await request(host, mutation.updateMqtt, mqttFields).catch(
+    (e) => e
   )
+  expect(result.message).toContain('You are not authorized.')
   expect(setInterval).toBeCalledTimes(0)
   expect(clearInterval).toBeCalledTimes(0)
   expect(mockSparkplug.on).toBeCalledTimes(0)
@@ -588,11 +588,8 @@ test('service query returns a list of services', async () => {
   expect(mockSparkplug.stop).toBeCalledTimes(0)
 })
 test('service query without authorization headers returns error', async () => {
-  expect(
-    await request(host, query.services).catch((e) => e)
-  ).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":null,"errors":[{"message":"You are not authorized.","locations":[{"line":3,"column":5}],"path":["services"]}],"status":200},"request":{"query":"\\n  query Services {\\n    services {\\n      ...FullService\\n    }\\n  }\\n  \\n  fragment FullService on Service {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Mqtt {\\n        id\\n        host\\n        port\\n        group\\n        node\\n        username\\n        password\\n        rate\\n        encrypt\\n        primaryHosts {\\n          id\\n          name\\n          status\\n        }\\n        sources {\\n          device {\\n            id\\n          }\\n        }\\n      }\\n    }\\n  }\\n\\n"}}]`
-  )
+  const result = await request(host, query.services).catch((e) => e)
+  expect(result.message).toContain('You are not authorized.')
   expect(mockSparkplug.on).toBeCalledTimes(0)
   expect(mockSparkplug.publishNodeBirth).toBeCalledTimes(0)
   expect(mockSparkplug.publishDeviceBirth).toBeCalledTimes(0)
@@ -600,11 +597,10 @@ test('service query without authorization headers returns error', async () => {
   expect(mockSparkplug.stop).toBeCalledTimes(0)
 })
 test('delete service without authorization headers returns error', async () => {
-  expect(
-    await request(host, mutation.deleteMqtt, { id: mqtt.id }).catch((e) => e)
-  ).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":{"deleteMqtt":null},"errors":[{"message":"You are not authorized.","locations":[{"line":4,"column":3}],"path":["deleteMqtt"]}],"status":200},"request":{"query":"mutation DeleteMqtt (\\n  $id: ID!\\n){\\n  deleteMqtt(\\n    id: $id\\n  ) {\\n    ... FullService\\n  }\\n}\\n\\n  fragment FullService on Service {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Mqtt {\\n        id\\n        host\\n        port\\n        group\\n        node\\n        username\\n        password\\n        rate\\n        encrypt\\n        primaryHosts {\\n          id\\n          name\\n          status\\n        }\\n        sources {\\n          device {\\n            id\\n          }\\n        }\\n      }\\n    }\\n  }\\n","variables":{"id":"1"}}}]`
-  )
+  const result = await request(host, mutation.deleteMqtt, {
+    id: mqtt.id
+  }).catch((e) => e)
+  expect(result.message).toContain('You are not authorized.')
 })
 test('delete mqtt with valid arguments and credentials returns deleted service', async () => {
   const { deleteMqtt } = await client

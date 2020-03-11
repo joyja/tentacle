@@ -190,7 +190,7 @@ class Mqtt extends Model {
     })
     let historyToPublish = []
     for (const host of hosts) {
-      const history = await host.getHistory(50)
+      const history = await host.getHistory(this.recordLimit)
       const newRecords = history.filter((record) => {
         return !historyToPublish.some((row) => {
           return row.id === record.id
@@ -319,6 +319,15 @@ class Mqtt extends Model {
   setEncrypt(value) {
     return this.update(this.id, 'encrypt', value).then((result) => {
       this._encrypt = result
+    })
+  }
+  get recordLimit() {
+    this.checkInit()
+    return this._recordLimit
+  }
+  setRecordLimit(value) {
+    return this.update(this.id, 'recordLimit', value).then((result) => {
+      this._recordLimit = result
     })
   }
   get connected() {
