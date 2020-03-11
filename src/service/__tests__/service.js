@@ -86,6 +86,7 @@ test(`Mqtt: create creates a service with service config`, async () => {
   const devices = [1]
   const rate = 1000
   const encrypt = true
+  const recordLimit = 50
   const createdBy = user.id
   const primaryHosts = ['aPrimaryHost', 'AnotherPrimaryHost']
   const mqtt = await Mqtt.create(
@@ -100,6 +101,7 @@ test(`Mqtt: create creates a service with service config`, async () => {
     devices,
     rate,
     encrypt,
+    recordLimit,
     createdBy,
     primaryHosts
   )
@@ -330,11 +332,16 @@ describe(`MQTT History: `, () => {
     history = await MqttHistory.create(mqttSource.id, tag.id, tag.value)
   })
   test(`check that init sets the appropriate underscore fields.`, async () => {
-    const id = MqttHistory.instances[0].id
-    const mqttSourceId = MqttHistory.instances[0]._mqttSource
-    const tagId = MqttHistory.instances[0]._tag
-    const value = MqttHistory.instances[0]._value
-    const timestamp = MqttHistory.instances[0]._timestamp
+    const row = await MqttHistory.executeQuery(
+      `SELECT * FROM ${MqttHistory.table}`,
+      [],
+      true
+    )
+    const id = row.id
+    const mqttSourceId = row.mqttSource
+    const tagId = row.tag
+    const value = row.value
+    const timestamp = row.timestamp
     MqttHistory.instances = []
     mqttHistory = new MqttHistory(id)
     await mqttHistory.init()

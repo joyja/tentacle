@@ -271,6 +271,7 @@ Mqtt.create = async function(
   devices,
   rate,
   encrypt,
+  recordLimit,
   createdBy,
   primaryHosts
 ) {
@@ -285,6 +286,7 @@ Mqtt.create = async function(
     password,
     rate,
     encrypt,
+    recordLimit,
     primaryHosts
   }
   const mqtt = await this._createModel(fields)

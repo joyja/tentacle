@@ -15,6 +15,7 @@ async function createMqtt(root, args, context, info) {
     args.devices,
     args.rate,
     args.encrypt,
+    args.recordLimit,
     createdBy,
     args.primaryHosts ? args.primaryHosts : []
   )
@@ -55,6 +56,9 @@ async function updateMqtt(root, args, context, info) {
     }
     if (args.encrypt !== undefined) {
       await service.config.setEncrypt(args.encrypt)
+    }
+    if (args.recordLimit !== undefined) {
+      await service.config.setRecordLimit(args.recordLimit)
     }
     await service.config.disconnect()
     await service.config.connect()
