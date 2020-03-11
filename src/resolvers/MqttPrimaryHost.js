@@ -1,5 +1,5 @@
 const recordCount = async function(parent, args, context, info) {
-  console.log(await parent.getRecordCount())
+  console.log(parent)
   return parent.getRecordCount()
 }
 
