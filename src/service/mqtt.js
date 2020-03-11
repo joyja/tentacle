@@ -208,7 +208,7 @@ class Mqtt extends Model {
     }
     console.log(historyToPublish.length)
     //publish
-    for (record of historyToPublish) {
+    for (const record of historyToPublish) {
       await record.delete()
     }
   }
