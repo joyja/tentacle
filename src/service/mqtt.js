@@ -445,7 +445,8 @@ class MqttPrimaryHost extends Model {
     })
   }
   async getRecordCount() {
-    return this.getHistory().length
+    const history = await this.getHistory()
+    return history.length
   }
   getHistory() {
     return MqttPrimaryHostHistory.getByPrimaryHostId(this.id)
