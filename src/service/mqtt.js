@@ -190,10 +190,12 @@ class Mqtt extends Model {
       historyToPublish = [...historyToPublish, ...newRecords]
     }
     const devices = historyToPublish.reduce((a, record) => {
-      return !a.some((device) => {
+      return a.some((device) => {
         return device.id === record.mqttHistory.mqttSource.device.id
       })
-    })
+        ? a
+        : [...a, record.mqttHistory.mqttSource.device]
+    }, [])
     for (device of devices) {
       const payload = historyToPublish
         .filter((record) => {
