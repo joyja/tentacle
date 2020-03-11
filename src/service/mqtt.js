@@ -9,7 +9,7 @@ class Mqtt extends Model {
     await MqttSource.initialize(db, pubsub)
     await MqttPrimaryHost.initialize(db, pubsub)
     await MqttPrimaryHostHistory.initialize(db, pubsub)
-    const result = super.initialize(db, pubsub)
+    const result = await super.initialize(db, pubsub)
     if (this.tableExisted && this.version < 3) {
       const newColumns = [{ colName: 'recordLimit', colType: 'TEXT' }]
       for (const column of newColumns) {
