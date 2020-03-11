@@ -189,21 +189,31 @@ class Mqtt extends Model {
       })
       historyToPublish = [...historyToPublish, ...newRecords]
     }
-    const payload = historyToPublish.map((record) => {
-      console.log(record)
-      return {
-        name: record.mqttHistory.tag.name,
-        value: record.mqttHistory.value,
-        timestamp: record.mqttHistory._timestamp,
-        type: record.mqttHistory.tag.datatype,
-        isHistorical: true
-      }
+    const devices = historyToPublish.reduce((a, record) => {
+      return !a.some((device) => {
+        return device.id === record.mqttHistory.mqttSource.device.id
+      })
     })
-    console.log(historyToPublish.length)
-    this.client.publishDeviceData(`${source.device.name}`, {
-      timestamp: getTime(new Date()),
-      metrics: [...payload]
-    })
+    for (device of devices) {
+      const payload = historyToPublish
+        .filter((record) => {
+          return device.id === record.mqttHistory.mqttSource.device.id
+        })
+        .map((record) => {
+          console.log(record)
+          return {
+            name: record.mqttHistory.tag.name,
+            value: record.mqttHistory.value,
+            timestamp: record.mqttHistory._timestamp,
+            type: record.mqttHistory.tag.datatype,
+            isHistorical: true
+          }
+        })
+      this.client.publishDeviceData(`${device.name}`, {
+        timestamp: getTime(new Date()),
+        metrics: [...payload]
+      })
+    }
     for (const record of historyToPublish) {
       await record.delete()
     }
