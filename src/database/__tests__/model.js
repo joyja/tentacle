@@ -3,8 +3,6 @@ const logger = require('../../logger')
 const { createTestDb, deleteTestDb } = require('../../../test/db')
 const { executeQuery, executeUpdate, Model } = require('../../database')
 
-const dbFilename = `test-model-spread-edge.db`
-
 let db = undefined
 beforeAll(async () => {
   db = await createTestDb().catch((error) => {
@@ -37,14 +35,14 @@ TestModel.table = 'test'
 
 describe(`executeQuery:`, () => {
   test('Called with undefined params calls db.all with empty object.', () => {
-    const db = {
-      all: jest.fn((sql, params, callback) => [])
+    const mockdb = {
+      all: jest.fn((sql, params, callback) => callback())
     }
     const sql = ``
     const params = undefined
-    executeQuery(db, sql, params)
-    expect(db.all).toBeCalledWith(sql, [], expect.any(Function))
-    expect(db.all).toBeCalledTimes(1)
+    executeQuery(mockdb, sql, params)
+    expect(mockdb.all).toBeCalledWith(sql, [], expect.any(Function))
+    expect(mockdb.all).toBeCalledTimes(1)
   })
   test('If db call returns error, error is thrown', async () => {
     const sql = ``
@@ -55,14 +53,14 @@ describe(`executeQuery:`, () => {
 })
 
 test('executeUpdate: Called with undefined params calls db.run with empty object.', () => {
-  const db = {
-    run: jest.fn((sql, params, callback) => [])
+  const mockdb = {
+    run: jest.fn((sql, params, callback) => callback())
   }
   const sql = ``
   const params = undefined
-  executeUpdate(db, sql, params)
-  expect(db.run).toBeCalledWith(sql, [], expect.any(Function))
-  expect(db.run).toBeCalledTimes(1)
+  executeUpdate(mockdb, sql, params)
+  expect(mockdb.run).toBeCalledWith(sql, [], expect.any(Function))
+  expect(mockdb.run).toBeCalledTimes(1)
 })
 
 describe(`Model:`, () => {
