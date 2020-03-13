@@ -300,12 +300,9 @@ Mqtt.prototype.publishHistory = async function() {
   const hosts = this.primaryHosts.filter((host) => {
     return host.readyForData
   })
-  console.log(hosts)
   let historyToPublish = []
   for (const host of hosts) {
     const history = await host.getHistory(this.recordLimit)
-    console.log(history)
-    console.log(this.recordLimit)
     const newRecords = history.filter((record) => {
       return !historyToPublish.some((row) => {
         return row.id === record.id
@@ -314,7 +311,7 @@ Mqtt.prototype.publishHistory = async function() {
     historyToPublish = [...historyToPublish, ...newRecords]
   }
   const devices = historyToPublish.reduce((a, record) => {
-    const source = MqttSource.get(record.source)
+    const source = MqttSource.findById(record.source)
     return a.some((device) => {
       return device.id === source.device.id
     })
@@ -324,11 +321,11 @@ Mqtt.prototype.publishHistory = async function() {
   for (device of devices) {
     const payload = historyToPublish
       .filter((record) => {
-        const source = MqttSource.get(record.source)
+        const source = MqttSource.findById(record.source)
         return device.id === source.device.id
       })
       .map((record) => {
-        const tag = Tag.get(record.tag)
+        const tag = Tag.findById(record.tag)
         return {
           name: tag.name,
           value: record.value,
