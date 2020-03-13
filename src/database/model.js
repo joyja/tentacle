@@ -17,6 +17,7 @@ const executeQuery = function(
 ) {
   return queue.schedule(
     (db, sql, params) => {
+      console.log(sql)
       return new Promise((resolve, reject) => {
         const callback = (error, rows) => {
           if (error) {
@@ -43,6 +44,7 @@ const executeQuery = function(
 const executeUpdate = function(db, sql, params = [], priority = 1) {
   return queue.schedule(
     (db, sql, params) => {
+      console.log(sql)
       return new Promise((resolve, reject) => {
         db.run(sql, params, function(error) {
           if (error) {
@@ -119,7 +121,7 @@ class Model {
       )
     }
   }
-  static async get(selector, ignoreExisting = false, createResults) {
+  static async get(selector, ignoreExisting = false) {
     this.checkInitialized()
     let model = undefined
     if (typeof selector === 'number') {
@@ -130,7 +132,6 @@ class Model {
       }
       if (!model || this.cold) {
         model = new this(selector)
-        model.createResults = createResults
         await model.init(this)
       }
       return model
@@ -164,12 +165,7 @@ class Model {
       .join(',')})`
     const params = Object.keys(fields).map((key) => fields[key])
     const result = await this.executeUpdate(sql, params)
-    const createResults = {
-      sql,
-      params,
-      result
-    }
-    return this.get(result.lastID, false, createResults)
+    return this.get(result.lastID, false)
   }
   static async delete(selector) {
     this.checkInitialized()
