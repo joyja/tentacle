@@ -66,6 +66,7 @@ const device = `
         status
         zeroBased
         timeout
+        retryRate
         sources {
           tag {
             ...ScalarTag
@@ -117,6 +118,7 @@ const service = `
           id
           name
           status
+          recordCount
         }
         sources {
           device {

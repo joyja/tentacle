@@ -187,3 +187,39 @@ describe(`Model:`, () => {
     )
   })
 })
+
+test(`Prioritize makes decisions based on priority`, async () => {
+  const results = []
+  await Promise.all([
+    executeQuery(db, 'PRAGMA user_version', [], true, 4).then((result) =>
+      results.push(result)
+    ),
+    executeUpdate(db, 'PRAGMA user_version = 100', [], 2).then((result) =>
+      results.push(result)
+    ),
+    executeQuery(db, 'PRAGMA user_version', [], true, 3).then((result) =>
+      results.push(result)
+    ),
+    executeQuery(db, 'PRAGMA user_version', [], true, 1).then((result) =>
+      results.push(result)
+    )
+  ])
+  expect(results).toMatchInlineSnapshot(`
+Array [
+  Object {
+    "user_version": 2,
+  },
+  Object {
+    "user_version": 2,
+  },
+  Statement {
+    "changes": 1,
+    "lastID": 2,
+    "sql": "PRAGMA user_version = 100",
+  },
+  Object {
+    "user_version": 100,
+  },
+]
+`)
+})

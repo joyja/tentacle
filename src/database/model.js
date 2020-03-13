@@ -8,7 +8,13 @@ const prioritize = (obj1, obj2) => {
 }
 const queue = new TaskEasy(prioritize, 1000)
 
-const executeQuery = function(db, sql, params = [], firstRowOnly = false) {
+const executeQuery = function(
+  db,
+  sql,
+  params = [],
+  firstRowOnly = false,
+  priority = 1
+) {
   return queue.schedule(
     (db, sql, params) => {
       return new Promise((resolve, reject) => {
@@ -28,13 +34,13 @@ const executeQuery = function(db, sql, params = [], firstRowOnly = false) {
     },
     [db, sql, params],
     {
-      priority: 1,
+      priority,
       timestamp: new Date()
     }
   )
 }
 
-const executeUpdate = function(db, sql, params = []) {
+const executeUpdate = function(db, sql, params = [], priority = 1) {
   return queue.schedule(
     (db, sql, params) => {
       return new Promise((resolve, reject) => {
@@ -49,7 +55,7 @@ const executeUpdate = function(db, sql, params = []) {
     },
     [db, sql, params],
     {
-      priority: 1,
+      priority,
       timestamp: new Date()
     }
   )
@@ -102,7 +108,9 @@ class Model {
     const result = await this.executeQuery(sql, params, true)
     this.tableExisted = result ? result.name === this.table : false
     await this.createTable()
-    return this.getAll()
+    if (!this.cold) {
+      return this.getAll()
+    }
   }
   static checkInitialized() {
     if (!this.initialized) {

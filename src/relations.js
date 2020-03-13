@@ -98,13 +98,12 @@ Object.defineProperties(Device.prototype, {
         return Modbus.instances.find((instance) => {
           return instance._device === this._id
         })
-      }
-      if (this.type === `ethernetip`) {
+      } else {
+        //default to EthernetIP
         return EthernetIP.instances.find((instance) => {
           return instance._device === this._id
         })
       }
-      return null
     }
   },
   createdBy: {
@@ -133,6 +132,7 @@ Modbus.create = async function(
   reverseWords,
   zeroBased,
   timeout,
+  retryRate,
   createdBy
 ) {
   const device = await Device.create(name, description, `modbus`, createdBy)
@@ -143,7 +143,8 @@ Modbus.create = async function(
     reverseBits,
     reverseWords,
     zeroBased,
-    timeout
+    timeout,
+    retryRate
   }
   return this._createModel(fields)
 }
@@ -243,12 +244,10 @@ Object.defineProperties(Service.prototype, {
   config: {
     get() {
       this.checkInit()
-      if (this.type === `mqtt`) {
-        return Mqtt.instances.find((instance) => {
-          return instance._service === this._id
-        })
-      }
-      return null
+      //default to Mqtt
+      return Mqtt.instances.find((instance) => {
+        return instance._service === this._id
+      })
     }
   },
   createdBy: {
@@ -341,14 +340,6 @@ Object.defineProperties(MqttSource.prototype, {
     get() {
       this.checkInit()
       return Device.findById(this._device)
-    }
-  },
-  history: {
-    get() {
-      this.checkInit()
-      return MqttHistory.instances.filter((instance) => {
-        return instance.initialized && instance.mqttSource.id === this.id
-      })
     }
   }
 })

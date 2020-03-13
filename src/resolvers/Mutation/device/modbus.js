@@ -18,6 +18,7 @@ async function createModbus(root, args, context, info) {
     args.reverseWords,
     args.zeroBased,
     args.timeout,
+    args.retryRate,
     createdBy
   )
   await modbus.connect()
@@ -51,6 +52,9 @@ async function updateModbus(root, args, context, info) {
     }
     if (args.timeout) {
       await device.config.setTimeout(args.timeout)
+    }
+    if (args.retryRate) {
+      await device.config.setRetryRate(args.retryRate)
     }
     await device.config.disconnect()
     await device.config.connect()
