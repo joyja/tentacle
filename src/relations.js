@@ -366,7 +366,7 @@ Object.defineProperties(Mqtt.prototype, {
 })
 
 MqttSource.prototype.log = async function(scanClassId) {
-  console.log(ScanClass.instances)
+  console.log(scanClassId)
   const scanClass = ScanClass.findById(scanClassId)
   const tags = Tag.instances.filter((tag) => {
     if (tag.source) {
