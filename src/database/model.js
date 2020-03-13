@@ -190,7 +190,11 @@ class Model {
     const result = async
       ? await this.executeUpdateAsync(sql, params)
       : await this.executeUpdate(sql, params)
-    return this.get(result.lastID, false, async)
+    if (!this.cold) {
+      return this.get(result.lastID, false, async)
+    } else {
+      return result.lastID
+    }
   }
   static async delete(selector) {
     this.checkInitialized()

@@ -404,8 +404,9 @@ class MqttHistory extends Model {
         return new Promise((resolve) => {
           this.db.serialize(async () => {
             const history = await super.create(fields, true)
-            for (const host of history.mqttSource.mqtt.primaryHosts) {
-              await MqttPrimaryHostHistory.create(host.id, history.id, true)
+            const source = await MqttSource.get(mqttSource)
+            for (const host of source.mqtt.primaryHosts) {
+              await MqttPrimaryHostHistory.create(host.id, history, true)
             }
             resolve(history)
           })
