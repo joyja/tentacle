@@ -28,8 +28,8 @@ class Mqtt extends Model {
     }
     return mqtt
   }
-  async init() {
-    const result = await super.init(Mqtt)
+  async init(async) {
+    const result = await super.init(async)
     this._service = result.service
     this._host = result.host
     this._port = result.port
@@ -367,7 +367,7 @@ class MqttSource extends Model {
       mqtt,
       device
     }
-    return super.create(fields, MqttSource)
+    return super.create(fields)
   }
   async init() {
     const result = await super.init()
@@ -391,7 +391,7 @@ MqttSource.instances = []
 MqttSource.initialized = false
 
 class MqttHistory extends Model {
-  static async create(mqttSource, tag, value) {
+  static create(mqttSource, tag, value) {
     const timestamp = getTime(new Date())
     const fields = {
       mqttSource,
@@ -399,15 +399,21 @@ class MqttHistory extends Model {
       timestamp,
       value
     }
-    return new Promise((resolve) => {
-      this.db.serialize(async () => {
-        const history = await super.create(fields)
-        for (const host of history.mqttSource.mqtt.primaryHosts) {
-          await MqttPrimaryHostHistory.create(host.id, history.id)
-        }
-        resolve(history)
-      })
-    })
+    return this.schedule(
+      async () => {
+        return new Promise((resolve) => {
+          this.db.serialize(async () => {
+            const history = await super.create(fields, true)
+            for (const host of history.mqttSource.mqtt.primaryHosts) {
+              await MqttPrimaryHostHistory.create(host.id, history.id, true)
+            }
+            resolve(history)
+          })
+        })
+      },
+      [],
+      1
+    )
   }
   static async getBySourceId(mqttSourceId, limit) {
     let sql = `SELECT id FROM ${this.table} WHERE mqttSource=?`
@@ -430,10 +436,10 @@ class MqttHistory extends Model {
                     FROM mqttHistory AS a 
                     LEFT JOIN mqttPrimaryHostHistory AS b ON a.id = b.mqttHistory 
                     WHERE b.id IS NULL AND mqttHistory.id = a.id)`
-    return this.executeQuery(sql)
+    return this.executeQuery(sql, [], false)
   }
-  async init() {
-    const result = await super.init()
+  async init(async) {
+    const result = await super.init(async)
     this._mqttSource = result.mqttSource
     this._tag = result.tag
     this._value = result.value
@@ -477,8 +483,8 @@ class MqttPrimaryHost extends Model {
     }
     return super.create(fields)
   }
-  async init() {
-    const result = await super.init()
+  async init(async = false) {
+    const result = await super.init(async)
     this._mqtt = result.mqtt
     this._name = result.name
     this.status = `UNKNOWN`
@@ -511,12 +517,12 @@ MqttPrimaryHost.instances = []
 MqttPrimaryHost.initialized = false
 
 class MqttPrimaryHostHistory extends Model {
-  static create(mqttPrimaryHost, mqttHistory) {
+  static create(mqttPrimaryHost, mqttHistory, async) {
     const fields = {
       mqttPrimaryHost,
       mqttHistory
     }
-    return super.create(fields)
+    return super.create(fields, async)
   }
   static async getByPrimaryHostId(mqttPrimaryHostId, limit) {
     let sql = `SELECT id FROM ${this.table} WHERE mqttPrimaryHost=?`
@@ -546,11 +552,11 @@ class MqttPrimaryHostHistory extends Model {
     }
     return instances
   }
-  async init() {
-    const result = await super.init()
+  async init(async) {
+    const result = await super.init(async)
     try {
       this._mqttPrimaryHost = result.mqttPrimaryHost
-      this._mqttHistory = await MqttHistory.get(result.mqttHistory)
+      this._mqttHistory = await MqttHistory.get(result.mqttHistory, true, async)
     } catch (error) {
       logger.error(error)
     }

@@ -30,8 +30,8 @@ class Service extends Model {
   constructor(selector, checkExists = true) {
     super(selector, Service, checkExists)
   }
-  async init() {
-    const result = await super.init(Service)
+  async init(async) {
+    const result = await super.init(async)
     this._name = result.name
     this._description = result.description
     this._type = result.type

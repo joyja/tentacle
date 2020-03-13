@@ -23,7 +23,7 @@ class User extends Model {
       username,
       password: hash
     }
-    return super.create(fields, User)
+    return super.create(fields)
   }
   static async login(username, password) {
     const user = User.instances.find((user) => {
