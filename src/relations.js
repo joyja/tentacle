@@ -345,8 +345,6 @@ Mqtt.prototype.publishHistory = async function() {
   let params = historyToPublish.map((record) => {
     return record.id
   })
-  console.log(sql)
-  console.log(params)
   await this.constructor.executeUpdate(sql, params)
   sql = `DELETE FROM mqttHistory 
     WHERE EXISTS 
