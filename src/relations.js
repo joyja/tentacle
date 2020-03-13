@@ -295,6 +295,59 @@ Mqtt.create = async function(
   return mqtt
 }
 
+Mqtt.publishHistory = async function() {
+  const hosts = this.primaryHosts.filter((host) => {
+    return host.readyForData
+  })
+  let historyToPublish = []
+  for (const host of hosts) {
+    const history = await host.getHistory(this.recordLimit)
+    const newRecords = history.filter((record) => {
+      return !historyToPublish.some((row) => {
+        return row.id === record.id
+      })
+    })
+    historyToPublish = [...historyToPublish, ...newRecords]
+  }
+  const devices = historyToPublish.reduce((a, record) => {
+    const source = MqttSource.get(record.source)
+    return a.some((device) => {
+      return device.id === source.device.id
+    })
+      ? a
+      : [...a, source.device]
+  }, [])
+  for (device of devices) {
+    const payload = historyToPublish
+      .filter((record) => {
+        const source = MqttSource.get(record.source)
+        return device.id === source.device.id
+      })
+      .map((record) => {
+        const tag = Tag.get(record.tag)
+        return {
+          name: tag.name,
+          value: record.value,
+          timestamp: record.timestamp,
+          type: tag.datatype,
+          isHistorical: true
+        }
+      })
+    this.client.publishDeviceData(`${device.name}`, {
+      timestamp: getTime(new Date()),
+      metrics: [...payload]
+    })
+  }
+  const sql = `DELETE FROM mqttPrimaryHostHistory WHERE id in (${'?,'
+    .repeat(historyToPublish.length)
+    .slice(0, -1)})`
+  const params = mqttHistoryToPublish.map((record) => {
+    return record.id
+  })
+  await this.constructor.executeUpdate(sql, params)
+  await MqttHistory.clearPublished()
+}
+
 Object.defineProperties(Mqtt.prototype, {
   service: {
     get() {
@@ -325,7 +378,7 @@ MqttSource.prototype.log = async function(scanClassId) {
     }
   })
   for (tag of tags) {
-    await MqttHistory.create(this.id, tag.id, tag.value)
+    await this.log(tag)
   }
 }
 
@@ -344,21 +397,6 @@ Object.defineProperties(MqttSource.prototype, {
   }
 })
 
-Object.defineProperties(MqttHistory.prototype, {
-  mqttSource: {
-    get() {
-      this.checkInit()
-      return MqttSource.findById(this._mqttSource)
-    }
-  },
-  tag: {
-    get() {
-      this.checkInit()
-      return Tag.findById(this._tag)
-    }
-  }
-})
-
 module.exports = {
   Device,
   Modbus,
@@ -368,7 +406,6 @@ module.exports = {
   Service,
   Mqtt,
   MqttSource,
-  MqttHistory,
   Tag,
   ScanClass,
   User

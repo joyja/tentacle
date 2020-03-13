@@ -13,8 +13,7 @@ const {
   ModbusSource,
   Service,
   Mqtt,
-  MqttSource,
-  MqttHistory
+  MqttSource
 } = require('../../relations')
 const fromUnixTime = require('date-fns/fromUnixTime')
 
@@ -70,7 +69,6 @@ test(`Initializing Service, also initializes Mqtt, MqttSource and MqttHistory.`,
   expect(Service.initialized).toBe(true)
   expect(Mqtt.initialized).toBe(true)
   expect(MqttSource.initialized).toBe(true)
-  expect(MqttHistory.initialized).toBe(true)
 })
 let service = null
 test(`Mqtt: create creates a service with service config`, async () => {
@@ -310,70 +308,6 @@ describe(`MQTT Source: `, () => {
   })
 })
 
-describe(`MQTT History: `, () => {
-  let history = undefined
-  test(`Create creates instance and adds to MqttHistory.sources.`, async () => {
-    const mqttSource = MqttSource.instances[1]
-    const scanClass = await ScanClass.create(1000, User.instances[0].id)
-    const tag = await Tag.create(
-      `aTag`,
-      `A Tag`,
-      123,
-      scanClass.id,
-      User.instances[0].id,
-      'FLOAT'
-    )
-    await ModbusSource.create(
-      Device.instances[0].config.id,
-      tag.id,
-      41234,
-      'HOLDING_REGISTER'
-    )
-    historyId = await MqttHistory.create(mqttSource.id, tag.id, tag.value)
-  })
-  test(`check that init sets the appropriate underscore fields.`, async () => {
-    const row = await MqttHistory.executeQuery(
-      `SELECT * FROM ${MqttHistory.table}`,
-      [],
-      true
-    )
-    const id = row.id
-    const mqttSourceId = row.mqttSource
-    const tagId = row.tag
-    const value = row.value
-    const timestamp = row.timestamp
-    MqttHistory.instances = []
-    mqttHistory = new MqttHistory(id)
-    await mqttHistory.init()
-    expect(mqttHistory._mqttSource).toBe(mqttSourceId)
-    expect(mqttHistory._tag).toBe(tagId)
-    expect(mqttHistory._value).toBe(value)
-    expect(mqttHistory._timestamp).toBe(timestamp)
-    await MqttHistory.getAll()
-  })
-  test(`Getters all return their underscore values.`, async () => {
-    const history = await MqttHistory.get(historyId)
-    expect(history.value).toBe(history._value)
-    expect(getTime(history.timestamp)).toBe(history._timestamp)
-  })
-})
-
-test(`Mqtt source log creates a historical record for each tag with the device as a source of a specific scan class`, async () => {
-  const prevCount = MqttHistory.instances.length
-  const mqttSource = MqttSource.instances[1]
-  const scanClass = ScanClass.instances[0]
-  await mqttSource.log(scanClass.id)
-  expect(MqttHistory.instances.length).toBe(
-    prevCount +
-      scanClass.tags.filter((tag) => {
-        if (tag.source) {
-          tag.source.device.id === mqttSource.device.id
-        } else {
-          false
-        }
-      }).length
-  )
-})
 test(`Publish publishes the real tag values, the historical tag values, and deletes the buffer.`, async () => {
   const mqtt = Mqtt.instances[0]
   mqtt.connect()
@@ -383,6 +317,7 @@ test(`Publish publishes the real tag values, the historical tag values, and dele
 test(`Tag: scan calls tag.source.read for each tag with a source and mqttSource.log`, async () => {
   spyOn(ModbusSource.prototype, 'read')
   spyOn(MqttSource.prototype, 'log')
+  await ScanClass.create('default', 'default scan class', 3000)
   await ScanClass.instances[0].scan()
   expect(ModbusSource.prototype.read).toBeCalledTimes(
     ScanClass.instances[0].tags.filter((tag) => tag.source).length
