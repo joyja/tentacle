@@ -342,7 +342,7 @@ Mqtt.prototype.publishHistory = async function() {
   const sql = `DELETE FROM mqttPrimaryHostHistory WHERE id in (${'?,'
     .repeat(historyToPublish.length)
     .slice(0, -1)})`
-  const params = mqttHistoryToPublish.map((record) => {
+  const params = historyToPublish.map((record) => {
     return record.id
   })
   await this.constructor.executeUpdate(sql, params)
