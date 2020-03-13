@@ -417,7 +417,7 @@ class MqttPrimaryHost extends Model {
       b.value as value
       FROM mqttPrimaryHostHistory AS a 
       JOIN mqttHistory AS b 
-      WHERE a.mqttHistory=b.id`
+      ON a.mqttHistory=b.id`
     if (limit) {
       sql = `${sql} LIMIT ${limit}`
     }
