@@ -384,11 +384,11 @@ MqttSource.prototype.log = async function(scanClassId) {
     let sql = `INSERT INTO mqttHistory (mqttSource, tag, timestamp, value)`
     sql = `${sql} VALUES (?,?,?,?);`
     let params = [this.id, tag.id, getTime(new Date()), tag.value]
-    const result = await this.executeUpdate(sql, params)
+    const result = await this.constructor.executeUpdate(sql, params)
     for (host of primaryHosts) {
       sql = `${sql} INSERT INTO mqttPrimaryHostHistory (mqttPrimaryHost, mqttHistory)`
       params = [host.id, result.lastId]
-      await this.executeUpdate(sql, params)
+      await this.constructor.executeUpdate(sql, params)
     }
   }
 }
