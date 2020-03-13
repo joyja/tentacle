@@ -296,7 +296,7 @@ Mqtt.create = async function(
   return mqtt
 }
 
-Mqtt.publishHistory = async function() {
+Mqtt.prototype.publishHistory = async function() {
   const hosts = this.primaryHosts.filter((host) => {
     return host.readyForData
   })
@@ -367,7 +367,6 @@ Object.defineProperties(Mqtt.prototype, {
 })
 
 MqttSource.prototype.log = async function(scanClassId) {
-  console.log(scanClassId)
   const scanClass = ScanClass.findById(scanClassId)
   const tags = Tag.instances.filter((tag) => {
     if (tag.source) {
