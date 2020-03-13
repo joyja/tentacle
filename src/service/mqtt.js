@@ -366,18 +366,6 @@ class MqttSource extends Model {
     this._mqtt = result.mqtt
     this._device = result.device
   }
-  async log(tag) {
-    const primaryHosts = this.mqtt.primaryHosts
-    let sql = `INSERT INTO mqttHistory (mqttSource, tag, timestamp, value)`
-    sql = `${sql} VALUES (?,?,?,?);`
-    let params = [this.id, tag.id, getTime(new Date()), tag.value]
-    const result = await this.executeUpdate(sql, params)
-    for (host of primaryHosts) {
-      sql = `${sql} INSERT INTO mqttPrimaryHostHistory (mqttPrimaryHost, mqttHistory)`
-      params = [host.id, result.lastId]
-      await this.executeUpdate(sql, params)
-    }
-  }
 }
 MqttSource.table = `mqttSource`
 MqttSource.fields = [

@@ -8,6 +8,7 @@ const {
 } = require('./device')
 const { Service, Mqtt, MqttSource, MqttHistory } = require('./service')
 const { User } = require('./auth')
+const getTime = require('date-fns/getTime')
 
 // This file creates any properties that form relationships with other models.
 // It is defined here to prevent circular dependencies.
