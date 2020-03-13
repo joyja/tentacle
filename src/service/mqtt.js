@@ -500,9 +500,8 @@ class MqttPrimaryHost extends Model {
       instance.id === this._mqtt
     })
   }
-  async getRecordCount() {
-    const history = await this.getHistory()
-    return history.length
+  getRecordCount() {
+    return MqttPrimaryHostHistory.getCountByPrimaryHostId(this.id)
   }
   getHistory(limit) {
     return MqttPrimaryHostHistory.getByPrimaryHostId(this.id, limit)
@@ -537,6 +536,11 @@ class MqttPrimaryHostHistory extends Model {
       await instance.init()
     }
     return instances
+  }
+  static async getCountByPrimaryHostId(mqttPrimaryHostId) {
+    let sql = `SELECT COUNT(id) AS count FROM ${this.table} WHERE mqttPrimaryHost=?`
+    const result = await this.executeQuery(sql, [mqttPrimaryHostId], true)
+    return result.count
   }
   static async getByHistoryId(mqttHistoryId, limit) {
     let sql = `SELECT id FROM ${this.table} WHERE mqttHistory=?`
