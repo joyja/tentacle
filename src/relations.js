@@ -339,14 +339,20 @@ Mqtt.prototype.publishHistory = async function() {
       metrics: [...payload]
     })
   }
-  const sql = `DELETE FROM mqttPrimaryHostHistory WHERE id in (${'?,'
+  let sql = `DELETE FROM mqttPrimaryHostHistory WHERE id in (${'?,'
     .repeat(historyToPublish.length)
     .slice(0, -1)})`
-  const params = historyToPublish.map((record) => {
+  let params = historyToPublish.map((record) => {
     return record.id
   })
   await this.constructor.executeUpdate(sql, params)
-  await MqttHistory.clearPublished()
+  sql = `DELETE FROM mqttHistory 
+    WHERE EXISTS 
+      (	SELECT a.id 
+        FROM mqttHistory AS a 
+        LEFT JOIN mqttPrimaryHostHistory AS b ON a.id = b.mqttHistory 
+        WHERE b.id IS NULL AND mqttHistory.id = a.id)`
+  return this.executeQuery(sql, [], false)
 }
 
 Object.defineProperties(Mqtt.prototype, {
