@@ -95,6 +95,7 @@ The easiest way is to use [PM2](https://github.com/Unitech/pm2).
     * [MqttSource](#mqttsource)
     * [ScanClass](#scanclass)
     * [Service](#service)
+    * [Subscription](#subscription)
     * [Tag](#tag)
     * [User](#user)
   * [Enums](#enums)
@@ -248,6 +249,11 @@ Requires a valid authorization token. Creates a new scan class
 <td></td>
 </tr>
 <tr>
+<td colspan="2" align="right" valign="top">description</td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" align="right" valign="top">rate</td>
 <td valign="top"><a href="#int">Int</a>!</td>
 <td></td>
@@ -264,6 +270,16 @@ Requires a valid authorization token. Updates an existing scan class
 <tr>
 <td colspan="2" align="right" valign="top">id</td>
 <td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">name</td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">description</td>
+<td valign="top"><a href="#string">String</a></td>
 <td></td>
 </tr>
 <tr>
@@ -359,6 +375,11 @@ Requires a valid authorization token. Updates an existing tag
 <td></td>
 </tr>
 <tr>
+<td colspan="2" align="right" valign="top">datatype</td>
+<td valign="top"><a href="#datatype">Datatype</a></td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" align="right" valign="top">value</td>
 <td valign="top"><a href="#string">String</a></td>
 <td></td>
@@ -447,6 +468,11 @@ Requires a valid authorization token. Creates a modbus device, and automatically
 <td></td>
 </tr>
 <tr>
+<td colspan="2" align="right" valign="top">retryRate</td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>updateModbus</strong></td>
 <td valign="top"><a href="#device">Device</a></td>
 <td>
@@ -497,6 +523,11 @@ Requires a valid authorization token. Updates an existing modbus device and refr
 </tr>
 <tr>
 <td colspan="2" align="right" valign="top">timeout</td>
+<td valign="top"><a href="#int">Int</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">retryRate</td>
 <td valign="top"><a href="#int">Int</a></td>
 <td></td>
 </tr>
@@ -782,6 +813,11 @@ Requires a valid authorization token. Creates an MQTT Sparkplug B service (tied 
 <td></td>
 </tr>
 <tr>
+<td colspan="2" align="right" valign="top">recordLimit</td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" align="right" valign="top">primaryHosts</td>
 <td valign="top">[<a href="#string">String</a>!]</td>
 <td></td>
@@ -842,6 +878,11 @@ Requires a valid authorization token. Updates an MQTT Sparkplug B service and re
 </tr>
 <tr>
 <td colspan="2" align="right" valign="top">rate</td>
+<td valign="top"><a href="#int">Int</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">recordLimit</td>
 <td valign="top"><a href="#int">Int</a></td>
 <td></td>
 </tr>
@@ -1263,6 +1304,15 @@ Whether registers start from zero or one. Can be used to make sure device addres
 
 </td>
 </tr>
+<tr>
+<td colspan="2" valign="top"><strong>retryRate</strong></td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td>
+
+Milliseconds between retries when connection is interrupted.
+
+</td>
+</tr>
 </tbody>
 </table>
 
@@ -1425,6 +1475,15 @@ True if ssl:// is to be used, otherwise tcp:// will be used.
 </td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>recordLimit</strong></td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td>
+
+Maximum number of records to publish at one time while forwarding historical data.
+
+</td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>primaryHosts</strong></td>
 <td valign="top">[<a href="#mqttprimaryhost">MqttPrimaryHost</a>!]!</td>
 <td>
@@ -1554,6 +1613,24 @@ A scan class allows for groups of tags to be updated at the same pre-defined rat
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>name</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td>
+
+Identifier for the scan class, used as a brief descriptor
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>description</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td>
+
+Description to allow for users to give the scan class more context.
+
+</td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>rate</strong></td>
 <td valign="top"><a href="#int">Int</a>!</td>
 <td>
@@ -1646,6 +1723,26 @@ User who created the service.
 Date/time the service was created.
 
 </td>
+</tr>
+</tbody>
+</table>
+
+##### Subscription
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>tagUpdate</strong></td>
+<td valign="top"><a href="#tag">Tag</a></td>
+<td></td>
 </tr>
 </tbody>
 </table>
