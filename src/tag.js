@@ -44,10 +44,10 @@ class Tag extends Model {
       min,
       units
     }
-    return super.create(fields, Tag)
+    return super.create(fields)
   }
-  async init() {
-    const result = await super.init(Tag)
+  async init(async) {
+    const result = await super.init(async)
     this._name = result.name
     this._description = result.description
     this._value = result.value
@@ -181,8 +181,8 @@ class ScanClass extends Model {
     }
     return super.create(fields)
   }
-  async init() {
-    const result = await super.init(ScanClass)
+  async init(async) {
+    const result = await super.init(async)
     this._name = result.name
     this._description = result.description
     this._rate = result.rate

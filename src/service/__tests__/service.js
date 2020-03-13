@@ -329,7 +329,7 @@ describe(`MQTT History: `, () => {
       41234,
       'HOLDING_REGISTER'
     )
-    history = await MqttHistory.create(mqttSource.id, tag.id, tag.value)
+    historyId = await MqttHistory.create(mqttSource.id, tag.id, tag.value)
   })
   test(`check that init sets the appropriate underscore fields.`, async () => {
     const row = await MqttHistory.executeQuery(
@@ -352,6 +352,7 @@ describe(`MQTT History: `, () => {
     await MqttHistory.getAll()
   })
   test(`Getters all return their underscore values.`, async () => {
+    const history = await MqttHistory.get(historyId)
     expect(history.value).toBe(history._value)
     expect(getTime(history.timestamp)).toBe(history._timestamp)
   })

@@ -1,6 +1,6 @@
 {
   "name": "tentacle-edge",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "A nodejs industrial automation edge gateway with a GraphQL API",
   "scripts": {
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",

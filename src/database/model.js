@@ -8,6 +8,23 @@ const prioritize = (obj1, obj2) => {
 }
 const queue = new TaskEasy(prioritize, 1000)
 
+const executeQueryAsync = function(db, sql, params, firstRowOnly = false) {
+  return new Promise((resolve, reject) => {
+    const callback = (error, rows) => {
+      if (error) {
+        reject(error)
+      } else {
+        resolve(rows)
+      }
+    }
+    if (firstRowOnly) {
+      db.get(sql, params, callback)
+    } else {
+      db.all(sql, params, callback)
+    }
+  })
+}
+
 const executeQuery = function(
   db,
   sql,
@@ -16,23 +33,10 @@ const executeQuery = function(
   priority = 1
 ) {
   return queue.schedule(
-    (db, sql, params) => {
-      return new Promise((resolve, reject) => {
-        const callback = (error, rows) => {
-          if (error) {
-            reject(error)
-          } else {
-            resolve(rows)
-          }
-        }
-        if (firstRowOnly) {
-          db.get(sql, params, callback)
-        } else {
-          db.all(sql, params, callback)
-        }
-      })
+    (db, sql, params, firstRowOnly) => {
+      return executeQueryAsync(db, sql, params, firstRowOnly)
     },
-    [db, sql, params],
+    [db, sql, params, firstRowOnly],
     {
       priority,
       timestamp: new Date()
@@ -40,18 +44,22 @@ const executeQuery = function(
   )
 }
 
+const executeUpdateAsync = function(db, sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.run(sql, params, function(error) {
+      if (error) {
+        reject(error)
+      } else {
+        resolve(this)
+      }
+    })
+  })
+}
+
 const executeUpdate = function(db, sql, params = [], priority = 1) {
   return queue.schedule(
     (db, sql, params) => {
-      return new Promise((resolve, reject) => {
-        db.run(sql, params, function(error) {
-          if (error) {
-            reject(error)
-          } else {
-            resolve(this)
-          }
-        })
-      })
+      return executeUpdateAsync(db, sql, params)
     },
     [db, sql, params],
     {
@@ -62,15 +70,32 @@ const executeUpdate = function(db, sql, params = [], priority = 1) {
 }
 
 class Model {
-  static executeUpdate(sql, params) {
-    return executeUpdate(this.db, sql, params).catch((error) => {
+  static executeUpdate(sql, params, priority = 1) {
+    return executeUpdate(this.db, sql, params, priority).catch((error) => {
       logger.error(error)
     })
   }
-  static executeQuery(sql, params, firstRowOnly) {
-    return executeQuery(this.db, sql, params, firstRowOnly).catch((error) => {
+  static executeQuery(sql, params, firstRowOnly, priority = 1) {
+    return executeQuery(this.db, sql, params, firstRowOnly, priority).catch(
+      (error) => {
+        logger.error(error)
+      }
+    )
+  }
+  static executeUpdateAsync(sql, params) {
+    return executeUpdateAsync(this.db, sql, params).catch((error) => {
       logger.error(error)
     })
+  }
+  static executeQueryAsync(sql, params, firstRowOnly) {
+    return executeQueryAsync(this.db, sql, params, firstRowOnly).catch(
+      (error) => {
+        logger.error(error)
+      }
+    )
+  }
+  static schedule(callback, params, priority) {
+    return queue.schedule(callback, params, { priority, timestamp: new Date() })
   }
   static createTable() {
     // fields should be formatted { colName, colType } for typical columns
@@ -119,7 +144,7 @@ class Model {
       )
     }
   }
-  static async get(selector, ignoreExisting = false, createResults) {
+  static async get(selector, ignoreExisting = false, async = false) {
     this.checkInitialized()
     let model = undefined
     if (typeof selector === 'number') {
@@ -130,8 +155,7 @@ class Model {
       }
       if (!model || this.cold) {
         model = new this(selector)
-        model.createResults = createResults
-        await model.init(this)
+        await model.init(async)
       }
       return model
     } else {
@@ -155,7 +179,7 @@ class Model {
     }
     return instances
   }
-  static async create(fields) {
+  static async create(fields, async = false) {
     this.checkInitialized()
     const sql = `INSERT INTO ${this.table} ("${Object.keys(fields).join(
       `","`
@@ -163,13 +187,14 @@ class Model {
       .fill(`?`)
       .join(',')})`
     const params = Object.keys(fields).map((key) => fields[key])
-    const result = await this.executeUpdate(sql, params)
-    const createResults = {
-      sql,
-      params,
-      result
+    const result = async
+      ? await this.executeUpdateAsync(sql, params)
+      : await this.executeUpdate(sql, params)
+    if (!this.cold) {
+      return this.get(result.lastID, false, async)
+    } else {
+      return result.lastID
     }
-    return this.get(result.lastID, false, createResults)
   }
   static async delete(selector) {
     this.checkInitialized()
@@ -215,11 +240,13 @@ class Model {
       )
     }
   }
-  async init() {
+  async init(async = false) {
     const sql = `SELECT * FROM ${this.constructor.table} WHERE id=?`
     let result
     try {
-      result = await this.constructor.executeQuery(sql, [this._id])
+      result = async
+        ? await this.constructor.executeQueryAsync(sql, [this._id])
+        : await this.constructor.executeQuery(sql, [this._id])
       if (result.length < 1) {
         throw new Error(
           `There is no ${this.constructor.table} with id# ${this._id}.`
@@ -266,5 +293,6 @@ class Model {
 module.exports = {
   executeQuery,
   executeUpdate,
+  queue,
   Model
 }
