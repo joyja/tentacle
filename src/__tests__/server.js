@@ -46,16 +46,10 @@ afterAll(async () => {
 
 beforeEach(() => {
   jest.useFakeTimers()
-  ModbusRTU.prototype.connectTCP.mockClear()
-  ModbusRTU.prototype.close.mockClear()
-  Controller.prototype.connect.mockClear()
-  Controller.prototype.destroy.mockClear()
-  mockSparkplug.on.mockClear()
-  mockSparkplug.publishNodeBirth.mockClear()
-  mockSparkplug.publishDeviceBirth.mockClear()
-  mockSparkplug.publishDeviceData.mockClear()
-  mockSparkplug.publishDeviceDeath.mockClear()
-  mockSparkplug.stop.mockClear()
+})
+
+afterEach(() => {
+  jest.clearAllMocks()
 })
 
 let client = undefined
@@ -244,7 +238,8 @@ test('create modbus with the proper headers and fields returns valid results', a
     reverseBits: true,
     reverseWords: true,
     zeroBased: true,
-    timeout: 1000
+    timeout: 1000,
+    retryRate: 4000
   }
   const { createModbus } = await client
     .request(mutation.createModbus, modbusFields)
@@ -272,11 +267,10 @@ test('create modbus with the proper headers and fields returns valid results', a
   modbus = createModbus
 })
 test('create modbus without authorization headers returns error', async () => {
-  expect(
-    await request(host, mutation.createModbus, modbusFields).catch((e) => e)
-  ).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":{"createModbus":null},"errors":[{"message":"You are not authorized.","locations":[{"line":11,"column":3}],"path":["createModbus"]}],"status":200},"request":{"query":"mutation CreateModbus (\\n  $name: String!\\n  $description: String!\\n  $host: String!\\n  $port: Int!\\n  $reverseBits: Boolean!\\n  $reverseWords: Boolean!\\n  $zeroBased: Boolean!\\n  $timeout: Int!\\n){\\n  createModbus(\\n    name: $name\\n    description: $description\\n    host: $host\\n    port: $port\\n    reverseBits: $reverseBits\\n    reverseWords: $reverseWords\\n    zeroBased: $zeroBased\\n    timeout: $timeout\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        timeout\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    max\\n    min\\n    units\\n  }\\n\\n","variables":{"name":"aModbus","description":"A Modbus","host":"localhost","port":502,"reverseBits":true,"reverseWords":true,"zeroBased":true,"timeout":1000}}}]`
+  const result = await request(host, mutation.createModbus, modbusFields).catch(
+    (e) => e
   )
+  expect(result.message).toContain('You are not authorized.')
   expect(ModbusRTU.prototype.connectTCP).toBeCalledTimes(0)
   expect(ModbusRTU.prototype.close).toBeCalledTimes(0)
 })
@@ -289,6 +283,8 @@ test('updateModbus updates the modbus values', async () => {
   modbusFields.reverseBits = false
   modbusFields.reverseWords = false
   modbusFields.zeroBased = false
+  modbusFields.timeout = 1000
+  modbusFields.retryRate = 10000
   const { updateModbus } = await client
     .request(mutation.updateModbus, modbusFields)
     .catch((error) => {
@@ -296,6 +292,7 @@ test('updateModbus updates the modbus values', async () => {
     })
   expect(ModbusRTU.prototype.connectTCP).toBeCalledTimes(1)
   expect(ModbusRTU.prototype.close).toBeCalledTimes(1)
+  expect(ModbusRTU.prototype.setTimeout).toBeCalledTimes(1)
   expect(updateModbus).toEqual({
     id: '1',
     ..._.pick(modbusFields, ['name', 'description']),
@@ -315,13 +312,10 @@ test('updateModbus updates the modbus values', async () => {
   modbus = updateModbus
 })
 test('updateModbus without authorization headers returns error', async () => {
-  expect(
-    await request(host, mutation.updateModbus, { id: modbus.id }).catch(
-      (e) => e
-    )
-  ).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":{"updateModbus":null},"errors":[{"message":"You are not authorized.","locations":[{"line":12,"column":3}],"path":["updateModbus"]}],"status":200},"request":{"query":"mutation UpdateModbus (\\n  $id: ID!\\n  $name: String\\n  $description: String\\n  $host: String\\n  $port: Int\\n  $reverseBits: Boolean\\n  $reverseWords: Boolean\\n  $zeroBased: Boolean\\n  $timeout: Int\\n){\\n  updateModbus(\\n    id: $id\\n    name: $name\\n    description: $description\\n    host: $host\\n    port: $port\\n    reverseBits: $reverseBits\\n    reverseWords: $reverseWords\\n    zeroBased: $zeroBased\\n    timeout: $timeout\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        timeout\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    max\\n    min\\n    units\\n  }\\n\\n","variables":{"id":"1"}}}]`
-  )
+  const result = await request(host, mutation.updateModbus, {
+    id: modbus.id
+  }).catch((e) => e)
+  expect(result.message).toContain(`You are not authorized.`)
   expect(ModbusRTU.prototype.connectTCP).toBeCalledTimes(0)
   expect(ModbusRTU.prototype.close).toBeCalledTimes(0)
 })
@@ -360,13 +354,12 @@ test('create ethernetip with the proper headers and fields returns valid results
   ethernetip = createEthernetIP
 })
 test('create ethernetip without authorization headers returns error', async () => {
-  expect(
-    await request(host, mutation.createEthernetIP, ethernetipFields).catch(
-      (e) => e
-    )
-  ).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":{"createEthernetIP":null},"errors":[{"message":"You are not authorized.","locations":[{"line":7,"column":3}],"path":["createEthernetIP"]}],"status":200},"request":{"query":"mutation CreateEthernetIP (\\n  $name: String!\\n  $description: String!\\n  $host: String!\\n  $slot: Int!\\n){\\n  createEthernetIP(\\n    name: $name\\n    description: $description\\n    host: $host\\n    slot: $slot\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        timeout\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    max\\n    min\\n    units\\n  }\\n\\n","variables":{"name":"aEthernetIP","description":"A EthernetIP","host":"localhost","slot":0}}}]`
-  )
+  const result = await request(
+    host,
+    mutation.createEthernetIP,
+    ethernetipFields
+  ).catch((e) => e)
+  expect(result.message).toContain(`You are not authorized.`)
   expect(Controller.prototype.connect).toBeCalledTimes(0)
   expect(Controller.prototype.destroy).toBeCalledTimes(0)
 })
@@ -404,13 +397,10 @@ test('updateEthernetIP updates the ethernetip values', async () => {
   ethernetip = updateEthernetIP
 })
 test('updateEthernetIP without authorization headers returns error', async () => {
-  expect(
-    await request(host, mutation.updateEthernetIP, { id: ethernetip.id }).catch(
-      (e) => e
-    )
-  ).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":{"updateEthernetIP":null},"errors":[{"message":"You are not authorized.","locations":[{"line":8,"column":3}],"path":["updateEthernetIP"]}],"status":200},"request":{"query":"mutation UpdateEthernetIP (\\n  $id: ID!\\n  $name: String\\n  $description: String\\n  $host: String\\n  $slot: Int\\n){\\n  updateEthernetIP(\\n    id: $id\\n    name: $name\\n    description: $description\\n    host: $host\\n    slot: $slot\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        timeout\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    max\\n    min\\n    units\\n  }\\n\\n","variables":{"id":"2"}}}]`
-  )
+  const result = await request(host, mutation.updateEthernetIP, {
+    id: ethernetip.id
+  }).catch((e) => e)
+  expect(result.message).toContain(`You are not authorized.`)
   expect(Controller.prototype.connect).toBeCalledTimes(0)
   expect(Controller.prototype.destroy).toBeCalledTimes(0)
 })
@@ -421,11 +411,8 @@ test('device query returns a list of devices', async () => {
   expect(devices).toEqual([modbus, ethernetip])
 })
 test('device query without authorization headers returns error', async () => {
-  expect(
-    await request(host, query.devices).catch((e) => e)
-  ).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":null,"errors":[{"message":"You are not authorized.","locations":[{"line":3,"column":5}],"path":["devices"]}],"status":200},"request":{"query":"\\n  query Devices {\\n    devices {\\n      ...FullDevice\\n    }\\n  }\\n  \\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        timeout\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    max\\n    min\\n    units\\n  }\\n\\n\\n"}}]`
-  )
+  const result = await request(host, query.devices).catch((e) => e)
+  expect(result.message).toContain(`You are not authorized.`)
 })
 mqttFields = undefined
 mqtt = undefined
@@ -473,7 +460,8 @@ test('create mqtt with the proper headers and fields returns valid results', asy
         return {
           id: expect.any(String),
           name: host,
-          status: 'UNKNOWN'
+          status: 'UNKNOWN',
+          recordCount: expect.any(Number)
         }
       }),
       port: `${mqttFields.port}`,
@@ -625,13 +613,10 @@ test('delete mqtt with valid arguments and credentials returns deleted service',
   expect(isStillThere).toBe(false)
 })
 test('delete modbus without authorization headers returns error', async () => {
-  expect(
-    await request(host, mutation.deleteModbus, { id: modbus.id }).catch(
-      (e) => e
-    )
-  ).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":{"deleteModbus":null},"errors":[{"message":"You are not authorized.","locations":[{"line":4,"column":3}],"path":["deleteModbus"]}],"status":200},"request":{"query":"mutation DeleteModbus (\\n  $id: ID!\\n){\\n  deleteModbus(\\n    id: $id\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        timeout\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    max\\n    min\\n    units\\n  }\\n\\n","variables":{"id":"1"}}}]`
-  )
+  const result = await request(host, mutation.deleteModbus, {
+    id: modbus.id
+  }).catch((e) => e)
+  expect(result.message).toContain(`You are not authorized.`)
 })
 test('delete modbus with valid arguments and credentials returns deleted device', async () => {
   const { deleteModbus } = await client
@@ -651,13 +636,10 @@ test('delete modbus with valid arguments and credentials returns deleted device'
   expect(isStillThere).toBe(false)
 })
 test('delete ethernetip without authorization headers returns error', async () => {
-  expect(
-    await request(host, mutation.deleteEthernetIP, { id: ethernetip.id }).catch(
-      (e) => e
-    )
-  ).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":{"deleteEthernetIP":null},"errors":[{"message":"You are not authorized.","locations":[{"line":4,"column":3}],"path":["deleteEthernetIP"]}],"status":200},"request":{"query":"mutation DeleteEthernetIP (\\n  $id: ID!\\n){\\n  deleteEthernetIP(\\n    id: $id\\n  ) {\\n    ... FullDevice\\n  }\\n}\\n\\n  fragment FullDevice on Device {\\n    id\\n    name\\n    description\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    config {\\n      ... on Modbus {\\n        id\\n        host\\n        port\\n        reverseBits\\n        reverseWords\\n        status\\n        zeroBased\\n        timeout\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n        }\\n      }\\n    }\\n    config {\\n      ... on EthernetIP {\\n        id\\n        host\\n        slot\\n        sources {\\n          tag {\\n            ...ScalarTag\\n          }\\n          tagname\\n        }\\n        status\\n      }\\n    }\\n  }\\n  \\n  fragment ScalarTag on Tag {\\n    id\\n    name\\n    description\\n    datatype\\n    value\\n    createdBy {\\n      id\\n      username\\n    }\\n    createdOn\\n    max\\n    min\\n    units\\n  }\\n\\n","variables":{"id":"2"}}}]`
-  )
+  const result = await request(host, mutation.deleteEthernetIP, {
+    id: ethernetip.id
+  }).catch((e) => e)
+  expect(result.message).toContain(`You are not authorized.`)
 })
 test('delete ethernetip with valid arguments and credentials returns deleted device', async () => {
   const { deleteEthernetIP } = await client

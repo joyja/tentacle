@@ -64,6 +64,8 @@ type Modbus {
   status: String
   """Whether registers start from zero or one. Can be used to make sure device addresses and those configured in the gateway match (and are not one off from eachother)"""
   zeroBased: Boolean!
+  """Milliseconds between retries when connection is interrupted."""
+  retryRate: Int!
 }
 
 """A Mobus source reads a register from a modbus TCP device and updates a tag value per the tags scan class."""
@@ -261,7 +263,8 @@ type Mutation {
     reverseBits: Boolean!,
     reverseWords: Boolean!,
     zeroBased: Boolean!,
-    timeout: Int!
+    timeout: Int!,
+    retryRate: Int!
   ): Device
   """Requires a valid authorization token. Updates an existing modbus device and refreshes the connection."""
   updateModbus(
@@ -273,7 +276,8 @@ type Mutation {
     reverseBits: Boolean,
     reverseWords: Boolean,
     zeroBased: Boolean,
-    timeout: Int
+    timeout: Int,
+    retryRate: Int
   ): Device
   """Requires a valid authorization token. Deletes a modbus device. All sources assigned to this device are deleted and tags using
   this device as a source will have their sources set to null, making their values static."""

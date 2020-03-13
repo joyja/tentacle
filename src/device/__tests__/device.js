@@ -57,6 +57,7 @@ test(`Modbus: create creates a device with modbus config`, async () => {
   const reverseWords = true
   const zeroBased = true
   const timeout = 1000
+  const retryRate = 3000
   const createdBy = user.id
   const modbus = await Modbus.create(
     name,
@@ -67,6 +68,7 @@ test(`Modbus: create creates a device with modbus config`, async () => {
     reverseWords,
     zeroBased,
     timeout,
+    retryRate,
     createdBy
   )
   device = modbus.device
@@ -79,6 +81,7 @@ test(`Modbus: create creates a device with modbus config`, async () => {
   expect(modbus.reverseWords).toBe(reverseWords)
   expect(modbus.zeroBased).toBe(zeroBased)
   expect(modbus.timeout).toBe(timeout)
+  expect(modbus.retryRate).toBe(retryRate)
   expect(modbus.device.createdBy.id).toBe(user.id)
 })
 describe(`Device: `, () => {

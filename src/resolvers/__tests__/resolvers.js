@@ -43,9 +43,15 @@ const dbFilename = `test-resolvers-spread-edge.db`
 
 let db = undefined
 let user = undefined
-let context = {}
+const pubsub = {
+  publish: jest.fn(),
+  asyncIterator: jest.fn()
+}
+let context = {
+  pubsub
+}
 let unauthorizedContext = {}
-const pubsub = new PubSub()
+
 beforeAll(async () => {
   ModbusRTU.prototype.connectTCP.mockResolvedValue({})
   ModbusRTU.prototype.close.mockImplementation((callback) => {
@@ -1198,5 +1204,12 @@ describe(`Mutations: `, () => {
       await resolvers.Mutation.deleteMqtt({}, args, context, {}).catch((e) => e)
     ).toMatchInlineSnapshot(`[Error: Service with id 1234567 does not exist.]`)
     expect(Mqtt.instances.length).toBe(prevCount)
+  })
+})
+
+describe('Subscription: ', () => {
+  test('tagUpdate subscribe returns an asyncIterator', () => {
+    resolvers.Subscription.tagUpdate.subscribe({}, {}, context)
+    expect(pubsub.asyncIterator).toBeCalledTimes(1)
   })
 })

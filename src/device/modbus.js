@@ -4,7 +4,20 @@ const ModbusRTU = require(`modbus-serial`)
 class Modbus extends Model {
   static async initialize(db, pubsub) {
     await ModbusSource.initialize(db, pubsub)
-    return super.initialize(db, pubsub)
+    const result = await super.initialize(db, pubsub)
+    if (this.tableExisted && this.version < 4) {
+      const newColumns = [
+        { colName: 'retryRate', colType: 'INTEGER', default: 5000 }
+      ]
+      for (const column of newColumns) {
+        let sql = `ALTER TABLE "${this.table}" ADD "${column.colName}" ${column.colType}`
+        if (column.default) {
+          sql = `${sql} DEFAULT ${column.default}`
+        }
+        await this.executeUpdate(sql)
+      }
+    }
+    return result
   }
   static _createModel(fields) {
     return super.create(fields)
@@ -28,6 +41,7 @@ class Modbus extends Model {
     this._reverseWords = result.reverseWords
     this._zeroBased = result.zeroBased
     this.client.setTimeout(result.timeout)
+    this._retryRate = result.retryRate
     this.connected = false
     this.error = null
   }
@@ -38,8 +52,15 @@ class Modbus extends Model {
         .connectTCP(this.host, { port: this.port })
         .catch((error) => {
           this.error = error.message
+          this.connected = false
+          if (!this.retryInterval) {
+            this.retryInterval = setInterval(async () => {
+              await this.connect()
+            }, this.retryRate)
+          }
         })
       if (!this.error) {
+        this.retryInterval = clearInterval(this.retryInterval)
         this.connected = true
       } else {
         this.connected = false
@@ -48,6 +69,7 @@ class Modbus extends Model {
   }
   async disconnect() {
     await new Promise((resolve, reject) => {
+      this.retryInterval = clearInterval(this.retryInterval)
       this.client.close(() => {
         resolve()
       })
@@ -108,6 +130,15 @@ class Modbus extends Model {
       this.client.setTimeout(result)
     )
   }
+  get retryRate() {
+    this.checkInit()
+    return this._retryRate
+  }
+  setRetryRate(value) {
+    return this.update(this.id, 'retryRate', value).then(
+      (result) => (this._retryRate = result)
+    )
+  }
   get status() {
     if (this.connected) {
       return `connected`
@@ -126,7 +157,8 @@ Modbus.fields = [
   { colName: 'reverseBits', colType: 'INTEGER' },
   { colName: 'reverseWords', colType: 'INTEGER' },
   { colName: 'zeroBased', colType: 'INTEGER' },
-  { colName: 'timeout', colType: 'INTEGER' }
+  { colName: 'timeout', colType: 'INTEGER' },
+  { colName: 'retryRate', colType: 'INTEGER' }
 ]
 Modbus.instances = []
 Modbus.initialized = false
@@ -200,6 +232,11 @@ class ModbusSource extends Model {
               resolve()
             }
           )
+        }).catch(async (error) => {
+          if (error.name === 'TransactionTimedOutError') {
+            await this.modbus.disconnect()
+            await this.modbus.connect()
+          }
         })
       } else if (this.registerType === 'HOLDING_REGISTER') {
         const quantity = this.format === 'INT16' ? 1 : 2
@@ -218,6 +255,11 @@ class ModbusSource extends Model {
               resolve()
             }
           )
+        }).catch(async (error) => {
+          if (error.name === 'TransactionTimedOutError') {
+            await this.modbus.disconnect()
+            await this.modbus.connect()
+          }
         })
       } else if (this.registerType === 'DISCRETE_INPUT') {
         return new Promise((resolve, reject) => {
@@ -236,6 +278,11 @@ class ModbusSource extends Model {
               }
             }
           )
+        }).catch(async (error) => {
+          if (error.name === 'TransactionTimedOutError') {
+            await this.modbus.disconnect()
+            await this.modbus.connect()
+          }
         })
       }
     }
