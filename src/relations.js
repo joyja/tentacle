@@ -352,7 +352,7 @@ Mqtt.prototype.publishHistory = async function() {
         FROM mqttHistory AS a 
         LEFT JOIN mqttPrimaryHostHistory AS b ON a.id = b.mqttHistory 
         WHERE b.id IS NULL AND mqttHistory.id = a.id)`
-  return this.executeQuery(sql, [], false)
+  return this.constructor.executeQuery(sql, [], false)
 }
 
 Object.defineProperties(Mqtt.prototype, {
