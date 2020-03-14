@@ -346,13 +346,18 @@ Mqtt.prototype.publishHistory = async function() {
     return record.id
   })
   await this.constructor.executeUpdate(sql, params)
-  sql = `DELETE FROM mqttHistory 
-    WHERE EXISTS 
-      (	SELECT a.id 
-        FROM mqttHistory AS a 
-        LEFT JOIN mqttPrimaryHostHistory AS b ON a.id = b.mqttHistory 
-        WHERE b.id IS NULL AND mqttHistory.id = a.id)`
-  return this.constructor.executeQuery(sql, [], false)
+  sql = `SELECT a.id AS id
+    FROM mqttHistory AS a
+    LEFT JOIN mqttPrimaryHostHistory AS b ON a.id = b.mqttHistory
+    WHERE b.id IS NULL LIMIT 750`
+  const historyToDelete = await this.constructor.executeQuery(sql, [], false)
+  sql = `DELETE FROM mqttHistory WHERE id in (${'?,'
+    .repeat(historyToDelete.length)
+    .slice(0, -1)})`
+  params = historyToDelete.map((record) => {
+    return record.id
+  })
+  await this.constructor.executeUpdate(sql, params)
 }
 
 Object.defineProperties(Mqtt.prototype, {
@@ -385,17 +390,22 @@ MqttSource.prototype.log = async function(scanClassId) {
     }
   })
   for (tag of tags) {
-    const primaryHosts = this.mqtt.primaryHosts
-    let sql = `INSERT INTO mqttHistory (mqttSource, tag, timestamp, value)`
-    sql = `${sql} VALUES (?,?,?,?);`
-    let params = [this.id, tag.id, getTime(new Date()), tag.value]
-    const result = await this.constructor.executeUpdate(sql, params)
-    for (host of primaryHosts) {
-      sql = `INSERT INTO mqttPrimaryHostHistory (mqttPrimaryHost, mqttHistory)`
-      sql = `${sql} VALUES (?,?);`
-      params = [host.id, result.lastID]
-      await this.constructor.executeUpdate(sql, params)
-    }
+    await new Promise((resolve) => {
+      this.db.serialize(async () => {
+        const primaryHosts = this.mqtt.primaryHosts
+        let sql = `INSERT INTO mqttHistory (mqttSource, tag, timestamp, value)`
+        sql = `${sql} VALUES (?,?,?,?);`
+        let params = [this.id, tag.id, getTime(new Date()), tag.value]
+        const result = await this.constructor.executeUpdate(sql, params)
+        for (host of primaryHosts) {
+          sql = `INSERT INTO mqttPrimaryHostHistory (mqttPrimaryHost, mqttHistory)`
+          sql = `${sql} VALUES (?,?);`
+          params = [host.id, result.lastID]
+          await this.constructor.executeUpdate(sql, params)
+        }
+        resolve()
+      })
+    })
   }
 }
 
