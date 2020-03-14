@@ -350,7 +350,7 @@ Mqtt.prototype.publishHistory = async function() {
     FROM mqttHistory AS a
     LEFT JOIN mqttPrimaryHostHistory AS b ON a.id = b.mqttHistory
     WHERE b.id IS NULL`
-  const historyToDelete = this.constructor.executeQuery(sql, [], false)
+  const historyToDelete = await this.constructor.executeQuery(sql, [], false)
   sql = `DELETE FROM mqttPrimaryHostHistory WHERE id in (${'?,'
     .repeat(historyToDelete.length)
     .slice(0, -1)})`
