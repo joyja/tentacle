@@ -310,35 +310,35 @@ Mqtt.prototype.publishHistory = async function() {
     })
     historyToPublish = [...historyToPublish, ...newRecords]
   }
-  // const devices = historyToPublish.reduce((a, record) => {
-  //   const source = MqttSource.findById(record.source)
-  //   return a.some((device) => {
-  //     return device.id === source.device.id
-  //   })
-  //     ? a
-  //     : [...a, source.device]
-  // }, [])
-  // for (device of devices) {
-  //   const payload = historyToPublish
-  //     .filter((record) => {
-  //       const source = MqttSource.findById(record.source)
-  //       return device.id === source.device.id
-  //     })
-  //     .map((record) => {
-  //       const tag = Tag.findById(record.tag)
-  //       return {
-  //         name: tag.name,
-  //         value: record.value,
-  //         timestamp: record.timestamp,
-  //         type: tag.datatype,
-  //         isHistorical: true
-  //       }
-  //     })
-  //   this.client.publishDeviceData(`${device.name}`, {
-  //     timestamp: getTime(new Date()),
-  //     metrics: [...payload]
-  //   })
-  // }
+  const devices = historyToPublish.reduce((a, record) => {
+    const source = MqttSource.findById(record.source)
+    return a.some((device) => {
+      return device.id === source.device.id
+    })
+      ? a
+      : [...a, source.device]
+  }, [])
+  for (device of devices) {
+    const payload = historyToPublish
+      .filter((record) => {
+        const source = MqttSource.findById(record.source)
+        return device.id === source.device.id
+      })
+      .map((record) => {
+        const tag = Tag.findById(record.tag)
+        return {
+          name: tag.name,
+          value: record.value,
+          timestamp: record.timestamp,
+          type: tag.datatype,
+          isHistorical: true
+        }
+      })
+    this.client.publishDeviceData(`${device.name}`, {
+      timestamp: getTime(new Date()),
+      metrics: [...payload]
+    })
+  }
   // let sql = `DELETE FROM mqttPrimaryHostHistory WHERE id in (${'?,'
   //   .repeat(historyToPublish.length)
   //   .slice(0, -1)})`
