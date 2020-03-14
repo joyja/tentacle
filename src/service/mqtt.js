@@ -1,14 +1,32 @@
-const { Model } = require(`../database`)
+const { Model, executeUpdate } = require(`../database`)
 const sparkplug = require(`tentacle-sparkplug-client`)
 const getTime = require('date-fns/getTime')
 const _ = require('lodash')
 const logger = require('../logger')
 
+const createTable = function(db, tableName, fields) {
+  let sql = `CREATE TABLE IF NOT EXISTS "${tableName}" (`
+  sql = `${sql} "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE`
+  fields.forEach((field) => {
+    if (field.colRef) {
+      sql = `${sql}, "${field.colName}" INTEGER`
+    } else {
+      sql = `${sql}, "${field.colName}" ${field.colType}`
+    }
+  })
+  fields.forEach((field) => {
+    if (field.colRef) {
+      sql = `${sql}, FOREIGN KEY("${field.colName}") REFERENCES "${field.colRef}"("id") ON DELETE ${field.onDelete}`
+    }
+  })
+  sql = `${sql});`
+  return executeUpdate(db, sql)
+}
+
 class Mqtt extends Model {
   static async initialize(db, pubsub) {
     await MqttSource.initialize(db, pubsub)
     await MqttPrimaryHost.initialize(db, pubsub)
-    await MqttPrimaryHostHistory.initialize(db, pubsub)
     const result = await super.initialize(db, pubsub)
     if (this.tableExisted && this.version < 3) {
       const newColumns = [{ colName: 'recordLimit', colType: 'TEXT' }]
@@ -17,6 +35,26 @@ class Mqtt extends Model {
         await this.executeUpdate(sql)
       }
     }
+    const mqttHistoryFields = [
+      { colName: 'mqttSource', colRef: 'mqttSource', onDelete: 'CASCADE' },
+      { colName: 'tag', colRef: 'tag', onDelete: 'CASCADE' },
+      { colName: 'timestamp', colType: 'INTEGER' },
+      { colName: 'value', colType: 'TEXT' }
+    ]
+    await createTable(this.db, 'mqttHistory', mqttHistoryFields)
+    const mqttPrimaryHostHistoryFields = [
+      {
+        colName: 'mqttPrimaryHost',
+        colRef: 'mqttPrimaryHost',
+        onDelete: 'CASCADE'
+      },
+      { colName: 'mqttHistory', colRef: 'mqttHistory', onDelete: 'CASCADE' }
+    ]
+    await createTable(
+      this.db,
+      'mqttPrimaryHostHistory',
+      mqttPrimaryHostHistoryFields
+    )
     return result
   }
   static async _createModel(fields) {
@@ -184,51 +222,6 @@ class Mqtt extends Model {
       })
     }
   }
-  async publishHistory() {
-    const hosts = this.primaryHosts.filter((host) => {
-      return host.readyForData
-    })
-    let historyToPublish = []
-    for (const host of hosts) {
-      const history = await host.getHistory(this.recordLimit)
-      const newRecords = history.filter((record) => {
-        return !historyToPublish.some((row) => {
-          return row.id === record.id
-        })
-      })
-      historyToPublish = [...historyToPublish, ...newRecords]
-    }
-    const devices = historyToPublish.reduce((a, record) => {
-      return a.some((device) => {
-        return device.id === record.mqttHistory.mqttSource.device.id
-      })
-        ? a
-        : [...a, record.mqttHistory.mqttSource.device]
-    }, [])
-    for (device of devices) {
-      const payload = historyToPublish
-        .filter((record) => {
-          return device.id === record.mqttHistory.mqttSource.device.id
-        })
-        .map((record) => {
-          return {
-            name: record.mqttHistory.tag.name,
-            value: record.mqttHistory.value,
-            timestamp: record.mqttHistory._timestamp,
-            type: record.mqttHistory.tag.datatype,
-            isHistorical: true
-          }
-        })
-      this.client.publishDeviceData(`${device.name}`, {
-        timestamp: getTime(new Date()),
-        metrics: [...payload]
-      })
-    }
-    for (const record of historyToPublish) {
-      await record.delete()
-    }
-    await MqttHistory.clearPublished()
-  }
   get primaryHosts() {
     this.checkInit()
     return MqttPrimaryHost.instances.filter((host) => {
@@ -359,7 +352,6 @@ Mqtt.connected = false
 
 class MqttSource extends Model {
   static async initialize(db, pubsub) {
-    await MqttHistory.initialize(db, pubsub)
     return super.initialize(db, pubsub)
   }
   static create(mqtt, device) {
@@ -374,13 +366,6 @@ class MqttSource extends Model {
     this._mqtt = result.mqtt
     this._device = result.device
   }
-  async getRecordCount() {
-    const history = await this.getHistory()
-    return history.length
-  }
-  getHistory(limit) {
-    return MqttHistory.getBySourceId(this.id, limit)
-  }
 }
 MqttSource.table = `mqttSource`
 MqttSource.fields = [
@@ -389,92 +374,6 @@ MqttSource.fields = [
 ]
 MqttSource.instances = []
 MqttSource.initialized = false
-
-class MqttHistory extends Model {
-  static create(mqttSource, tag, value) {
-    const timestamp = getTime(new Date())
-    const fields = {
-      mqttSource,
-      tag,
-      timestamp,
-      value
-    }
-    return this.schedule(
-      async () => {
-        return new Promise((resolve) => {
-          this.db.serialize(async () => {
-            const history = await super.create(fields, true)
-            const source = await MqttSource.get(mqttSource)
-            for (const host of source.mqtt.primaryHosts) {
-              await MqttPrimaryHostHistory.create(host.id, history, true)
-            }
-            resolve(history)
-          })
-        })
-      },
-      [],
-      1
-    )
-  }
-  static async getBySourceId(mqttSourceId, limit) {
-    let sql = `SELECT id FROM ${this.table} WHERE mqttSource=?`
-    if (limit) {
-      sql = sql + ` LIMIT ${limit}`
-    }
-    const rows = await this.executeQuery(sql, [mqttSourceId])
-    const instances = rows.map((row) => {
-      return new this(row.id)
-    })
-    for (const instance of instances) {
-      await instance.init()
-    }
-    return instances
-  }
-  static clearPublished() {
-    const sql = `DELETE FROM mqttHistory 
-                WHERE EXISTS 
-                  (	SELECT a.id 
-                    FROM mqttHistory AS a 
-                    LEFT JOIN mqttPrimaryHostHistory AS b ON a.id = b.mqttHistory 
-                    WHERE b.id IS NULL AND mqttHistory.id = a.id)`
-    return this.executeQuery(sql, [], false)
-  }
-  async init(async) {
-    const result = await super.init(async)
-    this._mqttSource = result.mqttSource
-    this._tag = result.tag
-    this._value = result.value
-    this._timestamp = result.timestamp
-  }
-  get value() {
-    this.checkInit()
-    return this._value
-  }
-  get timestamp() {
-    this.checkInit()
-    return new Date(this._timestamp)
-  }
-  async getPrimaryHosts() {
-    const primaryHostHistories = await MqttPrimaryHostHistory.getByHistoryId(
-      this.id
-    )
-    return primaryHostHistories.map((instance) => {
-      return MqttPrimaryHost.instances.find((host) => {
-        instance._mqttPrimaryHost === host._id
-      })
-    })
-  }
-}
-MqttHistory.table = `mqttHistory`
-MqttHistory.fields = [
-  { colName: 'mqttSource', colRef: 'mqttSource', onDelete: 'CASCADE' },
-  { colName: 'tag', colRef: 'tag', onDelete: 'CASCADE' },
-  { colName: 'timestamp', colType: 'INTEGER' },
-  { colName: 'value', colType: 'TEXT' }
-]
-MqttHistory.instances = []
-MqttHistory.initialized = false
-MqttHistory.cold = true
 
 class MqttPrimaryHost extends Model {
   static create(mqtt, name) {
@@ -501,11 +400,28 @@ class MqttPrimaryHost extends Model {
       instance.id === this._mqtt
     })
   }
-  getRecordCount() {
-    return MqttPrimaryHostHistory.getCountByPrimaryHostId(this.id)
+  async getRecordCount() {
+    let sql = `SELECT COUNT(id) AS count FROM "mqttPrimaryHostHistory" WHERE mqttPrimaryHost=?`
+    const result = await this.constructor.executeQuery(sql, [this.id], true)
+    return result.count
   }
   getHistory(limit) {
-    return MqttPrimaryHostHistory.getByPrimaryHostId(this.id, limit)
+    let sql = `SELECT 
+      a.id as id,  
+      a.mqttPrimaryHost as hostId,
+      a.mqttPrimaryHost as hostName,
+      b.id as historyId,
+      b.mqttSource as source,
+      b.tag as tag,
+      b.timestamp as timestamp,
+      b.value as value
+      FROM mqttPrimaryHostHistory AS a 
+      JOIN mqttHistory AS b 
+      ON a.mqttHistory=b.id`
+    if (limit) {
+      sql = `${sql} LIMIT ${limit}`
+    }
+    return this.constructor.executeQuery(sql, [])
   }
 }
 MqttPrimaryHost.table = `mqttPrimaryHost`
@@ -516,76 +432,7 @@ MqttPrimaryHost.fields = [
 MqttPrimaryHost.instances = []
 MqttPrimaryHost.initialized = false
 
-class MqttPrimaryHostHistory extends Model {
-  static create(mqttPrimaryHost, mqttHistory, async) {
-    const fields = {
-      mqttPrimaryHost,
-      mqttHistory
-    }
-    return super.create(fields, async)
-  }
-  static async getByPrimaryHostId(mqttPrimaryHostId, limit) {
-    let sql = `SELECT id FROM ${this.table} WHERE mqttPrimaryHost=?`
-    if (limit) {
-      sql = sql + ` LIMIT ${limit}`
-    }
-    const rows = await this.executeQuery(sql, [mqttPrimaryHostId])
-    const instances = rows.map((row) => {
-      return new this(row.id)
-    })
-    for (const instance of instances) {
-      await instance.init()
-    }
-    return instances
-  }
-  static async getCountByPrimaryHostId(mqttPrimaryHostId) {
-    let sql = `SELECT COUNT(id) AS count FROM ${this.table} WHERE mqttPrimaryHost=?`
-    const result = await this.executeQuery(sql, [mqttPrimaryHostId], true)
-    return result.count
-  }
-  static async getByHistoryId(mqttHistoryId, limit) {
-    let sql = `SELECT id FROM ${this.table} WHERE mqttHistory=?`
-    if (limit) {
-      sql = sql + ` LIMIT ${limit}`
-    }
-    const rows = await this.executeQuery(sql, [mqttHistoryId])
-    const instances = rows.map((row) => {
-      return new this(row.id)
-    })
-    for (const instance of instances) {
-      await instance.init()
-    }
-    return instances
-  }
-  async init(async) {
-    const result = await super.init(async)
-    try {
-      this._mqttPrimaryHost = result.mqttPrimaryHost
-      this._mqttHistory = await MqttHistory.get(result.mqttHistory, true, async)
-    } catch (error) {
-      logger.error(error)
-    }
-  }
-  get mqttHistory() {
-    this.checkInit()
-    return this._mqttHistory
-  }
-}
-MqttPrimaryHostHistory.table = `mqttPrimaryHostHistory`
-MqttPrimaryHostHistory.fields = [
-  {
-    colName: 'mqttPrimaryHost',
-    colRef: 'mqttPrimaryHost',
-    onDelete: 'CASCADE'
-  },
-  { colName: 'mqttHistory', colRef: 'mqttHistory', onDelete: 'CASCADE' }
-]
-MqttPrimaryHostHistory.instances = []
-MqttPrimaryHostHistory.initialized = []
-MqttPrimaryHostHistory.cold = true
-
 module.exports = {
   Mqtt,
-  MqttSource,
-  MqttHistory
+  MqttSource
 }

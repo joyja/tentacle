@@ -8,6 +8,7 @@ const {
 } = require('./device')
 const { Service, Mqtt, MqttSource, MqttHistory } = require('./service')
 const { User } = require('./auth')
+const getTime = require('date-fns/getTime')
 
 // This file creates any properties that form relationships with other models.
 // It is defined here to prevent circular dependencies.
@@ -295,6 +296,65 @@ Mqtt.create = async function(
   return mqtt
 }
 
+Mqtt.prototype.publishHistory = async function() {
+  const hosts = this.primaryHosts.filter((host) => {
+    return host.readyForData
+  })
+  let historyToPublish = []
+  for (const host of hosts) {
+    const history = await host.getHistory(this.recordLimit)
+    const newRecords = history.filter((record) => {
+      return !historyToPublish.some((row) => {
+        return row.id === record.id
+      })
+    })
+    historyToPublish = [...historyToPublish, ...newRecords]
+  }
+  const devices = historyToPublish.reduce((a, record) => {
+    const source = MqttSource.findById(record.source)
+    return a.some((device) => {
+      return device.id === source.device.id
+    })
+      ? a
+      : [...a, source.device]
+  }, [])
+  for (device of devices) {
+    const payload = historyToPublish
+      .filter((record) => {
+        const source = MqttSource.findById(record.source)
+        return device.id === source.device.id
+      })
+      .map((record) => {
+        const tag = Tag.findById(record.tag)
+        return {
+          name: tag.name,
+          value: record.value,
+          timestamp: record.timestamp,
+          type: tag.datatype,
+          isHistorical: true
+        }
+      })
+    this.client.publishDeviceData(`${device.name}`, {
+      timestamp: getTime(new Date()),
+      metrics: [...payload]
+    })
+  }
+  let sql = `DELETE FROM mqttPrimaryHostHistory WHERE id in (${'?,'
+    .repeat(historyToPublish.length)
+    .slice(0, -1)})`
+  let params = historyToPublish.map((record) => {
+    return record.id
+  })
+  await this.constructor.executeUpdate(sql, params)
+  sql = `DELETE FROM mqttHistory 
+    WHERE EXISTS 
+      (	SELECT a.id 
+        FROM mqttHistory AS a 
+        LEFT JOIN mqttPrimaryHostHistory AS b ON a.id = b.mqttHistory 
+        WHERE b.id IS NULL AND mqttHistory.id = a.id)`
+  return this.constructor.executeQuery(sql, [], false)
+}
+
 Object.defineProperties(Mqtt.prototype, {
   service: {
     get() {
@@ -325,7 +385,17 @@ MqttSource.prototype.log = async function(scanClassId) {
     }
   })
   for (tag of tags) {
-    await MqttHistory.create(this.id, tag.id, tag.value)
+    const primaryHosts = this.mqtt.primaryHosts
+    let sql = `INSERT INTO mqttHistory (mqttSource, tag, timestamp, value)`
+    sql = `${sql} VALUES (?,?,?,?);`
+    let params = [this.id, tag.id, getTime(new Date()), tag.value]
+    const result = await this.constructor.executeUpdate(sql, params)
+    for (host of primaryHosts) {
+      sql = `INSERT INTO mqttPrimaryHostHistory (mqttPrimaryHost, mqttHistory)`
+      sql = `${sql} VALUES (?,?);`
+      params = [host.id, result.lastID]
+      await this.constructor.executeUpdate(sql, params)
+    }
   }
 }
 
@@ -344,21 +414,6 @@ Object.defineProperties(MqttSource.prototype, {
   }
 })
 
-Object.defineProperties(MqttHistory.prototype, {
-  mqttSource: {
-    get() {
-      this.checkInit()
-      return MqttSource.findById(this._mqttSource)
-    }
-  },
-  tag: {
-    get() {
-      this.checkInit()
-      return Tag.findById(this._tag)
-    }
-  }
-})
-
 module.exports = {
   Device,
   Modbus,
@@ -368,7 +423,6 @@ module.exports = {
   Service,
   Mqtt,
   MqttSource,
-  MqttHistory,
   Tag,
   ScanClass,
   User

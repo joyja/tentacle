@@ -1,14 +1,6 @@
 const logger = require('../logger')
-const { TaskEasy } = require('task-easy')
 
-const prioritize = (obj1, obj2) => {
-  return obj1.priority === obj2.priority
-    ? obj1.timestamp.getTime() < obj2.timestamp.getTime() // Return true if task 1 is older than task 2
-    : obj1.priority > obj2.priority // return true if task 1 is higher priority than task 2
-}
-const queue = new TaskEasy(prioritize, 1000)
-
-const executeQueryAsync = function(db, sql, params, firstRowOnly = false) {
+const executeQuery = function(db, sql, params = [], firstRowOnly = false) {
   return new Promise((resolve, reject) => {
     const callback = (error, rows) => {
       if (error) {
@@ -25,26 +17,7 @@ const executeQueryAsync = function(db, sql, params, firstRowOnly = false) {
   })
 }
 
-const executeQuery = function(
-  db,
-  sql,
-  params = [],
-  firstRowOnly = false,
-  priority = 1
-) {
-  return queue.schedule(
-    (db, sql, params, firstRowOnly) => {
-      return executeQueryAsync(db, sql, params, firstRowOnly)
-    },
-    [db, sql, params, firstRowOnly],
-    {
-      priority,
-      timestamp: new Date()
-    }
-  )
-}
-
-const executeUpdateAsync = function(db, sql, params = []) {
+const executeUpdate = function(db, sql, params = []) {
   return new Promise((resolve, reject) => {
     db.run(sql, params, function(error) {
       if (error) {
@@ -56,46 +29,16 @@ const executeUpdateAsync = function(db, sql, params = []) {
   })
 }
 
-const executeUpdate = function(db, sql, params = [], priority = 1) {
-  return queue.schedule(
-    (db, sql, params) => {
-      return executeUpdateAsync(db, sql, params)
-    },
-    [db, sql, params],
-    {
-      priority,
-      timestamp: new Date()
-    }
-  )
-}
-
 class Model {
-  static executeUpdate(sql, params, priority = 1) {
-    return executeUpdate(this.db, sql, params, priority).catch((error) => {
+  static executeUpdate(sql, params) {
+    return executeUpdate(this.db, sql, params).catch((error) => {
       logger.error(error)
     })
   }
-  static executeQuery(sql, params, firstRowOnly, priority = 1) {
-    return executeQuery(this.db, sql, params, firstRowOnly, priority).catch(
-      (error) => {
-        logger.error(error)
-      }
-    )
-  }
-  static executeUpdateAsync(sql, params) {
-    return executeUpdateAsync(this.db, sql, params).catch((error) => {
+  static executeQuery(sql, params, firstRowOnly) {
+    return executeQuery(this.db, sql, params, firstRowOnly).catch((error) => {
       logger.error(error)
     })
-  }
-  static executeQueryAsync(sql, params, firstRowOnly) {
-    return executeQueryAsync(this.db, sql, params, firstRowOnly).catch(
-      (error) => {
-        logger.error(error)
-      }
-    )
-  }
-  static schedule(callback, params, priority) {
-    return queue.schedule(callback, params, { priority, timestamp: new Date() })
   }
   static createTable() {
     // fields should be formatted { colName, colType } for typical columns
@@ -133,9 +76,7 @@ class Model {
     const result = await this.executeQuery(sql, params, true)
     this.tableExisted = result ? result.name === this.table : false
     await this.createTable()
-    if (!this.cold) {
-      return this.getAll()
-    }
+    return this.getAll()
   }
   static checkInitialized() {
     if (!this.initialized) {
@@ -144,18 +85,18 @@ class Model {
       )
     }
   }
-  static async get(selector, ignoreExisting = false, async = false) {
+  static async get(selector, ignoreExisting = false) {
     this.checkInitialized()
     let model = undefined
     if (typeof selector === 'number') {
-      if (!this.cold && !ignoreExisting) {
+      if (!ignoreExisting) {
         model = this.instances.find((instance) => {
           return instance._id === selector
         })
       }
-      if (!model || this.cold) {
+      if (!model) {
         model = new this(selector)
-        await model.init(async)
+        await model.init()
       }
       return model
     } else {
@@ -174,12 +115,10 @@ class Model {
         return this.get(row.id, true)
       })
     )
-    if (!this.cold) {
-      this.instances = instances
-    }
+    this.instances = instances
     return instances
   }
-  static async create(fields, async = false) {
+  static async create(fields) {
     this.checkInitialized()
     const sql = `INSERT INTO ${this.table} ("${Object.keys(fields).join(
       `","`
@@ -187,14 +126,8 @@ class Model {
       .fill(`?`)
       .join(',')})`
     const params = Object.keys(fields).map((key) => fields[key])
-    const result = async
-      ? await this.executeUpdateAsync(sql, params)
-      : await this.executeUpdate(sql, params)
-    if (!this.cold) {
-      return this.get(result.lastID, false, async)
-    } else {
-      return result.lastID
-    }
+    const result = await this.executeUpdate(sql, params)
+    return this.get(result.lastID, false)
   }
   static async delete(selector) {
     this.checkInitialized()
@@ -220,19 +153,17 @@ class Model {
     this.errors = []
     if (typeof selector === 'number') {
       this._id = selector
-      if (!Subclass.cold) {
-        const exists = Subclass.instances.some((instance) => {
-          return instance._id === selector
-        })
-        if (!exists) {
-          Subclass.instances.push(this)
-        } else {
-          logger.error(
-            new Error(
-              `A ${Subclass.table} with this id already exists. Use get() method to get the existing instance.`
-            )
+      const exists = Subclass.instances.some((instance) => {
+        return instance._id === selector
+      })
+      if (!exists) {
+        Subclass.instances.push(this)
+      } else {
+        logger.error(
+          new Error(
+            `A ${Subclass.table} with this id already exists. Use get() method to get the existing instance.`
           )
-        }
+        )
       }
     } else {
       logger.error(
@@ -240,13 +171,11 @@ class Model {
       )
     }
   }
-  async init(async = false) {
+  async init() {
     const sql = `SELECT * FROM ${this.constructor.table} WHERE id=?`
     let result
     try {
-      result = async
-        ? await this.constructor.executeQueryAsync(sql, [this._id])
-        : await this.constructor.executeQuery(sql, [this._id])
+      result = await this.constructor.executeQuery(sql, [this._id])
       if (result.length < 1) {
         throw new Error(
           `There is no ${this.constructor.table} with id# ${this._id}.`
@@ -256,13 +185,11 @@ class Model {
         this._id = result[0].id
       }
     } catch (error) {
-      if (!this.constructor.cold) {
-        this.constructor.instances = this.constructor.instances.filter(
-          (instance) => {
-            return instance._id !== this._id
-          }
-        )
-      }
+      this.constructor.instances = this.constructor.instances.filter(
+        (instance) => {
+          return instance._id !== this._id
+        }
+      )
       this.errors.push(error)
       logger.error(error)
     }
@@ -293,6 +220,5 @@ class Model {
 module.exports = {
   executeQuery,
   executeUpdate,
-  queue,
   Model
 }
