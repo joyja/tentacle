@@ -310,49 +310,49 @@ Mqtt.prototype.publishHistory = async function() {
     })
     historyToPublish = [...historyToPublish, ...newRecords]
   }
-  const devices = historyToPublish.reduce((a, record) => {
-    const source = MqttSource.findById(record.source)
-    return a.some((device) => {
-      return device.id === source.device.id
-    })
-      ? a
-      : [...a, source.device]
-  }, [])
-  for (device of devices) {
-    const payload = historyToPublish
-      .filter((record) => {
-        const source = MqttSource.findById(record.source)
-        return device.id === source.device.id
-      })
-      .map((record) => {
-        const tag = Tag.findById(record.tag)
-        return {
-          name: tag.name,
-          value: record.value,
-          timestamp: record.timestamp,
-          type: tag.datatype,
-          isHistorical: true
-        }
-      })
-    this.client.publishDeviceData(`${device.name}`, {
-      timestamp: getTime(new Date()),
-      metrics: [...payload]
-    })
-  }
-  let sql = `DELETE FROM mqttPrimaryHostHistory WHERE id in (${'?,'
-    .repeat(historyToPublish.length)
-    .slice(0, -1)})`
-  let params = historyToPublish.map((record) => {
-    return record.id
-  })
-  await this.constructor.executeUpdate(sql, params)
-  sql = `DELETE FROM mqttHistory 
-    WHERE EXISTS 
-      (	SELECT a.id 
-        FROM mqttHistory AS a 
-        LEFT JOIN mqttPrimaryHostHistory AS b ON a.id = b.mqttHistory 
-        WHERE b.id IS NULL AND mqttHistory.id = a.id)`
-  return this.constructor.executeQuery(sql, [], false)
+  // const devices = historyToPublish.reduce((a, record) => {
+  //   const source = MqttSource.findById(record.source)
+  //   return a.some((device) => {
+  //     return device.id === source.device.id
+  //   })
+  //     ? a
+  //     : [...a, source.device]
+  // }, [])
+  // for (device of devices) {
+  //   const payload = historyToPublish
+  //     .filter((record) => {
+  //       const source = MqttSource.findById(record.source)
+  //       return device.id === source.device.id
+  //     })
+  //     .map((record) => {
+  //       const tag = Tag.findById(record.tag)
+  //       return {
+  //         name: tag.name,
+  //         value: record.value,
+  //         timestamp: record.timestamp,
+  //         type: tag.datatype,
+  //         isHistorical: true
+  //       }
+  //     })
+  //   this.client.publishDeviceData(`${device.name}`, {
+  //     timestamp: getTime(new Date()),
+  //     metrics: [...payload]
+  //   })
+  // }
+  // let sql = `DELETE FROM mqttPrimaryHostHistory WHERE id in (${'?,'
+  //   .repeat(historyToPublish.length)
+  //   .slice(0, -1)})`
+  // let params = historyToPublish.map((record) => {
+  //   return record.id
+  // })
+  // await this.constructor.executeUpdate(sql, params)
+  // sql = `DELETE FROM mqttHistory
+  //   WHERE EXISTS
+  //     (	SELECT a.id
+  //       FROM mqttHistory AS a
+  //       LEFT JOIN mqttPrimaryHostHistory AS b ON a.id = b.mqttHistory
+  //       WHERE b.id IS NULL AND mqttHistory.id = a.id)`
+  // return this.constructor.executeQuery(sql, [], false)
 }
 
 Object.defineProperties(Mqtt.prototype, {
