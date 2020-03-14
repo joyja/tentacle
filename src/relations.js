@@ -390,17 +390,22 @@ MqttSource.prototype.log = async function(scanClassId) {
     }
   })
   for (tag of tags) {
-    const primaryHosts = this.mqtt.primaryHosts
-    let sql = `INSERT INTO mqttHistory (mqttSource, tag, timestamp, value)`
-    sql = `${sql} VALUES (?,?,?,?);`
-    let params = [this.id, tag.id, getTime(new Date()), tag.value]
-    const result = await this.constructor.executeUpdate(sql, params)
-    for (host of primaryHosts) {
-      sql = `INSERT INTO mqttPrimaryHostHistory (mqttPrimaryHost, mqttHistory)`
-      sql = `${sql} VALUES (?,?);`
-      params = [host.id, result.lastID]
-      await this.constructor.executeUpdate(sql, params)
-    }
+    await new Promise((resolve) => {
+      this.db.serialize(async () => {
+        const primaryHosts = this.mqtt.primaryHosts
+        let sql = `INSERT INTO mqttHistory (mqttSource, tag, timestamp, value)`
+        sql = `${sql} VALUES (?,?,?,?);`
+        let params = [this.id, tag.id, getTime(new Date()), tag.value]
+        const result = await this.constructor.executeUpdate(sql, params)
+        for (host of primaryHosts) {
+          sql = `INSERT INTO mqttPrimaryHostHistory (mqttPrimaryHost, mqttHistory)`
+          sql = `${sql} VALUES (?,?);`
+          params = [host.id, result.lastID]
+          await this.constructor.executeUpdate(sql, params)
+        }
+        resolve()
+      })
+    })
   }
 }
 
