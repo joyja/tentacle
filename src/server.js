@@ -24,14 +24,17 @@ start = async function(dbFilename) {
       }
     })
   } else {
-    if (fs.existsSync(`./${dbFilename}`)) {
+    if (fs.existsSync(`${__dirname}/../${dbFilename}`)) {
       fileExisted = true
     }
-    db = new sqlite3.cached.Database(`./${dbFilename}`, (error) => {
-      if (error) {
-        throw error
+    db = new sqlite3.cached.Database(
+      `${__dirname}/../${dbFilename}`,
+      (error) => {
+        if (error) {
+          throw error
+        }
       }
-    })
+    )
   }
   const pubsub = new PubSub()
   server = new GraphQLServer({
