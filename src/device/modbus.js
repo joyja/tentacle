@@ -1,5 +1,6 @@
 const { Model } = require(`../database`)
 const ModbusRTU = require(`modbus-serial`)
+const logger = require(`../logger`)
 
 class Modbus extends Model {
   static async initialize(db, pubsub) {
@@ -44,10 +45,14 @@ class Modbus extends Model {
     this._retryRate = result.retryRate
     this.connected = false
     this.error = null
+    this.retryCount = 0
   }
   async connect() {
     if (!this.connected) {
       this.error = null
+      logger.info(
+        `Connecting to modbus device ${this.device.name}, host: ${this.host}, port: ${this.port}.`
+      )
       await this.client
         .connectTCP(this.host, { port: this.port })
         .catch((error) => {
@@ -55,24 +60,44 @@ class Modbus extends Model {
           this.connected = false
           if (!this.retryInterval) {
             this.retryInterval = setInterval(async () => {
+              logger.info(
+                `Retrying connection to modbus device ${this.device.name}, retry attempts: ${this.retryCount}.`
+              )
+              this.retryCount += 1
               await this.connect()
             }, this.retryRate)
           }
         })
       if (!this.error) {
+        this.retryCount = 0
         this.retryInterval = clearInterval(this.retryInterval)
+        logger.info(
+          `Connected to modbus device ${this.device.name}, host: ${this.host}, port: ${this.port}.`
+        )
         this.connected = true
       } else {
         this.connected = false
+        logger.info(
+          `Connection failed to modbus device ${this.device.name}, host: ${this.host}, port: ${this.port}, with error: ${this.error}.`
+        )
       }
     }
   }
   async disconnect() {
-    await new Promise((resolve, reject) => {
+    await new Promise((resolve) => {
+      this.retryCount = 0
       this.retryInterval = clearInterval(this.retryInterval)
-      this.client.close(() => {
+      logger.info(`Disconnecting from modbus device ${this.device.name}`)
+      const logText = `Closed connection to modbus device ${this.device.name}.`
+      if (this.connected) {
+        this.client.close(() => {
+          logger.info(logText)
+          resolve()
+        })
+      } else {
+        logger.info(logText)
         resolve()
-      })
+      }
     })
     this.connected = false
   }
