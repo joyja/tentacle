@@ -82,6 +82,7 @@ class Mqtt extends Model {
   }
   connect() {
     if (!this.client) {
+      logger.info(`Mqtt service ${this.name} is connecting.`)
       const config = {
         serverUrl: `${this.encrypt ? 'ssl' : 'tcp'}://${this.host}:${
           this.port
@@ -108,8 +109,9 @@ class Mqtt extends Model {
         this.onBirth()
       })
       this.client.on('dcmd', (deviceId, payload) => {
-        console.log(deviceId)
-        console.log(payload)
+        logger.info(
+          `Mqtt service ${this.name} received a dcmd for ${deviceId}.`
+        )
       })
       this.client.on('ncmd', (payload) => {
         if (payload.metrics) {
@@ -118,6 +120,9 @@ class Mqtt extends Model {
           )
           if (rebirth) {
             if (rebirth.value) {
+              logger.info(
+                `Rebirth request detected from mqtt service ${this.name}. Reinitializing...`
+              )
               this.disconnect()
               this.connect()
             }
@@ -169,10 +174,12 @@ class Mqtt extends Model {
     this.startPublishing()
   }
   onError(error) {
+    logger.error(`Mqtt service ${this.name} had an error: ${error}`)
     this.error = error.message
     this.stopPublishing()
   }
   onOffline() {
+    logger.info(`Mqtt service ${this.name} is offline.`)
     this.stopPublishing()
   }
   startPublishing() {
@@ -186,6 +193,7 @@ class Mqtt extends Model {
   }
   disconnect() {
     if (this.client) {
+      logger.info(`Mqtt service ${this.name} is disconnecting.`)
       this.stopPublishing()
       const payload = {
         timestamp: getTime(new Date())
