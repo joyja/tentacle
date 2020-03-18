@@ -161,7 +161,7 @@ class Mqtt extends Model {
       }
     })
     this.client.on('state', (primaryHostId, state) => {
-      logger.info(`Received state: ${state} for primary host: ${primaryHostId}.`)
+      logger.info(`On ${this.service.name}, received state: ${state} for primary host: ${primaryHostId}.`)
       if (primaryHostId) {
         const primaryHost = MqttPrimaryHost.instances.find(
           (host) => host.name === primaryHostId
