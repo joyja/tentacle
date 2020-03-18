@@ -186,7 +186,7 @@ const createMqtt = `mutation CreateMqtt (
     $node: String!
     $username: String!
     $password: String!
-    $devices: [Int!]!
+    $devices: [ID!]!
     $rate: Int!
     $encrypt: Boolean!
     $recordLimit: Int!
