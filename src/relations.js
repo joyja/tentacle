@@ -299,18 +299,12 @@ Mqtt.create = async function(
 }
 
 Mqtt.prototype.publishHistory = async function() {
-  console.log(this.service.name)
-  console.log(this.primaryHosts)
   const hosts = this.primaryHosts.filter((host) => {
     return host.readyForData
   })
-  console.log('hosts')
-  console.log(hosts)
   let historyToPublish = []
   for (const host of hosts) {
     const history = await host.getHistory(this.recordLimit)
-    console.log('history')
-    console.log(history)
     const newRecords = history.filter((record) => {
       return !historyToPublish.some((row) => {
         return row.id === record.id
@@ -318,8 +312,6 @@ Mqtt.prototype.publishHistory = async function() {
     })
     historyToPublish = [...historyToPublish, ...newRecords]
   }
-  console.log(historyToPublish)
-  console.log(historyToPublish)
   const devices = historyToPublish.reduce((a, record) => {
     const source = MqttSource.findById(record.source)
     return a.some((device) => {
@@ -328,7 +320,6 @@ Mqtt.prototype.publishHistory = async function() {
       ? a
       : [...a, source.device]
   }, [])
-  console.log(devices)
   for (device of devices) {
     const payload = historyToPublish
       .filter((record) => {
@@ -345,7 +336,6 @@ Mqtt.prototype.publishHistory = async function() {
           isHistorical: true
         }
       })
-    console.log(payload)
     this.client.publishDeviceData(`${device.name}`, {
       timestamp: getTime(new Date()),
       metrics: [...payload]
@@ -357,8 +347,6 @@ Mqtt.prototype.publishHistory = async function() {
   let params = historyToPublish.map((record) => {
     return record.id
   })
-  console.log(sql)
-  console.log(params)
   await this.constructor.executeUpdate(sql, params)
   sql = `SELECT a.id AS id
     FROM mqttHistory AS a
