@@ -155,7 +155,7 @@ class Mqtt extends Model {
         })
       })
     })
-    MqttPrimaryHost.instances.forEach((host) => {
+    this.primaryHosts.forEach((host) => {
       if (host.status === `ONLINE` || host.status === `UNKNOWN`) {
         host.readyForData = true
       }

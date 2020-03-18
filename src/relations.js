@@ -304,10 +304,12 @@ Mqtt.prototype.publishHistory = async function() {
   const hosts = this.primaryHosts.filter((host) => {
     return host.readyForData
   })
+  console.log('hosts')
   console.log(hosts)
   let historyToPublish = []
   for (const host of hosts) {
     const history = await host.getHistory(this.recordLimit)
+    console.log('history')
     console.log(history)
     const newRecords = history.filter((record) => {
       return !historyToPublish.some((row) => {
@@ -316,6 +318,7 @@ Mqtt.prototype.publishHistory = async function() {
     })
     historyToPublish = [...historyToPublish, ...newRecords]
   }
+  console.log(historyToPublish)
   console.log(historyToPublish)
   const devices = historyToPublish.reduce((a, record) => {
     const source = MqttSource.findById(record.source)
