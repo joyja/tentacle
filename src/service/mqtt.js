@@ -105,8 +105,8 @@ class Mqtt extends Model {
       this.client.on('reconnect', () => {
         this.onReconnect()
       })
-      this.client.on('error', () => {
-        this.onError()
+      this.client.on('error', (error) => {
+        this.onError(error)
       })
       this.client.on('offline', () => {
         this.onOffline()
