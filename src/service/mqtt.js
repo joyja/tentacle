@@ -423,7 +423,6 @@ class MqttPrimaryHost extends Model {
     let sql = `SELECT 
       a.id as id,  
       a.mqttPrimaryHost as hostId,
-      a.mqttPrimaryHost as hostName,
       b.id as historyId,
       b.mqttSource as source,
       b.tag as tag,
@@ -431,8 +430,8 @@ class MqttPrimaryHost extends Model {
       b.value as value
       FROM mqttPrimaryHostHistory AS a 
       JOIN mqttHistory AS b 
-      ON a.mqttHistory=b.id`
-      // WHERE hostId=?`
+      ON a.mqttHistory=b.id
+      WHERE a.mqttPrimaryHost=?`
     if (limit) {
       sql = `${sql} LIMIT ${limit}`
     }
