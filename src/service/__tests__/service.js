@@ -250,7 +250,7 @@ describe(`MQTT: `, () => {
   test(`onError publishing stops and mqtt error property is set.`, () => {
     const error = new Error('A really bad error')
     mqtt.onError(error)
-    expect(mqtt.error).toBe(error.message)
+    expect(mqtt.error.message).toBe(error.message)
     expect(clearInterval).toBeCalledTimes(1)
     mqtt.disconnect()
     mqtt.connect()
