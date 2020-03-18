@@ -160,6 +160,7 @@ class Mqtt extends Model {
     this.primaryHosts.forEach((host) => {
       console.log(host.status === `UNKNOWN`)
       if (host.status === `ONLINE` || host.status === `UNKNOWN`) {
+        console.log(`${host.name} readyForData true`)
         host.readyForData = true
       }
     })
@@ -170,6 +171,7 @@ class Mqtt extends Model {
           if (host) {
             host.status = `${state}`
             if (`${state}` === `OFFLINE`) {
+              console.log(`${host.name} readyForData false`)
               host.readyForData = false
             }
           }
