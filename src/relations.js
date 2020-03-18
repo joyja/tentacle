@@ -299,6 +299,8 @@ Mqtt.create = async function(
 }
 
 Mqtt.prototype.publishHistory = async function() {
+  console.log(this.service.name)
+  console.log(this.primaryHosts)
   const hosts = this.primaryHosts.filter((host) => {
     return host.readyForData
   })
