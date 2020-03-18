@@ -158,6 +158,7 @@ class Mqtt extends Model {
     console.log('On Birth Primary Hosts')
     console.log(this.primaryHosts)
     this.primaryHosts.forEach((host) => {
+      console.log(host.status === `UNKNOWN`)
       if (host.status === `ONLINE` || host.status === `UNKNOWN`) {
         host.readyForData = true
       }
