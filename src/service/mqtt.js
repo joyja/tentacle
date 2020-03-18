@@ -163,15 +163,14 @@ class Mqtt extends Model {
     this.client.on('state', (primaryHostId, state) => {
       logger.info(`On ${this.service.name}, received state: ${state} for primary host: ${primaryHostId}.`)
       if (primaryHostId) {
-        const primaryHost = MqttPrimaryHost.instances.find(
-          (host) => host.name === primaryHostId
-        )
-        if (primaryHost) {
-          primaryHost.status = `${state}`
-          if (`${state}` === `OFFLINE`) {
-            primaryHost.readyForData = false
+        const primaryHost = this.primaryHosts.forEach((host) => {
+          if (host) {
+            host.status = `${state}`
+            if (`${state}` === `OFFLINE`) {
+              host.readyForData = false
+            }
           }
-        }
+        })
       }
     })
     this.startPublishing()
