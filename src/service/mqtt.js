@@ -435,6 +435,8 @@ class MqttPrimaryHost extends Model {
     if (limit) {
       sql = `${sql} LIMIT ${limit}`
     }
+    console.log(sql)
+    console.log(this.id)
     return this.constructor.executeQuery(sql, [this.id])
   }
 }
