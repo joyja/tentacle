@@ -66,6 +66,12 @@ class Mqtt extends Model {
     }
     return mqtt
   }
+  static async delete(selector) {
+    const deleted = await super.delete(selector)
+    await MqttSource.getAll()
+    await MqttPrimaryHost.getAll()
+    return deleted
+  }
   async init(async) {
     const result = await super.init(async)
     this._service = result.service
