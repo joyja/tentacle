@@ -155,23 +155,20 @@ class Mqtt extends Model {
         })
       })
     })
-    console.log('On Birth Primary Hosts')
-    console.log(this.primaryHosts)
     this.primaryHosts.forEach((host) => {
-      console.log(host.status === `UNKNOWN`)
       if (host.status === `ONLINE` || host.status === `UNKNOWN`) {
-        console.log(`${host.name} readyForData true`)
         host.readyForData = true
       }
     })
     this.client.on('state', (primaryHostId, state) => {
-      logger.info(`On ${this.service.name}, received state: ${state} for primary host: ${primaryHostId}.`)
       if (primaryHostId) {
-        const primaryHost = this.primaryHosts.forEach((host) => {
+        const primaryHost = this.primaryHosts.filter(
+          (host) => host.name === primaryHostId
+        ).forEach((host) => {
+          logger.info(`On ${this.service.name}, received state: ${state} for primary host: ${primaryHostId}.`)
           if (host) {
             host.status = `${state}`
             if (`${state}` === `OFFLINE`) {
-              console.log(`${host.name} readyForData false`)
               host.readyForData = false
             }
           }
