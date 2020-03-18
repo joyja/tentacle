@@ -241,7 +241,7 @@ class Mqtt extends Model {
   get primaryHosts() {
     this.checkInit()
     console.log('primary host instances')
-    console.log(MqttPimaryHost.instances)
+    console.log(MqttPrimaryHost.instances)
     return MqttPrimaryHost.instances.filter((host) => {
       return host._mqtt === this.id
     })
