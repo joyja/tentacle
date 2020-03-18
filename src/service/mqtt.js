@@ -169,7 +169,7 @@ class Mqtt extends Model {
     this.startPublishing()
   }
   onError(error) {
-    this.error = error.message
+    this.error = error
     this.stopPublishing()
   }
   onOffline() {
