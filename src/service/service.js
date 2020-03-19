@@ -22,6 +22,8 @@ class Service extends Model {
   static async delete(selector) {
     const deleted = await super.delete(selector)
     await Mqtt.getAll()
+    await MqttSource.getAll()
+    await MqttPrimaryHost.getAll()
     return deleted
   }
   static findById(id) {
