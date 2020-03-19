@@ -22,11 +22,9 @@ ScanClass.prototype.scan = async function() {
     if (tag.source) {
       await tag.source.read()
     }
-    for (const source of MqttSource.instances) {
-      if (tag.source && tag.source.device.id === source.device.id) {
-        await source.log(this.id)
-      }
-    }
+  }
+  for (const source of MqttSource.instances) {
+    await source.log(this.id)
   }
 }
 

@@ -69,6 +69,8 @@ class Mqtt extends Model {
   static async delete(selector) {
     const deleted = await super.delete(selector)
     await MqttSource.getAll()
+    console.log('this happend')
+    console.log(MqttSource.instances)
     await MqttPrimaryHost.getAll()
     return deleted
   }
@@ -162,17 +164,19 @@ class Mqtt extends Model {
     })
     this.client.on('state', (primaryHostId, state) => {
       if (primaryHostId) {
-        const primaryHost = this.primaryHosts.filter(
-          (host) => host.name === primaryHostId
-        ).forEach((host) => {
-          logger.info(`On ${this.service.name}, received state: ${state} for primary host: ${primaryHostId}.`)
-          if (host) {
-            host.status = `${state}`
-            if (`${state}` === `OFFLINE`) {
-              host.readyForData = false
+        const primaryHost = this.primaryHosts
+          .filter((host) => host.name === primaryHostId)
+          .forEach((host) => {
+            logger.info(
+              `On ${this.service.name}, received state: ${state} for primary host: ${primaryHostId}.`
+            )
+            if (host) {
+              host.status = `${state}`
+              if (`${state}` === `OFFLINE`) {
+                host.readyForData = false
+              }
             }
-          }
-        })
+          })
       }
     })
     this.startPublishing()
@@ -437,8 +441,6 @@ class MqttPrimaryHost extends Model {
     if (limit) {
       sql = `${sql} LIMIT ${limit}`
     }
-    console.log(sql)
-    console.log(this.id)
     return this.constructor.executeQuery(sql, [this.id])
   }
 }
