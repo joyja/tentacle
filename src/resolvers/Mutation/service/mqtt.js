@@ -109,10 +109,44 @@ async function deleteMqttPrimaryHost(root, args, context, info) {
   }
 }
 
+async function addMqttSource(root, args, context, info) {
+  await User.getUserFromContext(context)
+  const service = Service.findById(args.id)
+  if (service) {
+    if (service.type === `mqtt`) {
+      return service.config.addSource(args.deviceId)
+    } else {
+      throw new Error(
+        `Service with id ${args.id} is not an mqtt service. It's type ${service.type}`
+      )
+    }
+  } else {
+    throw new Error(`Service with id ${args.id} does not exist.`)
+  }
+}
+
+async function deleteMqttSource(root, args, context, info) {
+  await User.getUserFromContext(context)
+  const service = Service.findById(args.id)
+  if (service) {
+    if (service.type === `mqtt`) {
+      return service.config.deleteSource(args.deviceId)
+    } else {
+      throw new Error(
+        `Service with id ${args.id} is not an mqtt service. It's type ${service.type}`
+      )
+    }
+  } else {
+    throw new Error(`Service with id ${args.id} does not exist.`)
+  }
+}
+
 module.exports = {
   createMqtt,
   updateMqtt,
   deleteMqtt,
   addMqttPrimaryHost,
-  deleteMqttPrimaryHost
+  deleteMqttPrimaryHost,
+  addMqttSource,
+  deleteMqttSource
 }

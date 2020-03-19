@@ -344,9 +344,9 @@ type Mutation {
     encrypt: Boolean
   ): Service
   """Requires a valid authorization token. Adds a device to an MQTT service. All the tags with sources from that device will be published at the rate of the MQTT service configuration."""
-  addMqttDevice(id: ID!, deviceId: ID!): Service
+  addMqttSource(id: ID!, deviceId: ID!): Service
   """Requires a valid authorization token. Deletes a device from an MQTT service. The tags for the removed device will no longer be published to the broker (but the device and tags will still exist)."""
-  deleteMqttDevice(id: ID!, deviceId: ID!): Service
+  deleteMqttSource(id: ID!, deviceId: ID!): Service
   """Requires a valid authorization token. Adds a primary host id to monitor (for store & forward)"""
   addMqttPrimaryHost(id: ID!, name: String): MqttPrimaryHost
   """Requires a valid authorization token. Deletes a primary host id to monitor (for store & forward)"""
