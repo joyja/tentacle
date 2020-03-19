@@ -446,5 +446,6 @@ MqttPrimaryHost.initialized = false
 
 module.exports = {
   Mqtt,
-  MqttSource
+  MqttSource,
+  MqttPrimaryHost
 }
