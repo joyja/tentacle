@@ -178,8 +178,7 @@ class Mqtt extends Model {
     this.startPublishing()
   }
   onError(error) {
-    logger.error(`Mqtt service ${this.service.name} had an error: ${error}`)
-    this.error = error.message
+    this.error = error
     this.stopPublishing()
   }
   onOffline() {
