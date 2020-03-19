@@ -1,5 +1,5 @@
 const { Model } = require(`../database`)
-const { Mqtt } = require(`./mqtt`)
+const { Mqtt, MqttSource, MqttPrimaryHost } = require(`./mqtt`)
 const getUnixTime = require('date-fns/getUnixTime')
 const fromUnixTime = require('date-fns/fromUnixTime')
 
@@ -22,6 +22,8 @@ class Service extends Model {
   static async delete(selector) {
     const deleted = await super.delete(selector)
     await Mqtt.getAll()
+    await MqttSource.getAll()
+    await MqttPrimaryHost.getAll()
     return deleted
   }
   static findById(id) {

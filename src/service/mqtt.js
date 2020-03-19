@@ -82,6 +82,7 @@ class Mqtt extends Model {
   }
   connect() {
     if (!this.client) {
+      logger.info(`Mqtt service ${this.service.name} is connecting.`)
       const config = {
         serverUrl: `${this.encrypt ? 'ssl' : 'tcp'}://${this.host}:${
           this.port
@@ -98,8 +99,8 @@ class Mqtt extends Model {
       this.client.on('reconnect', () => {
         this.onReconnect()
       })
-      this.client.on('error', () => {
-        this.onError()
+      this.client.on('error', (error) => {
+        this.onError(error)
       })
       this.client.on('offline', () => {
         this.onOffline()
@@ -108,8 +109,9 @@ class Mqtt extends Model {
         this.onBirth()
       })
       this.client.on('dcmd', (deviceId, payload) => {
-        console.log(deviceId)
-        console.log(payload)
+        logger.info(
+          `Mqtt service ${this.service.name} received a dcmd for ${deviceId}.`
+        )
       })
       this.client.on('ncmd', (payload) => {
         if (payload.metrics) {
@@ -118,6 +120,9 @@ class Mqtt extends Model {
           )
           if (rebirth) {
             if (rebirth.value) {
+              logger.info(
+                `Rebirth request detected from mqtt service ${this.service.name}. Reinitializing...`
+              )
               this.disconnect()
               this.connect()
             }
@@ -144,22 +149,26 @@ class Mqtt extends Model {
         })
       })
     })
-    MqttPrimaryHost.instances.forEach((host) => {
+    this.primaryHosts.forEach((host) => {
       if (host.status === `ONLINE` || host.status === `UNKNOWN`) {
         host.readyForData = true
       }
     })
     this.client.on('state', (primaryHostId, state) => {
       if (primaryHostId) {
-        const primaryHost = MqttPrimaryHost.instances.find(
-          (host) => host.name === primaryHostId
-        )
-        if (primaryHost) {
-          primaryHost.status = `${state}`
-          if (`${state}` === `OFFLINE`) {
-            primaryHost.readyForData = false
-          }
-        }
+        const primaryHost = this.primaryHosts
+          .filter((host) => host.name === primaryHostId)
+          .forEach((host) => {
+            logger.info(
+              `On ${this.service.name}, received state: ${state} for primary host: ${primaryHostId}.`
+            )
+            if (host) {
+              host.status = `${state}`
+              if (`${state}` === `OFFLINE`) {
+                host.readyForData = false
+              }
+            }
+          })
       }
     })
     this.startPublishing()
@@ -173,6 +182,7 @@ class Mqtt extends Model {
     this.stopPublishing()
   }
   onOffline() {
+    logger.info(`Mqtt service ${this.service.name} is offline.`)
     this.stopPublishing()
   }
   startPublishing() {
@@ -186,6 +196,7 @@ class Mqtt extends Model {
   }
   disconnect() {
     if (this.client) {
+      logger.info(`Mqtt service ${this.service.name} is disconnecting.`)
       this.stopPublishing()
       const payload = {
         timestamp: getTime(new Date())
@@ -409,7 +420,6 @@ class MqttPrimaryHost extends Model {
     let sql = `SELECT 
       a.id as id,  
       a.mqttPrimaryHost as hostId,
-      a.mqttPrimaryHost as hostName,
       b.id as historyId,
       b.mqttSource as source,
       b.tag as tag,
@@ -417,11 +427,12 @@ class MqttPrimaryHost extends Model {
       b.value as value
       FROM mqttPrimaryHostHistory AS a 
       JOIN mqttHistory AS b 
-      ON a.mqttHistory=b.id`
+      ON a.mqttHistory=b.id
+      WHERE a.mqttPrimaryHost=?`
     if (limit) {
       sql = `${sql} LIMIT ${limit}`
     }
-    return this.constructor.executeQuery(sql, [])
+    return this.constructor.executeQuery(sql, [this.id])
   }
 }
 MqttPrimaryHost.table = `mqttPrimaryHost`
@@ -434,5 +445,6 @@ MqttPrimaryHost.initialized = false
 
 module.exports = {
   Mqtt,
-  MqttSource
+  MqttSource,
+  MqttPrimaryHost
 }
