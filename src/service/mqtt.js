@@ -258,6 +258,8 @@ class Mqtt extends Model {
   }
   async deleteSource(deviceId) {
     const source = this.sources.find((source) => {
+      console.log(typeof source.device.id)
+      console.log(typeof deviceId)
       return source.device.id === deviceId
     })
     if (source) {
