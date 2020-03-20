@@ -19,7 +19,7 @@
   "author": "",
   "license": "GPL-3.0",
   "devDependencies": {
-    "coveralls": "^3.0.11",
+    "coveralls": "^3.0.9",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-config-standard": "^14.1.0",
