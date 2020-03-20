@@ -114,7 +114,8 @@ async function addMqttSource(root, args, context, info) {
   const service = Service.findById(args.id)
   if (service) {
     if (service.type === `mqtt`) {
-      return service.config.addSource(args.deviceId)
+      await service.config.addSource(args.deviceId)
+      return service
     } else {
       throw new Error(
         `Service with id ${args.id} is not an mqtt service. It's type ${service.type}`
@@ -130,7 +131,8 @@ async function deleteMqttSource(root, args, context, info) {
   const service = Service.findById(args.id)
   if (service) {
     if (service.type === `mqtt`) {
-      return service.config.deleteSource(args.deviceId)
+      await service.config.deleteSource(args.deviceId)
+      return service
     } else {
       throw new Error(
         `Service with id ${args.id} is not an mqtt service. It's type ${service.type}`
