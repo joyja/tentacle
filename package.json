@@ -39,7 +39,7 @@
     "@types/jest": "^25.1.4",
     "bcryptjs": "^2.4.3",
     "cross-env": "^7.0.2",
-    "date-fns": "^2.10.0",
+    "date-fns": "^2.11.0",
     "date-fns-timezone": "^0.1.4",
     "esm": "^3.2.25",
     "ethernet-ip": "^1.2.5",
@@ -54,7 +54,7 @@
     "sparkplug-client-jar": "^3.2.2",
     "sqlite3": "^4.1.1",
     "task-easy": "^1.0.1",
-    "tentacle-sparkplug-client": "0.0.2",
+    "tentacle-sparkplug-client": "0.0.5",
     "winston": "^3.2.1"
   }
 }
