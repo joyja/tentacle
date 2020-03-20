@@ -253,6 +253,21 @@ class Mqtt extends Model {
     }
     return await primaryHost.delete()
   }
+  async addSource(deviceId) {
+    return MqttSource.create(this.id, deviceId)
+  }
+  async deleteSource(deviceId) {
+    const source = this.sources.find((source) => {
+      return source.device.id === parseInt(deviceId)
+    })
+    if (source) {
+      return source.delete()
+    } else {
+      throw Error(
+        `The mqtt service ${this.service.name} is not using a source with device id: ${deviceId}`
+      )
+    }
+  }
   get host() {
     this.checkInit()
     return this._host

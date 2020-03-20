@@ -292,6 +292,22 @@ describe(`Mutations: `, () => {
     expect(ScanClass.instances.length).toBe(prevCount)
     expect(updatedScanClass.rate).toBe(args.rate)
   })
+  test(`updateScanClass updates a scan class with the selected settings.`, async () => {
+    prevCount = ScanClass.instances.length
+    const args = {
+      id: scanClass.id
+    }
+    updatedScanClass = await resolvers.Mutation.updateScanClass(
+      {},
+      args,
+      context,
+      {}
+    ).catch((error) => {
+      throw error
+    })
+    await updatedScanClass.stopScan()
+    expect(ScanClass.instances.length).toBe(prevCount)
+  })
   test(`updateScanClass throws error on invalid ID.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
@@ -1167,6 +1183,125 @@ describe(`Mutations: `, () => {
       ).catch((e) => e)
     ).toMatchInlineSnapshot(
       `[Error: Service with id 3 is not an mqtt service. It's type notMqtt]`
+    )
+  })
+  let mqtt = undefined
+  test(`addMqttSource with invalid id throws error.`, async () => {
+    mqtt = await Mqtt.create(
+      'testMqtt',
+      'Test Mqtt',
+      'localhost',
+      '1883',
+      'group 1',
+      'node 1',
+      'username',
+      'password',
+      [],
+      5000,
+      false,
+      250,
+      user.id,
+      []
+    )
+    const device = Device.instances[0]
+    const prevLength = mqtt.service.config.sources.length
+    const args = {
+      id: 1234567,
+      deviceId: device.id
+    }
+    expect(
+      await resolvers.Mutation.addMqttSource({}, args, context, {}).catch(
+        (e) => e
+      )
+    ).toMatchInlineSnapshot(`[Error: Service with id 1234567 does not exist.]`)
+    expect(mqtt.service.config.sources.length).toBe(prevLength)
+    expect(
+      mqtt.service.config.sources.some(
+        (source) => source.device.id === device.id
+      )
+    ).toBe(false)
+  })
+  test(`addMqttSource with valid id adds an mqtt source.`, async () => {
+    const device = Device.instances[0]
+    const prevLength = mqtt.service.config.sources.length
+    const args = {
+      id: mqtt.service.id,
+      deviceId: device.id
+    }
+    await resolvers.Mutation.addMqttSource({}, args, context, {})
+    expect(mqtt.service.config.sources.length).toBe(prevLength + 1)
+    expect(
+      mqtt.service.config.sources.some((host) => host.name === args.name)
+    ).toBe(true)
+  })
+  test(`addMqttSource with a service that isn't mqtt throws an error`, async () => {
+    const device = Device.instances[0]
+    const nonMqttService = await Service.create(
+      'aService',
+      'aDescription',
+      'notMqtt',
+      User.instances[0].id
+    )
+    const args = {
+      id: nonMqttService.id,
+      deviceId: device.id
+    }
+    expect(
+      await resolvers.Mutation.addMqttSource({}, args, context, {}).catch(
+        (e) => e
+      )
+    ).toMatchInlineSnapshot(
+      `[Error: Service with id 5 is not an mqtt service. It's type notMqtt]`
+    )
+  })
+  test(`deleteMqttSource with valid id and name deletes a primary host.`, async () => {
+    const device = Device.instances[0]
+    const prevLength = service.config.sources.length
+    const args = {
+      id: 1234567,
+      deviceId: device.id
+    }
+    expect(
+      await resolvers.Mutation.deleteMqttSource({}, args, context, {}).catch(
+        (e) => e
+      )
+    ).toMatchInlineSnapshot(`[Error: Service with id 1234567 does not exist.]`)
+    expect(mqtt.service.config.sources.length).toBe(prevLength)
+    expect(
+      mqtt.service.config.sources.some((host) => host.name === args.name)
+    ).toBe(true)
+  })
+  test(`deleteMqttSource with valid id and name deletes a primary host.`, async () => {
+    const device = Device.instances[0]
+    const prevLength = mqtt.service.config.sources.length
+    const args = {
+      id: mqtt.service.id,
+      deviceId: device.id
+    }
+    await resolvers.Mutation.deleteMqttSource({}, args, context, {})
+    expect(mqtt.service.config.sources.length).toBe(prevLength - 1)
+    expect(
+      mqtt.service.config.sources.some((host) => host.name === args.name)
+    ).toBe(false)
+  })
+  test(`deleteMqttSource with a service that isn't mqtt throws an error`, async () => {
+    const device = Device.instances[0]
+    const nonMqttService = await Service.create(
+      'aService',
+      'aDescription',
+      'notMqtt',
+      User.instances[0].id
+    )
+    const args = {
+      id: nonMqttService.id,
+      deviceId: device.id
+    }
+    expect(
+      await resolvers.Mutation.deleteMqttSource({}, args, context, {}).catch(
+        (e) => e
+      )
+    ).toMatchInlineSnapshot(
+      `[Error: Service with id 6 is not an mqtt service. It's type notMqtt]`
     )
   })
   test(`updateMqtt with invalid id throws an error.`, async () => {
