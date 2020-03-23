@@ -186,8 +186,6 @@ class Mqtt extends Model {
     this.stopPublishing()
   }
   startPublishing() {
-    console.log(new Date().toISOString())
-    console.log(`this happend`)
     this.interval = clearInterval(this.interval)
     this.interval = setInterval(() => {
       this.publish()
