@@ -56,12 +56,10 @@ afterAll(async () => {
 
 beforeEach(() => {
   jest.useFakeTimers()
-  mockSparkplug.on.mockClear()
-  mockSparkplug.publishNodeBirth.mockClear()
-  mockSparkplug.publishDeviceBirth.mockClear()
-  mockSparkplug.publishDeviceData.mockClear()
-  mockSparkplug.publishDeviceDeath.mockClear()
-  mockSparkplug.stop.mockClear()
+})
+
+afterEach(() => {
+  jest.clearAllMocks()
 })
 
 test(`Initializing Service, also initializes Mqtt, MqttSource and MqttHistory.`, async () => {
@@ -243,7 +241,7 @@ describe(`MQTT: `, () => {
   })
   test(`onReconnect stops and then starts publishing.`, () => {
     mqtt.onReconnect()
-    expect(clearInterval).toBeCalledTimes(1)
+    expect(clearInterval).toBeCalledTimes(2)
     expect(setInterval).toBeCalledTimes(1)
     expect(setInterval).toBeCalledWith(expect.any(Function), mqtt.rate)
   })

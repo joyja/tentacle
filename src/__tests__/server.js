@@ -438,7 +438,7 @@ test('create mqtt with the proper headers and fields returns valid results', asy
       throw error
     })
   expect(setInterval).toBeCalledTimes(1)
-  expect(clearInterval).toBeCalledTimes(0)
+  expect(clearInterval).toBeCalledTimes(1)
   expect(mockSparkplug.on).toBeCalledTimes(7)
   expect(mockSparkplug.publishNodeBirth).toBeCalledTimes(1)
   expect(mockSparkplug.publishDeviceBirth).toBeCalledTimes(1)
@@ -515,7 +515,7 @@ test('update mqtt with the proper headers and fields returns valid results', asy
       throw error
     })
   expect(setInterval).toBeCalledTimes(1)
-  expect(clearInterval).toBeCalledTimes(1)
+  expect(clearInterval).toBeCalledTimes(2)
   expect(mockSparkplug.on).toBeCalledTimes(7)
   expect(mockSparkplug.publishNodeBirth).toBeCalledTimes(1)
   expect(mockSparkplug.publishDeviceBirth).toBeCalledTimes(1)
