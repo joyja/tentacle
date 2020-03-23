@@ -339,25 +339,31 @@ Mqtt.prototype.publishHistory = async function() {
       metrics: [...payload]
     })
   }
-  let sql = `DELETE FROM mqttPrimaryHostHistory WHERE id in (${'?,'
-    .repeat(historyToPublish.length)
-    .slice(0, -1)})`
-  let params = historyToPublish.map((record) => {
-    return record.id
-  })
-  await this.constructor.executeUpdate(sql, params)
+  let sql = undefined
+  let params = undefined
+  if (historyToPublish.length > 0) {
+    sql = `DELETE FROM mqttPrimaryHostHistory WHERE id in (${'?,'
+      .repeat(historyToPublish.length)
+      .slice(0, -1)})`
+    params = historyToPublish.map((record) => {
+      return record.id
+    })
+    await this.constructor.executeUpdate(sql, params)
+  }
   sql = `SELECT a.id AS id
     FROM mqttHistory AS a
     LEFT JOIN mqttPrimaryHostHistory AS b ON a.id = b.mqttHistory
     WHERE b.id IS NULL LIMIT 750`
   const historyToDelete = await this.constructor.executeQuery(sql, [], false)
-  sql = `DELETE FROM mqttHistory WHERE id in (${'?,'
-    .repeat(historyToDelete.length)
-    .slice(0, -1)})`
-  params = historyToDelete.map((record) => {
-    return record.id
-  })
-  await this.constructor.executeUpdate(sql, params)
+  if (historyToDelete && historyToDelete.length > 0) {
+    sql = `DELETE FROM mqttHistory WHERE id in (${'?,'
+      .repeat(historyToDelete.length)
+      .slice(0, -1)})`
+    params = historyToDelete.map((record) => {
+      return record.id
+    })
+    await this.constructor.executeUpdate(sql, params)
+  }
 }
 
 Object.defineProperties(Mqtt.prototype, {
