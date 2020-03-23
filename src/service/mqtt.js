@@ -169,7 +169,7 @@ class Mqtt extends Model {
               }
             }
             this.pubsub.publish('serviceUpdate', {
-              serviceUpdate: this.mqtt.service
+              serviceUpdate: this.service
             })
           })
       }
