@@ -347,11 +347,15 @@ Mqtt.prototype.publishHistory = async function() {
     return record.id
   })
   await this.constructor.executeUpdate(sql, params)
-  // sql = `DELETE FROM mqttHistory WHERE EXISTS (SELECT a.id AS id
-  //   FROM mqttHistory AS a
-  //   LEFT JOIN mqttPrimaryHostHistory AS b ON a.id = b.mqttHistory
-  //   WHERE b.id IS NULL LIMIT 750)`
-  // await this.constructor.executeUpdate(sql)
+  sql = `DELETE FROM mqttHistory 
+    WHERE id IN (
+      SELECT a.id AS id 
+      FROM mqttHistory AS a 
+      LEFT JOIN mqttPrimaryHostHistory AS b 
+      on a.id = b.mqttHistory 
+      WHERE b.id IS NULL LIMIT 750
+    )`
+  await this.constructor.executeUpdate(sql)
 }
 
 Object.defineProperties(Mqtt.prototype, {
