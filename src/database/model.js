@@ -1,6 +1,7 @@
 const logger = require('../logger')
 
 const executeQuery = function(db, sql, params = [], firstRowOnly = false) {
+  console.log(new Date().toISOString())
   console.log(sql)
   console.log(params)
   return new Promise((resolve, reject) => {
@@ -20,6 +21,7 @@ const executeQuery = function(db, sql, params = [], firstRowOnly = false) {
 }
 
 const executeUpdate = function(db, sql, params = []) {
+  console.log(new Date().toISOString())
   console.log(sql)
   console.log(params)
   return new Promise((resolve, reject) => {
