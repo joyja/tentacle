@@ -1,9 +1,11 @@
 const logger = require('../logger')
 
 const executeQuery = function(db, sql, params = [], firstRowOnly = false) {
-  console.log(new Date().toISOString())
-  console.log(sql)
-  console.log(params)
+  if (process.env.TENTACLE_DEBUG) {
+    console.log(new Date().toISOString())
+    console.log(sql)
+    console.log(params)
+  }
   return new Promise((resolve, reject) => {
     const callback = (error, rows) => {
       if (error) {
@@ -21,9 +23,11 @@ const executeQuery = function(db, sql, params = [], firstRowOnly = false) {
 }
 
 const executeUpdate = function(db, sql, params = []) {
-  console.log(new Date().toISOString())
-  console.log(sql)
-  console.log(params)
+  if (process.env.TENTACLE_DEBUG) {
+    console.log(new Date().toISOString())
+    console.log(sql)
+    console.log(params)
+  }
   return new Promise((resolve, reject) => {
     db.run(sql, params, function(error) {
       if (error) {
