@@ -303,6 +303,7 @@ Mqtt.prototype.publishHistory = async function() {
   let historyToPublish = []
   for (const host of hosts) {
     const history = await host.getHistory(this.recordLimit)
+    console.log(history)
     const newRecords = history.filter((record) => {
       return !historyToPublish.some((row) => {
         return row.id === record.id
@@ -346,18 +347,15 @@ Mqtt.prototype.publishHistory = async function() {
     return record.id
   })
   await this.constructor.executeUpdate(sql, params)
-  sql = `SELECT a.id AS id
-    FROM mqttHistory AS a
-    LEFT JOIN mqttPrimaryHostHistory AS b ON a.id = b.mqttHistory
-    WHERE b.id IS NULL LIMIT 750`
-  const historyToDelete = await this.constructor.executeQuery(sql, [], false)
-  sql = `DELETE FROM mqttHistory WHERE id in (${'?,'
-    .repeat(historyToDelete.length)
-    .slice(0, -1)})`
-  params = historyToDelete.map((record) => {
-    return record.id
-  })
-  await this.constructor.executeUpdate(sql, params)
+  sql = `DELETE FROM mqttHistory 
+    WHERE id IN (
+      SELECT a.id AS id 
+      FROM mqttHistory AS a 
+      LEFT JOIN mqttPrimaryHostHistory AS b 
+      on a.id = b.mqttHistory 
+      WHERE b.id IS NULL LIMIT 750
+    )`
+  await this.constructor.executeUpdate(sql)
 }
 
 Object.defineProperties(Mqtt.prototype, {
