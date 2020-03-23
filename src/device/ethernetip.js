@@ -32,11 +32,17 @@ class EthernetIP extends Model {
       } else {
         this.connected = false
       }
+      this.pubsub.publish('deviceUpdate', {
+        deviceUpdate: this.device
+      })
     }
   }
   async disconnect() {
     this.client.destroy()
     this.connected = false
+    this.pubsub.publish('deviceUpdate', {
+      deviceUpdate: this.device
+    })
   }
   get host() {
     this.checkInit()

@@ -1,7 +1,7 @@
 const tag = require('./tag')
-const mqttUpdate = require('./mqttUpdate')
+const service = require('./service')
 
 module.exports = {
-  ...mqttUpdate,
+  ...service,
   ...tag
 }

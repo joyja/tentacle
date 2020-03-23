@@ -81,6 +81,9 @@ class Modbus extends Model {
           `Connection failed to modbus device ${this.device.name}, host: ${this.host}, port: ${this.port}, with error: ${this.error}.`
         )
       }
+      this.pubsub.publish('deviceUpdate', {
+        deviceUpdate: this.device
+      })
     }
   }
   async disconnect() {
@@ -100,6 +103,9 @@ class Modbus extends Model {
       }
     })
     this.connected = false
+    this.pubsub.publish('deviceUpdate', {
+      deviceUpdate: this.device
+    })
   }
   get host() {
     this.checkInit()
