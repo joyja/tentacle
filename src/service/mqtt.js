@@ -168,6 +168,9 @@ class Mqtt extends Model {
                 host.readyForData = false
               }
             }
+            this.pubsub.publish('serviceUpdate', {
+              serviceUpdate: this.mqtt.service
+            })
           })
       }
     })
