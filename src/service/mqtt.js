@@ -186,6 +186,7 @@ class Mqtt extends Model {
     this.stopPublishing()
   }
   startPublishing() {
+    this.interval = clearInterval(this.interval)
     this.interval = setInterval(() => {
       this.publish()
       this.publishHistory()
