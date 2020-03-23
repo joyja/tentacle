@@ -400,6 +400,7 @@ MqttSource.prototype.log = async function(scanClassId) {
           sql = `${sql} VALUES (?,?);`
           params = [host.id, result.lastID]
           await this.constructor.executeUpdate(sql, params)
+          this.pubsub.publish('mqttUpdate', { mqttUpdate: this.mqtt.service })
         }
         resolve()
       })

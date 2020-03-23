@@ -356,5 +356,6 @@ type Mutation {
 }
 
 type Subscription {
-  tagUpdate: Tag
+  tagUpdate: Tag,
+  mqttUpdate: Service
 }
