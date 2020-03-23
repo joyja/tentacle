@@ -303,6 +303,7 @@ Mqtt.prototype.publishHistory = async function() {
   let historyToPublish = []
   for (const host of hosts) {
     const history = await host.getHistory(this.recordLimit)
+    console.log(history)
     const newRecords = history.filter((record) => {
       return !historyToPublish.some((row) => {
         return row.id === record.id
