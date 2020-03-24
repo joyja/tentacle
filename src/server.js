@@ -9,7 +9,7 @@ const { executeQuery } = require('./database/model')
 const fs = require('fs')
 const logger = require('./logger')
 
-const desiredUserVersion = 4
+const desiredUserVersion = 5
 
 let db = undefined
 let httpServer = undefined

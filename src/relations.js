@@ -303,7 +303,6 @@ Mqtt.prototype.publishHistory = async function() {
   let historyToPublish = []
   for (const host of hosts) {
     const history = await host.getHistory(this.recordLimit)
-    console.log(history)
     const newRecords = history.filter((record) => {
       return !historyToPublish.some((row) => {
         return row.id === record.id
@@ -387,27 +386,30 @@ MqttSource.prototype.log = async function(scanClassId) {
       return false
     }
   })
-  for (tag of tags) {
-    await new Promise((resolve) => {
-      this.db.serialize(async () => {
-        const primaryHosts = this.mqtt.primaryHosts
-        let sql = `INSERT INTO mqttHistory (mqttSource, tag, timestamp, value)`
-        sql = `${sql} VALUES (?,?,?,?);`
-        let params = [this.id, tag.id, getTime(new Date()), tag.value]
+  await new Promise((resolve) => {
+    this.db.serialize(async () => {
+      let sql = `INSERT INTO mqttHistory (mqttSource, timestamp)`
+      sql = `${sql} VALUES (?,?,?,?);`
+      let params = [this.id, tag.id, getTime(new Date()), tag.value]
+      const result = await this.constructor.executeUpdate(sql, params)
+      for (host of this.mqtt.primaryHosts) {
+        sql = `INSERT INTO mqttPrimaryHostHistory (mqttPrimaryHost, mqttHistory)`
+        sql = `${sql} VALUES (?,?);`
+        params = [host.id, result.lastID]
+        await this.constructor.executeUpdate(sql, params)
+        this.pubsub.publish('serviceUpdate', {
+          serviceUpdate: this.mqtt.service
+        })
+      }
+      for (tag of tags) {
+        let sql = `INSERT INTO mqttHistoryTag (mqttHistory, tag, value)`
+        sql = `${sql} VALUES (?,?,?);`
+        let params = [result.lastID, tag.id, tag.value]
         const result = await this.constructor.executeUpdate(sql, params)
-        for (host of primaryHosts) {
-          sql = `INSERT INTO mqttPrimaryHostHistory (mqttPrimaryHost, mqttHistory)`
-          sql = `${sql} VALUES (?,?);`
-          params = [host.id, result.lastID]
-          await this.constructor.executeUpdate(sql, params)
-          this.pubsub.publish('serviceUpdate', {
-            serviceUpdate: this.mqtt.service
-          })
-        }
-        resolve()
-      })
+      }
+      resolve()
     })
-  }
+  })
 }
 
 Object.defineProperties(MqttSource.prototype, {
