@@ -406,7 +406,9 @@ MqttSource.prototype.log = async function(scanClassId) {
           let sql = `INSERT INTO mqttHistoryTag (mqttHistory, tag, value)`
           sql = `${sql} VALUES (?,?,?);`
           console.log(tag.value)
-          let params = [result.lastID, tag.id, tag.value]
+          const value =
+            tag.datatype === `BOOLEAN` ? tag.value + '' === 'true' : tag.value
+          let params = [result.lastID, tag.id, value]
           await this.constructor.executeUpdate(sql, params)
         }
         resolve()
