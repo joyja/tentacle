@@ -326,7 +326,6 @@ Mqtt.prototype.publishHistory = async function() {
       })
       .map((record) => {
         const tag = Tag.findById(record.tag)
-        console.log(record.value)
         return {
           name: tag.name,
           value: tag.datatype === 'BOOLEAN' ? !!+record.value : record.value,
