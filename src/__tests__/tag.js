@@ -26,6 +26,10 @@ afterAll(async () => {
   })
 })
 
+afterEach(() => {
+  jest.clearAllMocks()
+})
+
 test(`Tag: initialize initializes ScanClass to.`, async () => {
   await Tag.initialize(db, pubsub)
   expect(ScanClass.initialized).toBe(true)

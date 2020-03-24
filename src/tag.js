@@ -191,6 +191,8 @@ class ScanClass extends Model {
     this.scanCount = 0
   }
   startScan() {
+    console.log('this happend')
+    this.interval = clearInterval(this.interval)
     this.interval = setInterval(async () => {
       await this.scan()
       this.scanCount += 1

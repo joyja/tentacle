@@ -24,7 +24,6 @@ ScanClass.prototype.scan = async function() {
     }
   }
   for (const source of MqttSource.instances) {
-    console.log(source)
     await source.log(this.id)
   }
 }
