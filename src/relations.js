@@ -392,7 +392,6 @@ MqttSource.prototype.log = async function(scanClassId) {
       sql = `${sql} VALUES (?,?);`
       let params = [this.id, getTime(new Date())]
       const result = await this.constructor.executeUpdate(sql, params)
-      console.log(result)
       for (host of this.mqtt.primaryHosts) {
         sql = `INSERT INTO mqttPrimaryHostHistory (mqttPrimaryHost, mqttHistory)`
         sql = `${sql} VALUES (?,?);`
