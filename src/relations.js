@@ -329,7 +329,7 @@ Mqtt.prototype.publishHistory = async function() {
         console.log(record.value)
         return {
           name: tag.name,
-          value: !!record.value,
+          value: tag.datatype === 'BOOLEAN' ? !!+record.value : record.value,
           timestamp: record.timestamp,
           type: tag.datatype,
           isHistorical: true
