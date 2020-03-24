@@ -401,7 +401,7 @@ MqttSource.prototype.log = async function(scanClassId) {
           serviceUpdate: this.mqtt.service
         })
       }
-      for (tag of tags) {
+      for (const tag of tags) {
         let sql = `INSERT INTO mqttHistoryTag (mqttHistory, tag, value)`
         sql = `${sql} VALUES (?,?,?);`
         let params = [result.lastID, tag.id, tag.value]
