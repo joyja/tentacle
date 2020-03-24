@@ -389,7 +389,7 @@ MqttSource.prototype.log = async function(scanClassId) {
   await new Promise((resolve) => {
     this.db.serialize(async () => {
       let sql = `INSERT INTO mqttHistory (mqttSource, timestamp)`
-      sql = `${sql} VALUES (?,?,?,?);`
+      sql = `${sql} VALUES (?,?);`
       let params = [this.id, getTime(new Date())]
       const result = await this.constructor.executeUpdate(sql, params)
       console.log(result)
