@@ -326,6 +326,7 @@ Mqtt.prototype.publishHistory = async function() {
       })
       .map((record) => {
         const tag = Tag.findById(record.tag)
+        console.log(record.value)
         return {
           name: tag.name,
           value: record.value,
@@ -406,9 +407,7 @@ MqttSource.prototype.log = async function(scanClassId) {
           let sql = `INSERT INTO mqttHistoryTag (mqttHistory, tag, value)`
           sql = `${sql} VALUES (?,?,?);`
           console.log(tag.value)
-          const value =
-            tag.datatype === `BOOLEAN` ? tag.value + '' === 'true' : tag.value
-          let params = [result.lastID, tag.id, value]
+          let params = [result.lastID, tag.id, tag.value]
           await this.constructor.executeUpdate(sql, params)
         }
         resolve()
