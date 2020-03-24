@@ -386,31 +386,32 @@ MqttSource.prototype.log = async function(scanClassId) {
       return false
     }
   })
-  console.log(tags)
-  await new Promise((resolve) => {
-    this.db.serialize(async () => {
-      let sql = `INSERT INTO mqttHistory (mqttSource, timestamp)`
-      sql = `${sql} VALUES (?,?);`
-      let params = [this.id, getTime(new Date())]
-      const result = await this.constructor.executeUpdate(sql, params)
-      for (host of this.mqtt.primaryHosts) {
-        sql = `INSERT INTO mqttPrimaryHostHistory (mqttPrimaryHost, mqttHistory)`
+  if (tags.length > 0) {
+    await new Promise((resolve) => {
+      this.db.serialize(async () => {
+        let sql = `INSERT INTO mqttHistory (mqttSource, timestamp)`
         sql = `${sql} VALUES (?,?);`
-        params = [host.id, result.lastID]
-        await this.constructor.executeUpdate(sql, params)
-        this.pubsub.publish('serviceUpdate', {
-          serviceUpdate: this.mqtt.service
-        })
-      }
-      for (const tag of tags) {
-        let sql = `INSERT INTO mqttHistoryTag (mqttHistory, tag, value)`
-        sql = `${sql} VALUES (?,?,?);`
-        let params = [result.lastID, tag.id, tag.value]
-        await this.constructor.executeUpdate(sql, params)
-      }
-      resolve()
+        let params = [this.id, getTime(new Date())]
+        const result = await this.constructor.executeUpdate(sql, params)
+        for (host of this.mqtt.primaryHosts) {
+          sql = `INSERT INTO mqttPrimaryHostHistory (mqttPrimaryHost, mqttHistory)`
+          sql = `${sql} VALUES (?,?);`
+          params = [host.id, result.lastID]
+          await this.constructor.executeUpdate(sql, params)
+          this.pubsub.publish('serviceUpdate', {
+            serviceUpdate: this.mqtt.service
+          })
+        }
+        for (const tag of tags) {
+          let sql = `INSERT INTO mqttHistoryTag (mqttHistory, tag, value)`
+          sql = `${sql} VALUES (?,?,?);`
+          let params = [result.lastID, tag.id, tag.value]
+          await this.constructor.executeUpdate(sql, params)
+        }
+        resolve()
+      })
     })
-  })
+  }
 }
 
 Object.defineProperties(MqttSource.prototype, {
