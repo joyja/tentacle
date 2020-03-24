@@ -376,6 +376,7 @@ Object.defineProperties(Mqtt.prototype, {
 
 MqttSource.prototype.log = async function(scanClassId) {
   const scanClass = ScanClass.findById(scanClassId)
+  console.log(scanClass)
   const tags = Tag.instances.filter((tag) => {
     if (tag.source) {
       return (
@@ -386,6 +387,7 @@ MqttSource.prototype.log = async function(scanClassId) {
       return false
     }
   })
+  console.log(tags)
   await new Promise((resolve) => {
     this.db.serialize(async () => {
       let sql = `INSERT INTO mqttHistory (mqttSource, timestamp)`
