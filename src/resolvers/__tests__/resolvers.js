@@ -150,6 +150,10 @@ afterAll(async () => {
   })
 })
 
+afterEach(async () => {
+  jest.clearAllMocks()
+})
+
 // ==============================
 //          Queries
 // ==============================
@@ -1345,6 +1349,14 @@ describe(`Mutations: `, () => {
 describe('Subscription: ', () => {
   test('tagUpdate subscribe returns an asyncIterator', () => {
     resolvers.Subscription.tagUpdate.subscribe({}, {}, context)
+    expect(pubsub.asyncIterator).toBeCalledTimes(1)
+  })
+  test('deviceUpdate subscribe returns an asyncIterator', () => {
+    resolvers.Subscription.deviceUpdate.subscribe({}, {}, context)
+    expect(pubsub.asyncIterator).toBeCalledTimes(1)
+  })
+  test('serviceUpdate subscribe returns an asyncIterator', () => {
+    resolvers.Subscription.serviceUpdate.subscribe({}, {}, context)
     expect(pubsub.asyncIterator).toBeCalledTimes(1)
   })
 })
