@@ -303,7 +303,6 @@ Mqtt.prototype.publishHistory = async function() {
   let historyToPublish = []
   for (const host of hosts) {
     const history = await host.getHistory(this.recordLimit)
-    console.log(history)
     const newRecords = history.filter((record) => {
       return !historyToPublish.some((row) => {
         return row.id === record.id
@@ -329,7 +328,7 @@ Mqtt.prototype.publishHistory = async function() {
         const tag = Tag.findById(record.tag)
         return {
           name: tag.name,
-          value: record.value,
+          value: tag.datatype === 'BOOLEAN' ? !!+record.value : record.value,
           timestamp: record.timestamp,
           type: tag.datatype,
           isHistorical: true
@@ -387,15 +386,14 @@ MqttSource.prototype.log = async function(scanClassId) {
       return false
     }
   })
-  for (tag of tags) {
+  if (tags.length > 0) {
     await new Promise((resolve) => {
       this.db.serialize(async () => {
-        const primaryHosts = this.mqtt.primaryHosts
-        let sql = `INSERT INTO mqttHistory (mqttSource, tag, timestamp, value)`
-        sql = `${sql} VALUES (?,?,?,?);`
-        let params = [this.id, tag.id, getTime(new Date()), tag.value]
+        let sql = `INSERT INTO mqttHistory (mqttSource, timestamp)`
+        sql = `${sql} VALUES (?,?);`
+        let params = [this.id, getTime(new Date())]
         const result = await this.constructor.executeUpdate(sql, params)
-        for (host of primaryHosts) {
+        for (host of this.mqtt.primaryHosts) {
           sql = `INSERT INTO mqttPrimaryHostHistory (mqttPrimaryHost, mqttHistory)`
           sql = `${sql} VALUES (?,?);`
           params = [host.id, result.lastID]
@@ -403,6 +401,12 @@ MqttSource.prototype.log = async function(scanClassId) {
           this.pubsub.publish('serviceUpdate', {
             serviceUpdate: this.mqtt.service
           })
+        }
+        for (const tag of tags) {
+          let sql = `INSERT INTO mqttHistoryTag (mqttHistory, tag, value)`
+          sql = `${sql} VALUES (?,?,?);`
+          let params = [result.lastID, tag.id, tag.value]
+          await this.constructor.executeUpdate(sql, params)
         }
         resolve()
       })

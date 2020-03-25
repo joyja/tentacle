@@ -24,10 +24,7 @@ const createTable = function(db, tableName, fields) {
 }
 
 class Mqtt extends Model {
-  static async initialize(db, pubsub) {
-    await MqttSource.initialize(db, pubsub)
-    await MqttPrimaryHost.initialize(db, pubsub)
-    const result = await super.initialize(db, pubsub)
+  static async upgradeToV3() {
     if (this.tableExisted && this.version < 3) {
       const newColumns = [{ colName: 'recordLimit', colType: 'TEXT' }]
       for (const column of newColumns) {
@@ -35,13 +32,36 @@ class Mqtt extends Model {
         await this.executeUpdate(sql)
       }
     }
+  }
+  static async upgradeToV5() {
+    let history = undefined
+    let sql = undefined
+    if (this.version < 5) {
+      sql = `DROP TABLE mqttHistory`
+      await this.executeUpdate(sql)
+      sql = `DROP TABLE mqttPrimaryHostHistory`
+      await this.executeUpdate(sql)
+    }
+  }
+  static async initialize(db, pubsub) {
+    await MqttSource.initialize(db, pubsub)
+    await MqttPrimaryHost.initialize(db, pubsub)
+    const result = await super.initialize(db, pubsub)
+    await this.upgradeToV3()
+    await this.upgradeToV5()
+    let history = undefined
+    let sql = undefined
     const mqttHistoryFields = [
       { colName: 'mqttSource', colRef: 'mqttSource', onDelete: 'CASCADE' },
-      { colName: 'tag', colRef: 'tag', onDelete: 'CASCADE' },
-      { colName: 'timestamp', colType: 'INTEGER' },
-      { colName: 'value', colType: 'TEXT' }
+      { colName: 'timestamp', colType: 'INTEGER' }
     ]
     await createTable(this.db, 'mqttHistory', mqttHistoryFields)
+    const mqttHistoryTagFields = [
+      { colName: 'mqttHistory', colRef: 'mqttHistory', onDelete: 'CASCADE' },
+      { colName: 'tag', colRef: 'tag', onDelete: 'CASCADE' },
+      { colName: 'value', colType: 'TEXT' }
+    ]
+    await createTable(this.db, 'mqttHistoryTag', mqttHistoryTagFields)
     const mqttPrimaryHostHistoryFields = [
       {
         colName: 'mqttPrimaryHost',
@@ -441,12 +461,14 @@ class MqttPrimaryHost extends Model {
       a.mqttPrimaryHost as hostId,
       b.id as historyId,
       b.mqttSource as source,
-      b.tag as tag,
+      c.tag as tag,
       b.timestamp as timestamp,
-      b.value as value
+      c.value as value
       FROM mqttPrimaryHostHistory AS a 
       JOIN mqttHistory AS b 
       ON a.mqttHistory=b.id
+      JOIN mqttHistoryTag AS c
+      ON b.id=c.mqttHistory
       WHERE a.mqttPrimaryHost=?`
     if (limit) {
       sql = `${sql} LIMIT ${limit}`
