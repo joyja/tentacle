@@ -132,6 +132,7 @@ class Mqtt extends Model {
         logger.info(
           `Mqtt service ${this.service.name} received a dcmd for ${deviceId}.`
         )
+        console.log(payload)
       })
       this.client.on('ncmd', (payload) => {
         if (payload.metrics) {
