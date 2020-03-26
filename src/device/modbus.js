@@ -238,11 +238,34 @@ class ModbusSource extends Model {
         this.modbus.reverseWords ? data[0] : data[1],
         this.modbus.reverseBits
       )
+      value = view.getInt32(0, this.modbus.reverseBits)
     } else if (this.tag.datatype === `INT16`) {
       view.setInt16(0, data[0], this.modbus.reverseBits)
       value = view.getInt16(0, this.modbus.reverseBits)
     }
     return value
+  }
+  formatOutput(value) {
+    const buffer = new ArrayBuffer(4)
+    const view = new DataView(buffer)
+    let data = []
+    if (this.tag.datatype === `FLOAT`) {
+      view.setFloat32(0, value, this.modbus.reverseBits)
+      data.push(
+        view.getInt16(this.modbus.reverseWords ? 1 : 0, this.modbus.reverseBits)
+      )
+      data.push(
+        view.getInt16(this.modbus.reverseWords ? 0 : 1, this.modbus.reverseBits)
+      )
+    } else if (this.tag.datatype === `INT32`) {
+      view.setInt32(0, value, this.modbus.reverseBits)
+      data.push(
+        view.getInt16(this.modbus.reverseWords ? 1 : 0, this.modbus.reverseBits)
+      )
+      data.push(
+        view.getInt16(this.modbus.reverseWords ? 0 : 1, this.modbus.reverseBits)
+      )
+    }
   }
   async read() {
     if (this.modbus.connected) {
@@ -258,7 +281,7 @@ class ModbusSource extends Model {
                 return
               }
               if (data) {
-                await this.tag.setValue(this.formatValue(data.data))
+                await this.tag.setValue(this.formatValue(data.data), false)
               }
               resolve()
             }
@@ -281,7 +304,7 @@ class ModbusSource extends Model {
                 return
               }
               if (data) {
-                this.tag.setValue(this.formatValue(data.data))
+                this.tag.setValue(this.formatValue(data.data), false)
               }
               resolve()
             }
@@ -303,7 +326,7 @@ class ModbusSource extends Model {
                 return
               } else {
                 if (data) {
-                  await this.tag.setValue(data.data[0])
+                  await this.tag.setValue(data.data[0], false)
                 }
                 resolve()
               }
@@ -314,6 +337,37 @@ class ModbusSource extends Model {
             await this.modbus.disconnect()
             await this.modbus.connect()
           }
+        })
+      }
+    }
+  }
+  async write(value) {
+    if (this.modbus.connected) {
+      if (this.registerType === 'HOLDING_REGISTER') {
+        return new Promise((resolve, reject) => {
+          this.modbus.client.writeRegisters(
+            this.register,
+            this.formatOutput(value),
+            (error) => {
+              if (error) {
+                reject(error)
+                return
+              }
+              resolve()
+            }
+          )
+        }).catch(async (error) => {
+          if (error.name === 'TransactionTimedOutError') {
+            await this.modbus.disconnect()
+            await this.modbus.connect()
+          }
+        })
+      } else if (this.registerType === 'COIL') {
+        return new Promise((resolve, reject) => {
+          this.modbus.client.writeCoil(
+            this.register,
+            this.value + '' === 'true'
+          )
         })
       }
     }

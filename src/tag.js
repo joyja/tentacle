@@ -86,8 +86,11 @@ class Tag extends Model {
       return this._value
     }
   }
-  setValue(value) {
+  async setValue(value, write = true) {
     this.checkInit()
+    if (this.source && write) {
+      this.source.write(value)
+    }
     return this.update(this.id, 'value', value, Tag).then((result) => {
       this._value = result
       this.pubsub.publish('tagUpdate', { tagUpdate: this })

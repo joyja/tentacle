@@ -100,7 +100,12 @@ class EthernetIPSource extends Model {
   async read() {
     if (this.ethernetip.connected) {
       await this.ethernetip.client.readTag(this.tagData)
-      await this.tag.setValue(this.tagData.value)
+      await this.tag.setValue(this.tagData.value, false)
+    }
+  }
+  async write(value) {
+    if (this.ethernetip.connected) {
+      await this.ethernetip.client.writeTag(this.tagData, value)
     }
   }
   get tagname() {
