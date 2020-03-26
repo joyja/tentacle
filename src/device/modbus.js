@@ -250,7 +250,7 @@ class ModbusSource extends Model {
     const view = new DataView(buffer)
     let data = []
     if (this.tag.datatype === `FLOAT`) {
-      view.setFloat32(0, value, this.modbus.reverseBits)
+      view.setFloat32(0, value)
       data.push(
         view.getUint16(
           this.modbus.reverseWords ? 2 : 0,
@@ -263,9 +263,8 @@ class ModbusSource extends Model {
           this.modbus.reverseBits
         )
       )
-      console.log(view.getFloat32(0, this.modbus.reverseBits))
     } else if (this.tag.datatype === `INT32`) {
-      view.setInt32(0, value, this.modbus.reverseBits)
+      view.setInt32(0, value)
       data.push(
         view.getUint16(
           this.modbus.reverseWords ? 0 : 2,
@@ -279,8 +278,6 @@ class ModbusSource extends Model {
         )
       )
     }
-    console.log('write')
-    console.log(data)
     return data
   }
   async read() {
@@ -320,7 +317,6 @@ class ModbusSource extends Model {
                 return
               }
               if (data) {
-                console.log(data.data)
                 this.tag.setValue(this.formatValue(data.data), false)
               }
               resolve()
