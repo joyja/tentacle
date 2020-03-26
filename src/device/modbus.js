@@ -253,13 +253,13 @@ class ModbusSource extends Model {
       view.setFloat32(0, value, !this.modbus.reverseBits)
       data.push(
         view.getUint16(
-          this.modbus.reverseWords ? 0 : 1,
+          this.modbus.reverseWords ? 0 : 2,
           !this.modbus.reverseBits
         )
       )
       data.push(
         view.getUint16(
-          this.modbus.reverseWords ? 1 : 0,
+          this.modbus.reverseWords ? 2 : 0,
           !this.modbus.reverseBits
         )
       )
@@ -268,13 +268,13 @@ class ModbusSource extends Model {
       view.setInt32(0, value, this.modbus.reverseBits)
       data.push(
         view.getUint16(
-          this.modbus.reverseWords ? 0 : 1,
+          this.modbus.reverseWords ? 0 : 2,
           !this.modbus.reverseBits
         )
       )
       data.push(
         view.getUint16(
-          this.modbus.reverseWords ? 1 : 0,
+          this.modbus.reverseWords ? 2 : 0,
           !this.modbus.reverseBits
         )
       )
