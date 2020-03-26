@@ -216,12 +216,12 @@ class ModbusSource extends Model {
     const view = new DataView(buffer)
     let value = null
     if (this.tag.datatype === `FLOAT`) {
-      view.setInt16(
+      view.setUint16(
         0,
         this.modbus.reverseWords ? data[1] : data[0],
         this.modbus.reverseBits
       )
-      view.setInt16(
+      view.setUint16(
         2,
         this.modbus.reverseWords ? data[0] : data[1],
         this.modbus.reverseBits
