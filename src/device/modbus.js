@@ -278,6 +278,8 @@ class ModbusSource extends Model {
         )
       )
     }
+    console.log('write')
+    console.log(data)
     return data
   }
   async read() {
@@ -317,6 +319,7 @@ class ModbusSource extends Model {
                 return
               }
               if (data) {
+                console.log(data.data)
                 this.tag.setValue(this.formatValue(data.data), false)
               }
               resolve()
