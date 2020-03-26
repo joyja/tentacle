@@ -353,6 +353,7 @@ class ModbusSource extends Model {
     if (this.modbus.connected) {
       if (this.registerType === 'HOLDING_REGISTER') {
         return new Promise((resolve, reject) => {
+          console.log(value)
           this.modbus.client.writeRegisters(
             this.register,
             this.formatOutput(value),
