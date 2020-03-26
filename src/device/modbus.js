@@ -263,7 +263,6 @@ class ModbusSource extends Model {
           !this.modbus.reverseBits
         )
       )
-      console.log(view.getFloat32(0, !this.modbus.reverseBits))
     } else if (this.tag.datatype === `INT32`) {
       view.setInt32(0, value, this.modbus.reverseBits)
       data.push(
@@ -359,7 +358,6 @@ class ModbusSource extends Model {
     if (this.modbus.connected) {
       if (this.registerType === 'HOLDING_REGISTER') {
         return new Promise((resolve, reject) => {
-          console.log(value)
           this.modbus.client.writeRegisters(
             this.register,
             this.formatOutput(value),
