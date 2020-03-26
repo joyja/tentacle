@@ -252,13 +252,13 @@ class ModbusSource extends Model {
     if (this.tag.datatype === `FLOAT`) {
       view.setFloat32(0, value, this.modbus.reverseBits)
       data.push(
-        view.getUInt16(
+        view.getUint16(
           this.modbus.reverseWords ? 1 : 0,
           this.modbus.reverseBits
         )
       )
       data.push(
-        view.getUInt16(
+        view.getUint16(
           this.modbus.reverseWords ? 0 : 1,
           this.modbus.reverseBits
         )
@@ -266,10 +266,10 @@ class ModbusSource extends Model {
     } else if (this.tag.datatype === `INT32`) {
       view.setInt32(0, value, this.modbus.reverseBits)
       data.push(
-        view.getInt16(this.modbus.reverseWords ? 1 : 0, this.modbus.reverseBits)
+        view.getint16(this.modbus.reverseWords ? 1 : 0, this.modbus.reverseBits)
       )
       data.push(
-        view.getInt16(this.modbus.reverseWords ? 0 : 1, this.modbus.reverseBits)
+        view.getint16(this.modbus.reverseWords ? 0 : 1, this.modbus.reverseBits)
       )
     }
     console.log(data)
@@ -366,10 +366,11 @@ class ModbusSource extends Model {
             }
           )
         }).catch(async (error) => {
-          console.log(error)
           if (error.name === 'TransactionTimedOutError') {
             await this.modbus.disconnect()
             await this.modbus.connect()
+          } else {
+            throw error
           }
         })
       } else if (this.registerType === 'COIL') {
