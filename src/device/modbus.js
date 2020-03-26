@@ -263,6 +263,7 @@ class ModbusSource extends Model {
           !this.modbus.reverseBits
         )
       )
+      console.log(view.getFloat32(0, !this.modbus.reverseBits))
     } else if (this.tag.datatype === `INT32`) {
       view.setInt32(0, value, this.modbus.reverseBits)
       data.push(
@@ -278,7 +279,6 @@ class ModbusSource extends Model {
         )
       )
     }
-    console.log(data)
     return data
   }
   async read() {
