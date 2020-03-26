@@ -366,6 +366,7 @@ class ModbusSource extends Model {
             }
           )
         }).catch(async (error) => {
+          console.log(error)
           if (error.name === 'TransactionTimedOutError') {
             await this.modbus.disconnect()
             await this.modbus.connect()
