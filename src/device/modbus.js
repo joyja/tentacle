@@ -266,6 +266,7 @@ class ModbusSource extends Model {
         view.getInt16(this.modbus.reverseWords ? 0 : 1, this.modbus.reverseBits)
       )
     }
+    return data
   }
   async read() {
     if (this.modbus.connected) {

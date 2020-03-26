@@ -89,7 +89,6 @@ class Tag extends Model {
   async setValue(value, write = true) {
     this.checkInit()
     if (this.source && write) {
-      console.log('this happend')
       this.source.write(value)
     }
     return this.update(this.id, 'value', value, Tag).then((result) => {
