@@ -357,6 +357,14 @@ Mqtt.prototype.publishHistory = async function() {
   await this.constructor.executeUpdate(sql)
 }
 
+Mqtt.prototype.onDcmd = function(payload) {
+  const { metrics } = payload
+  for (metric of metrics) {
+    const tag = Tag.instances.find((tag) => metric.name === tag.name)
+    tag.setValue(metric.value)
+  }
+}
+
 Object.defineProperties(Mqtt.prototype, {
   service: {
     get() {
