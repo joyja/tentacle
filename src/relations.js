@@ -10,7 +10,7 @@ const { Service, Mqtt, MqttSource, MqttHistory } = require('./service')
 const { User } = require('./auth')
 const getTime = require('date-fns/getTime')
 
-// This file creates any properties that form relationships with other models.
+// This file creates properties and defines methods requiring relationships with other models.
 // It is defined here to prevent circular dependencies.
 
 // ==============================
@@ -44,6 +44,13 @@ Object.defineProperties(ScanClass.prototype, {
     }
   }
 })
+
+Tag.delete = async function(selector) {
+  const deleted = await this._deleteModel(selector)
+  await ModbusSource.getAll()
+  await EthernetIPSource.getAll()
+  return deleted
+}
 
 Tag.prototype.setScanClass = async function(id) {
   const scanClass = ScanClass.findById(id)

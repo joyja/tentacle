@@ -50,7 +50,7 @@ class Model {
       logger.error(error, { message: `sql: ${sql}` })
     })
   }
-  static createTable() {
+  static async createTable() {
     // fields should be formatted { colName, colType } for typical columns
     // fields should be formatted { colName, colRef, onDelete } for foreign key
     this.checkInitialized()
@@ -69,7 +69,14 @@ class Model {
       }
     })
     sql = `${sql});`
-    return this.executeUpdate(sql)
+    const result = await this.executeUpdate(sql)
+    for (const field of this.fields) {
+      if (field.colRef) {
+        sql = `CREATE INDEX IF NOT EXISTS idx_${this.table}_${field.colName} ON ${this.table} (${field.colName});`
+        await this.executeUpdate(sql)
+      }
+    }
+    return result
   }
   static async initialize(db, pubsub) {
     this.initialized = true

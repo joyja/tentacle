@@ -40,9 +40,6 @@ class Service extends Model {
     this._createdBy = result.createdBy
     this._createdOn = result.createdOn
   }
-  delete() {
-    return super.delete(Service)
-  }
   get name() {
     this.checkInit()
     return this._name
