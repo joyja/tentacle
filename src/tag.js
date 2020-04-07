@@ -46,6 +46,9 @@ class Tag extends Model {
     }
     return super.create(fields)
   }
+  static _deleteModel(selector) {
+    return super.delete(selector)
+  }
   async init(async) {
     const result = await super.init(async)
     this._name = result.name
