@@ -1,5 +1,6 @@
 const { Model } = require(`../database`)
 const { Controller, Tag } = require('ethernet-ip')
+const logger = require(`../logger`)
 
 class EthernetIP extends Model {
   static async initialize(db, pubsub) {
@@ -99,7 +100,9 @@ class EthernetIPSource extends Model {
   }
   async read() {
     if (this.ethernetip.connected) {
-      await this.ethernetip.client.readTag(this.tagData)
+      await this.ethernetip.client.readTag(this.tagData).catch((error) => {
+        logger.error(error)
+      })
       await this.tag.setValue(this.tagData.value, false)
     }
   }
