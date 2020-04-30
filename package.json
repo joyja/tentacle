@@ -10,7 +10,9 @@
     "test:ci": "jest",
     "test:coverage": "jest --coverage",
     "fix": "eslint --ext .js,.vue --fix --ignore-path .gitignore .",
-    "coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls"
+    "coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "bin": {
     "tentacle": "./src/index.js"
@@ -55,6 +57,8 @@
     "sqlite3": "^4.1.1",
     "task-easy": "^1.0.1",
     "tentacle-sparkplug-client": "0.0.5",
-    "winston": "^3.2.1"
-  }
+    "winston": "^3.2.1",
+    "snyk": "^1.316.1"
+  },
+  "snyk": true
 }
