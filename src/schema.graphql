@@ -242,6 +242,8 @@ type Mutation {
   login(username: String!, password: String!): AuthPayload
   """Allows the user to change their password"""
   changePassword(oldPassword: String!, newPassword: String!): User
+  """Requires a valid authorization token with the appropriate privileges. Creates a new user"""
+  createUser(username: String!, password: String!): User
   """Requires a valid authorization token. Creates a new scan class"""
   createScanClass(name: String!, description: String!, rate: Int!): ScanClass
   """Requires a valid authorization token. Updates an existing scan class"""
