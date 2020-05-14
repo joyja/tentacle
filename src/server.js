@@ -14,7 +14,7 @@ const desiredUserVersion = 5
 let db = undefined
 let httpServer = undefined
 let server = undefined
-start = async function(dbFilename) {
+start = async function (dbFilename) {
   let fileExisted = false
   // Create database
   if (dbFilename === `:memory:`) {
@@ -45,8 +45,8 @@ start = async function(dbFilename) {
       tags: Tag.instances,
       scanClasses: ScanClass.instances,
       devices: Device.instances,
-      services: Service.instances
-    })
+      services: Service.instances,
+    }),
   })
 
   await new Promise(async (resolve, reject) => {
@@ -92,7 +92,7 @@ start = async function(dbFilename) {
   })
 }
 
-stop = async function() {
+stop = async function () {
   ScanClass.instances.forEach((instance) => {
     instance.stopScan()
   })
