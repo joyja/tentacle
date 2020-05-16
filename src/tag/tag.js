@@ -17,6 +17,20 @@ class Tag extends Model {
         let sql = `ALTER TABLE "${this.table}" ADD "${column.colName}" ${column.colType}`
         await this.executeUpdate(sql)
       }
+    } else if (this.tableExisted && this.version < 6) {
+      const newColumns = [
+        {
+          colName: 'userDefinedTypeMember',
+          colRef: 'udt',
+          onDelete: 'CASCADE',
+        },
+      ]
+      for (const column of newColumns) {
+        let sql = `ALTER TABLE "${this.table}" ADD "${column.colName}" INTEGER`
+        await this.executeUpdate(sql)
+        sql = `ALTER TABLE ADD FOREIGN KEY("${column.colName}") REFERENCES "${column.colRef}"("id") ON DELETE ${column.onDelete}`
+        await this.executeUpdate(sql)
+      }
     }
     return result
   }
