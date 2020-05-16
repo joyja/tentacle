@@ -61,3 +61,8 @@ UserDefinedTypeMember.fields = [
 ]
 UserDefinedType.instances = []
 UserDefinedType.initialized = false
+
+module.exports = {
+  UserDefinedType,
+  UserDefinedTypeMember,
+}
