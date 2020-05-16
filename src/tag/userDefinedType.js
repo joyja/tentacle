@@ -43,3 +43,21 @@ UserDefinedType.fields = [
 ]
 UserDefinedType.instances = []
 UserDefinedType.initialized = false
+
+class UserDefinedTypeMember extends Model {}
+UserDefinedTypeMember.table = 'udtMember'
+UserDefinedTypeMember.fields = [
+  { colName: 'name', colType: 'TEXT' },
+  { colName: 'description', colType: 'TEXT' },
+  { colName: 'scanClass', colRef: 'scanClass', onDelete: 'CASCADE' },
+  { colName: 'value', colType: 'TEXT' },
+  { colName: 'createdBy', colRef: 'user', onDelete: 'SET NULL' },
+  { colName: 'createdOn', colType: 'INTEGER' },
+  { colName: 'datatype', colType: 'TEXT' },
+  { colName: 'units', colType: 'TEXT' },
+  { colName: 'quality', colType: 'TEXT' },
+  { colName: 'max', colType: 'REAL' },
+  { colName: 'min', colType: 'REAL' },
+]
+UserDefinedType.instances = []
+UserDefinedType.initialized = false

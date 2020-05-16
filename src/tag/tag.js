@@ -157,6 +157,7 @@ Tag.fields = [
   { colName: 'quality', colType: 'TEXT' },
   { colName: 'max', colType: 'REAL' },
   { colName: 'min', colType: 'REAL' },
+  { colName: 'userDefinedTypeMember', colRef: 'udt', onDelete: 'CASCADE' },
 ]
 Tag.instances = []
 Tag.initialized = false
