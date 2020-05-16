@@ -21,7 +21,7 @@ class User extends Model {
     const hash = await bcrypt.hash(password, 10)
     const fields = {
       username,
-      password: hash
+      password: hash,
     }
     return super.create(fields)
   }
@@ -37,13 +37,13 @@ class User extends Model {
       } else {
         const token = jwt.sign(
           {
-            userId: user.id
+            userId: user.id,
           },
           APP_SECRET
         )
         return {
           token,
-          user
+          user,
         }
       }
     } else {
@@ -106,11 +106,11 @@ class User extends Model {
 User.table = `user`
 User.fields = [
   { colName: 'username', colType: 'TEXT' },
-  { colName: 'password', colType: 'TEXT' }
+  { colName: 'password', colType: 'TEXT' },
 ]
 User.instances = []
 User.initialized = false
 
 module.exports = {
-  User
+  User,
 }
