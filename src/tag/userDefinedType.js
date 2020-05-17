@@ -35,6 +35,12 @@ class UserDefinedType extends Model {
     this.checkInit()
     return fromUnixTime(this._createdOn)
   }
+  get udtInstances() {
+    this.checkInit()
+    return UserDefinedTypeInstance.instances.filter((instance) => {
+      return instance._udt === this._id
+    })
+  }
 }
 UserDefinedType.table = 'udt'
 UserDefinedType.fields = [
@@ -183,13 +189,58 @@ UserDefinedTypeMember.fields = [
 UserDefinedType.instances = []
 UserDefinedType.initialized = false
 
-class UserDefinedTypeInstance extends Model {}
+class UserDefinedTypeInstance extends Model {
+  static create(udt, name, description) {
+    const createdOn = getUnixTime(new Date())
+    const fields = {
+      udt,
+      name,
+      description,
+      createdBy,
+    }
+    return super.create(fields)
+  }
+  async init(async) {
+    const result = await super.init(async)
+    this._name = result.name
+    this._description = result.description
+    this._udt = result.udt
+    this._createdBy = result.createdBy
+    this._createdOn = result.createdOn
+  }
+  get name() {
+    this.checkInit()
+    return this._name
+  }
+  setName(value) {
+    return this.update(this.id, 'name', value, Tag).then(
+      (result) => (this._name = result)
+    )
+  }
+  get description() {
+    this.checkInit()
+    return this._description
+  }
+  setDescription(value) {
+    return this.update(this.id, 'description', value, Tag).then(
+      (result) => (this._description = result)
+    )
+  }
+  get udt() {
+    this.checkInit()
+    return UserDefinedType.findById(this._createdBy)
+  }
+}
 UserDefinedTypeInstance.table = 'udtInstance'
 UserDefinedTypeInstance.fields = [
   { colName: 'udt', colRef: 'udt', onDelete: 'CASCADE' },
   { colName: 'name', colType: 'TEXT' },
   { colName: 'description', colType: 'TEXT' },
+  { colName: 'createdBy', colRef: 'user', onDelete: 'SET NULL' },
+  { colName: 'createdOn', colType: 'INTEGER' },
 ]
+UserDefinedTypeInstance.instance = []
+UserDefinedTypeInstance.initialized = false
 
 module.exports = {
   UserDefinedType,

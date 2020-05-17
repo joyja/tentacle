@@ -3,6 +3,7 @@ const {
   ScanClass,
   UserDefinedType,
   UserDefinedTypeMember,
+  UserDefinedTypeInstance,
 } = require('./tag')
 const {
   Device,
@@ -97,10 +98,27 @@ Object.defineProperties(Tag.prototype, {
       return User.findById(this._createdBy)
     },
   },
+  userDefinedTypeInstance: {
+    get() {
+      this.checkInit()
+      return UserDefinedTypeInstance.findById(this._userDefinedTypeInstance)
+    },
+  },
   userDefinedTypeMember: {
     get() {
       this.checkInit()
       return UserDefinedTypeMember.findById(this._userDefinedTypeMember)
+    },
+  },
+})
+
+Object.defineProperties(UserDefinedTypeInstance.prototype, {
+  tags: {
+    get() {
+      this.checkInit()
+      return Tag.instances.filter((instance) => {
+        return instance.userDefinedTypeInstance === this._id
+      })
     },
   },
 })

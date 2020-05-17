@@ -20,8 +20,13 @@ class Tag extends Model {
     } else if (this.tableExisted && this.version < 6) {
       const newColumns = [
         {
+          colName: 'userDefinedTypeInstance',
+          colRef: 'udtInstance',
+          onDelete: 'CASCADE',
+        },
+        {
           colName: 'userDefinedTypeMember',
-          colRef: 'udt',
+          colRef: 'udtMember',
           onDelete: 'CASCADE',
         },
       ]
@@ -30,6 +35,10 @@ class Tag extends Model {
         await this.executeUpdate(sql)
         sql = `ALTER TABLE ADD FOREIGN KEY("${column.colName}") REFERENCES "${column.colRef}"("id") ON DELETE ${column.onDelete}`
         await this.executeUpdate(sql)
+        if (field.colRef) {
+          sql = `CREATE INDEX IF NOT EXISTS idx_${this.table}_${column.colName} ON ${this.table} (${column.colName});`
+          await this.executeUpdate(sql)
+        }
       }
     }
     return result
@@ -172,7 +181,16 @@ Tag.fields = [
   { colName: 'quality', colType: 'TEXT' },
   { colName: 'max', colType: 'REAL' },
   { colName: 'min', colType: 'REAL' },
-  { colName: 'userDefinedTypeMember', colRef: 'udt', onDelete: 'CASCADE' },
+  {
+    colName: 'userDefinedTypeInstance',
+    colRef: 'udtInstance',
+    onDelete: 'CASCADE',
+  },
+  {
+    colName: 'userDefinedTypeMember',
+    colRef: 'udtMember',
+    onDelete: 'CASCADE',
+  },
 ]
 Tag.instances = []
 Tag.initialized = false
