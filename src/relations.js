@@ -1,4 +1,9 @@
-const { Tag, ScanClass } = require('./tag')
+const {
+  Tag,
+  ScanClass,
+  UserDefinedType,
+  UserDefinedTypeMember,
+} = require('./tag')
 const {
   Device,
   Modbus,
@@ -453,6 +458,8 @@ module.exports = {
   Service,
   Mqtt,
   MqttSource,
+  UserDefinedType,
+  UserDefinedTypeMember,
   Tag,
   ScanClass,
   User,

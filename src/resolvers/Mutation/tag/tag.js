@@ -1,4 +1,4 @@
-const { User, Tag, ScanClass } = require('../../relations')
+const { User, Tag, ScanClass } = require('../../../relations')
 
 async function createScanClass(root, args, context, info) {
   const user = await User.getUserFromContext(context)
@@ -112,5 +112,5 @@ module.exports = {
   deleteScanClass,
   createTag,
   updateTag,
-  deleteTag
+  deleteTag,
 }
