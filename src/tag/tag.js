@@ -76,6 +76,7 @@ class Tag extends Model {
     this._max = result.max
     this._min = result.min
     this._units = result.units
+    this._userDefinedTypeMember = result.userDefinedTypeMember
   }
   get name() {
     this.checkInit()
