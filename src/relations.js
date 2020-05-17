@@ -97,6 +97,12 @@ Object.defineProperties(Tag.prototype, {
       return User.findById(this._createdBy)
     },
   },
+  userDefinedTypeMember: {
+    get() {
+      this.checkInit()
+      return UserDefinedTypeMember.findById(this._userDefinedTypeMember)
+    },
+  },
 })
 
 // ==============================

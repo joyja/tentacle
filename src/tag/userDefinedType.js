@@ -183,6 +183,14 @@ UserDefinedTypeMember.fields = [
 UserDefinedType.instances = []
 UserDefinedType.initialized = false
 
+class UserDefinedTypeInstance extends Model {}
+UserDefinedTypeInstance.table = 'udtInstance'
+UserDefinedTypeInstance.fields = [
+  { colName: 'udt', colRef: 'udt', onDelete: 'CASCADE' },
+  { colName: 'name', colType: 'TEXT' },
+  { colName: 'description', colType: 'TEXT' },
+]
+
 module.exports = {
   UserDefinedType,
   UserDefinedTypeMember,
