@@ -71,10 +71,66 @@ Tag.prototype.setScanClass = async function (id) {
 }
 
 Object.defineProperties(Tag.prototype, {
+  description: {
+    get() {
+      this.checkInit()
+      if (this._userDefinedTypeMember && !this._description) {
+        return this.userDefinedTypeMember.description
+      } else {
+        return this._description
+      }
+    },
+  },
+  datatype: {
+    get() {
+      this.checkInit()
+      if (this._userDefinedTypeMember && !this._datatype) {
+        return this.userDefinedTypeMember.datatype
+      } else {
+        return this._datatype
+      }
+    },
+  },
+  max: {
+    get() {
+      this.checkInit()
+      if (this._userDefinedTypeMember && !this._max) {
+        return this.userDefinedTypeMember.max
+      } else {
+        return this._max
+      }
+    },
+  },
+  min: {
+    get() {
+      this.checkInit()
+      if (this._userDefinedTypeMember && !this._min) {
+        return this.userDefinedTypeMember.min
+      } else {
+        return this._min
+      }
+    },
+  },
+  units: {
+    get() {
+      this.checkInit()
+      if (this._userDefinedTypeMember && !this._units) {
+        return this.userDefinedTypeMember.units
+      } else {
+        return this._units
+      }
+    },
+  },
   scanClass: {
     get() {
       this.checkInit()
-      return ScanClass.findById(this._scanClass)
+      let scanClass = null
+      if (this._userDefinedTypeMember && !this._scanClass) {
+        scanClass = this.userDefinedTypeMember.scanClass
+      } else {
+        scanClass = this._scanClass
+      }
+      return ScanClass.findById(scanClass)
     },
   },
   source: {
