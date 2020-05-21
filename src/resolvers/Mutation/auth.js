@@ -16,5 +16,5 @@ async function changePassword(root, args, context, info) {
 module.exports = {
   login,
   changePassword,
-  createUser
+  createUser,
 }
