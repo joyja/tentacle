@@ -25,6 +25,7 @@ class Device extends Model {
     const deleted = await super.delete(selector)
     await ModbusSource.getAll()
     await Modbus.getAll()
+    await EthernetIPSource.getAll()
     await EthernetIP.getAll()
     return deleted
   }
