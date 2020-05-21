@@ -10,6 +10,11 @@ class EthernetIP extends Model {
   static _createModel(fields) {
     return super.create(fields)
   }
+  static async delete(selector) {
+    const deleted = super.delete(selector)
+    EthernetIPSource.getAll()
+    return deleted
+  }
   constructor(selector, checkExists = true) {
     super(selector, checkExists)
     this.client = new Controller()
@@ -61,7 +66,16 @@ class EthernetIP extends Model {
     }
   }
   async disconnect() {
-    this.client.destroy()
+    this.retryCount = 0
+    this.retryInterval = clearInterval(this.retryInterval)
+    logger.info(`Disconnecting from ethernetip device ${this.device.name}`)
+    const logText = `Closed connection to ethernetip device ${this.device.name}`
+    if (this.connected) {
+      this.client.destroy()
+      logger.info(logText)
+    } else {
+      logger.info(logText)
+    }
     this.connected = false
     this.pubsub.publish('deviceUpdate', {
       deviceUpdate: this.device,
