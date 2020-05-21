@@ -34,7 +34,7 @@ class EthernetIP extends Model {
         this.connected = false
       }
       this.pubsub.publish('deviceUpdate', {
-        deviceUpdate: this.device
+        deviceUpdate: this.device,
       })
     }
   }
@@ -42,7 +42,7 @@ class EthernetIP extends Model {
     this.client.destroy()
     this.connected = false
     this.pubsub.publish('deviceUpdate', {
-      deviceUpdate: this.device
+      deviceUpdate: this.device,
     })
   }
   get host() {
@@ -77,7 +77,7 @@ EthernetIP.table = `ethernetip`
 EthernetIP.fields = [
   { colName: 'device', colRef: 'device', onDelete: 'CASCADE' },
   { colName: 'host', colType: 'TEXT' },
-  { colName: 'slot', colType: 'INTEGER' }
+  { colName: 'slot', colType: 'INTEGER' },
 ]
 EthernetIP.instances = []
 EthernetIP.initialized = false
@@ -87,7 +87,7 @@ class EthernetIPSource extends Model {
     const fields = {
       ethernetip,
       tag,
-      tagname
+      tagname,
     }
     return super.create(fields)
   }
@@ -125,12 +125,12 @@ EthernetIPSource.table = `ethernetipSource`
 EthernetIPSource.fields = [
   { colName: 'ethernetip', colRef: 'ethernetip', onDelete: 'CASCADE' },
   { colName: 'tag', colRef: 'tag', onDelete: 'CASCADE' },
-  { colName: 'tagname', colType: 'TEXT' }
+  { colName: 'tagname', colType: 'TEXT' },
 ]
 EthernetIPSource.instances = []
 EthernetIPSource.initialized = false
 
 module.exports = {
   EthernetIP,
-  EthernetIPSource
+  EthernetIPSource,
 }

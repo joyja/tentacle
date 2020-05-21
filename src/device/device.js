@@ -17,7 +17,7 @@ class Device extends Model {
       description,
       type,
       createdBy,
-      createdOn
+      createdOn,
     }
     return super.create(fields)
   }
@@ -69,11 +69,11 @@ Device.fields = [
   { colName: 'description', colType: 'TEXT' },
   { colName: 'type', colType: 'TEXT' },
   { colName: 'createdBy', colRef: 'user', onDelete: 'SET NULL' },
-  { colName: 'createdOn', colType: 'INTEGER' }
+  { colName: 'createdOn', colType: 'INTEGER' },
 ]
 Device.instances = []
 Device.initialized = false
 
 module.exports = {
-  Device
+  Device,
 }
