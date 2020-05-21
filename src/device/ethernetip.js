@@ -21,17 +21,39 @@ class EthernetIP extends Model {
     this._slot = result.slot
     this.connected = false
     this.error = null
+    this.retryCount = 0
   }
   async connect() {
     if (!this.connected) {
       this.error = null
+      logger.info(
+        `Connecting to ethernetip device ${this.device.name}, host: ${this.host}, slot: ${this.slot}.`
+      )
       await this.client.connect(this.host, this.slot).catch((error) => {
         this.error = error.message
+        this.conneted = false
+        if (!this.retryInterval) {
+          this.retryInterval = setInterval(async () => {
+            logger.info(
+              `Retrying connection to ethernetip device ${this.device.name}, retry attempts: ${this.retryCount}.`
+            )
+            this.retryCount += 1
+            await this.connect()
+          }, this.retryRate)
+        }
       })
       if (!this.error) {
+        this.retryCount = 0
+        this.retryInterval = clearInterval(this.retryInterval)
+        logger.info(
+          `Connected to ethernetip device ${this.device.name}, host: ${this.host}, slot: ${this.slot}.`
+        )
         this.connected = true
       } else {
         this.connected = false
+        logger.info(
+          `Connection failed to ethernetip device ${this.device.name}, host: ${this.host}, slot: ${this.slot}, with error: ${this.error}.`
+        )
       }
       this.pubsub.publish('deviceUpdate', {
         deviceUpdate: this.device,
