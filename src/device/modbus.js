@@ -8,7 +8,7 @@ class Modbus extends Model {
     const result = await super.initialize(db, pubsub)
     if (this.tableExisted && this.version < 4) {
       const newColumns = [
-        { colName: 'retryRate', colType: 'INTEGER', default: 5000 }
+        { colName: 'retryRate', colType: 'INTEGER', default: 5000 },
       ]
       for (const column of newColumns) {
         let sql = `ALTER TABLE "${this.table}" ADD "${column.colName}" ${column.colType}`
@@ -82,7 +82,7 @@ class Modbus extends Model {
         )
       }
       this.pubsub.publish('deviceUpdate', {
-        deviceUpdate: this.device
+        deviceUpdate: this.device,
       })
     }
   }
@@ -104,7 +104,7 @@ class Modbus extends Model {
     })
     this.connected = false
     this.pubsub.publish('deviceUpdate', {
-      deviceUpdate: this.device
+      deviceUpdate: this.device,
     })
   }
   get host() {
@@ -189,7 +189,7 @@ Modbus.fields = [
   { colName: 'reverseWords', colType: 'INTEGER' },
   { colName: 'zeroBased', colType: 'INTEGER' },
   { colName: 'timeout', colType: 'INTEGER' },
-  { colName: 'retryRate', colType: 'INTEGER' }
+  { colName: 'retryRate', colType: 'INTEGER' },
 ]
 Modbus.instances = []
 Modbus.initialized = false
@@ -200,7 +200,7 @@ class ModbusSource extends Model {
       modbus,
       tag,
       register,
-      registerType
+      registerType,
     }
     return super.create(fields)
   }
@@ -411,12 +411,12 @@ ModbusSource.fields = [
   { colName: 'modbus', colRef: 'modbus', onDelete: 'CASCADE' },
   { colName: 'tag', colRef: 'tag', onDelete: 'CASCADE' },
   { colName: 'register', colType: 'INTEGER' },
-  { colName: 'registerType', colType: 'TEXT' }
+  { colName: 'registerType', colType: 'TEXT' },
 ]
 ModbusSource.instances = []
 ModbusSource.initialized = false
 
 module.exports = {
   Modbus,
-  ModbusSource
+  ModbusSource,
 }

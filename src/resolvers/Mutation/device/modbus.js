@@ -3,7 +3,7 @@ const {
   Modbus,
   ModbusSource,
   Tag,
-  User
+  User,
 } = require('../../../relations')
 
 async function createModbus(root, args, context, info) {
@@ -85,7 +85,7 @@ async function createModbusSource(root, args, context, info) {
       if (tag) {
         const config = {
           register: args.register,
-          registerType: args.registerType
+          registerType: args.registerType,
         }
         return ModbusSource.create(
           device.config.id,
@@ -137,5 +137,5 @@ module.exports = {
   deleteModbus,
   createModbusSource,
   updateModbusSource,
-  deleteModbusSource
+  deleteModbusSource,
 }

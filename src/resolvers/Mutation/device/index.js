@@ -3,5 +3,5 @@ const ethernetip = require('./ethernetip')
 
 module.exports = {
   ...modbus,
-  ...ethernetip
+  ...ethernetip,
 }

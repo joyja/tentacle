@@ -17,15 +17,26 @@ class Device extends Model {
       description,
       type,
       createdBy,
-      createdOn
+      createdOn,
     }
     return super.create(fields)
   }
   static async delete(selector) {
+    for (const instance of this.instances) {
+      if (instance.config) {
+        await instance.config.disconnect()
+      }
+    }
     const deleted = await super.delete(selector)
     await ModbusSource.getAll()
     await Modbus.getAll()
+    await EthernetIPSource.getAll()
     await EthernetIP.getAll()
+    for (const instance of this.instances) {
+      if (instance.config) {
+        await instance.config.connect()
+      }
+    }
     return deleted
   }
   async init() {
@@ -69,11 +80,11 @@ Device.fields = [
   { colName: 'description', colType: 'TEXT' },
   { colName: 'type', colType: 'TEXT' },
   { colName: 'createdBy', colRef: 'user', onDelete: 'SET NULL' },
-  { colName: 'createdOn', colType: 'INTEGER' }
+  { colName: 'createdOn', colType: 'INTEGER' },
 ]
 Device.instances = []
 Device.initialized = false
 
 module.exports = {
-  Device
+  Device,
 }

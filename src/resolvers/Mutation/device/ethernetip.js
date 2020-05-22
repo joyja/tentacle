@@ -3,7 +3,7 @@ const {
   EthernetIP,
   EthernetIPSource,
   Tag,
-  User
+  User,
 } = require('../../../relations')
 
 async function createEthernetIP(root, args, context, info) {
@@ -48,7 +48,7 @@ async function deleteEthernetIP(root, args, context, info) {
   const user = await User.getUserFromContext(context)
   const device = Device.findById(args.id)
   if (device) {
-    await device.config.disconnect()
+    // await device.config.disconnect()
     return device.delete()
   } else {
     throw new Error(`Device with id ${args.id} does not exist.`)
@@ -65,7 +65,7 @@ async function createEthernetIPSource(root, args, context, info) {
       if (tag) {
         const config = {
           register: args.register,
-          registerType: args.registerType
+          registerType: args.registerType,
         }
         return EthernetIPSource.create(
           device.config.id,
@@ -115,5 +115,5 @@ module.exports = {
   deleteEthernetIP,
   createEthernetIPSource,
   updateEthernetIPSource,
-  deleteEthernetIPSource
+  deleteEthernetIPSource,
 }

@@ -1,6 +1,6 @@
 const logger = require('../logger')
 
-const executeQuery = function(db, sql, params = [], firstRowOnly = false) {
+const executeQuery = function (db, sql, params = [], firstRowOnly = false) {
   if (process.env.TENTACLE_DEBUG) {
     console.log(new Date().toISOString())
     console.log(sql)
@@ -22,14 +22,14 @@ const executeQuery = function(db, sql, params = [], firstRowOnly = false) {
   })
 }
 
-const executeUpdate = function(db, sql, params = []) {
+const executeUpdate = function (db, sql, params = []) {
   if (process.env.TENTACLE_DEBUG) {
     console.log(new Date().toISOString())
     console.log(sql)
     console.log(params)
   }
   return new Promise((resolve, reject) => {
-    db.run(sql, params, function(error) {
+    db.run(sql, params, function (error) {
       if (error) {
         reject(error)
       } else {
@@ -139,9 +139,7 @@ class Model {
     this.checkInitialized()
     const sql = `INSERT INTO ${this.table} ("${Object.keys(fields).join(
       `","`
-    )}") VALUES (${Array(Object.keys(fields).length)
-      .fill(`?`)
-      .join(',')})`
+    )}") VALUES (${Array(Object.keys(fields).length).fill(`?`).join(',')})`
     const params = Object.keys(fields).map((key) => fields[key])
     const result = await this.executeUpdate(sql, params)
     return this.get(result.lastID, false)
@@ -237,5 +235,5 @@ class Model {
 module.exports = {
   executeQuery,
   executeUpdate,
-  Model
+  Model,
 }
