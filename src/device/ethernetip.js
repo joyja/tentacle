@@ -74,12 +74,8 @@ class EthernetIP extends Model {
     this.retryInterval = clearInterval(this.retryInterval)
     logger.info(`Disconnecting from ethernetip device ${this.device.name}`)
     const logText = `Closed connection to ethernetip device ${this.device.name}`
-    if (this.connected) {
-      this.client.destroy()
-      logger.info(logText)
-    } else {
-      logger.info(logText)
-    }
+    this.client.destroy()
+    logger.info(logText)
     this.connected = false
     this.pubsub.publish('deviceUpdate', {
       deviceUpdate: this.device,
