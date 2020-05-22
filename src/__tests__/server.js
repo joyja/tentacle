@@ -625,7 +625,7 @@ test('delete modbus with valid arguments and credentials returns deleted device'
       throw error
     })
   expect(ModbusRTU.prototype.connectTCP).toBeCalledTimes(0)
-  expect(ModbusRTU.prototype.close).toBeCalledTimes(0)
+  expect(ModbusRTU.prototype.close).toBeCalledTimes(1)
   expect(deleteModbus.id).toEqual(modbus.id)
   const { devices } = await client.request(query.devices).catch((error) => {
     error
@@ -648,7 +648,7 @@ test('delete ethernetip with valid arguments and credentials returns deleted dev
       throw error
     })
   expect(Controller.prototype.connect).toBeCalledTimes(0)
-  expect(Controller.prototype.destroy).toBeCalledTimes(0)
+  expect(Controller.prototype.destroy).toBeCalledTimes(1)
   expect(deleteEthernetIP.id).toEqual(ethernetip.id)
   const { devices } = await client.request(query.devices).catch((error) => {
     error
