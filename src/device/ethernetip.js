@@ -30,7 +30,6 @@ class EthernetIP extends Model {
   }
   constructor(selector, checkExists = true) {
     super(selector, checkExists)
-    this.client = new Controller()
   }
   async init() {
     const result = await super.init()
@@ -48,6 +47,9 @@ class EthernetIP extends Model {
       logger.info(
         `Connecting to ethernetip device ${this.device.name}, host: ${this.host}, slot: ${this.slot}.`
       )
+      if (!this.client) {
+        this.client = new Controller()
+      }
       await this.client.connect(this.host, this.slot).catch((error) => {
         this.error = error.message
         this.connected = false
@@ -89,6 +91,7 @@ class EthernetIP extends Model {
     logger.info(`Disconnecting from ethernetip device ${this.device.name}`)
     const logText = `Closed connection to ethernetip device ${this.device.name}`
     this.client.destroy()
+    this.client = null
     logger.info(logText)
     this.connected = false
     this.pubsub.publish('deviceUpdate', {
