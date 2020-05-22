@@ -5,7 +5,20 @@ const logger = require(`../logger`)
 class EthernetIP extends Model {
   static async initialize(db, pubsub) {
     await EthernetIPSource.initialize(db, pubsub)
-    return super.initialize(db, pubsub)
+    const result = await super.initialize(db, pubsub)
+    if (this.tableExisted && this.version < 6) {
+      const newColumns = [
+        { colName: 'retryRate', colType: 'INTEGER', default: 5000 },
+      ]
+      for (const column of newColumns) {
+        let sql = `ALTER TABLE "${this.table}" ADD "${column.colName}" ${column.colType}`
+        if (column.default) {
+          sql = `${sql} DEFAULT ${column.default}`
+        }
+        await this.executeUpdate(sql)
+      }
+    }
+    return result
   }
   static _createModel(fields) {
     return super.create(fields)
@@ -24,6 +37,7 @@ class EthernetIP extends Model {
     this._device = result.device
     this._host = result.host
     this._slot = result.slot
+    this._retryRate = result.retryRate
     this.connected = false
     this.error = null
     this.retryCount = 0
@@ -114,6 +128,7 @@ EthernetIP.fields = [
   { colName: 'device', colRef: 'device', onDelete: 'CASCADE' },
   { colName: 'host', colType: 'TEXT' },
   { colName: 'slot', colType: 'INTEGER' },
+  { colName: 'retryRate', colType: 'INTEGER' },
 ]
 EthernetIP.instances = []
 EthernetIP.initialized = false

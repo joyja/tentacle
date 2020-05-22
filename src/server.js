@@ -9,7 +9,7 @@ const { executeQuery } = require('./database/model')
 const fs = require('fs')
 const logger = require('./logger')
 
-const desiredUserVersion = 5
+const desiredUserVersion = 6
 
 let db = undefined
 let httpServer = undefined
@@ -24,10 +24,10 @@ start = async function (dbFilename) {
       }
     })
   } else {
-    if (fs.existsSync(`./${dbFilename}`)) {
+    if (fs.existsSync(`./${dbFilename}.db`)) {
       fileExisted = true
     }
-    db = new sqlite3.cached.Database(`./${dbFilename}`, (error) => {
+    db = new sqlite3.cached.Database(`./${dbFilename}.db`, (error) => {
       if (error) {
         throw error
       }
@@ -65,8 +65,8 @@ start = async function (dbFilename) {
         userVersion !== desiredUserVersion
       ) {
         fs.copyFileSync(
-          `./spread-edge.db`,
-          `./spread-edge-backup-${new Date().toISOString()}.db`
+          `./${dbFilename}.db`,
+          `./${dbFilename}-backup-${new Date().toISOString()}.db`
         )
       }
       //Check for administrator account and initialize one if it doesn't exist.
