@@ -22,11 +22,17 @@ class Device extends Model {
     return super.create(fields)
   }
   static async delete(selector) {
+    for (device of Device.instances) {
+      await instance.config.disconnect()
+    }
     const deleted = await super.delete(selector)
     await ModbusSource.getAll()
     await Modbus.getAll()
     await EthernetIPSource.getAll()
     await EthernetIP.getAll()
+    for (device of Device.instances) {
+      await instance.config.connect()
+    }
     return deleted
   }
   async init() {
