@@ -37,7 +37,7 @@ class EthernetIP extends Model {
     this._device = result.device
     this._host = result.host
     this._slot = result.slot
-    this._retryRate = result.retryRate
+    this._retryRate = 50000
     this.connected = false
     this.error = null
     this.retryCount = 0
@@ -111,6 +111,15 @@ class EthernetIP extends Model {
   setSlot(value) {
     return this.update(this.id, 'slot', value).then(
       (result) => (this._slot = result)
+    )
+  }
+  get retryRate() {
+    this.checkInit()
+    return this._retryRate
+  }
+  setRetryRate(value) {
+    return this.update(this.id, 'retryRate', value).then(
+      (result) => (this._retryRate = result)
     )
   }
   get status() {
