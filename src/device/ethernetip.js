@@ -36,14 +36,18 @@ class EthernetIP extends Model {
       )
       await this.client.connect(this.host, this.slot).catch((error) => {
         this.error = error.message
-        this.conneted = false
+        this.connected = false
         if (!this.retryInterval) {
           this.retryInterval = setInterval(async () => {
-            logger.info(
-              `Retrying connection to ethernetip device ${this.device.name}, retry attempts: ${this.retryCount}.`
-            )
-            this.retryCount += 1
-            await this.connect()
+            if (this.device) {
+              logger.info(
+                `Retrying connection to ethernetip device ${this.device.name}, retry attempts: ${this.retryCount}.`
+              )
+              this.retryCount += 1
+              await this.connect()
+            } else {
+              clearInterval(this.retryInterval)
+            }
           }, this.retryRate)
         }
       })
