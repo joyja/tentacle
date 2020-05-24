@@ -58,6 +58,7 @@ class EthernetIP extends Model {
         await this.client.getControllerTagList(tagList)
 
         // Displays all tags
+        console.log('this happend')
         console.log(tagList.tags)
 
         // Displays all templates
