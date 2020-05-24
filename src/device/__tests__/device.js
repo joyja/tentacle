@@ -1,9 +1,9 @@
 jest.mock(`modbus-serial`)
-jest.mock(`ethernet-ip`)
+jest.mock(`tentacle-ethernet-ip`)
 jest.mock('graphql-yoga')
 const { PubSub } = require('graphql-yoga')
 const ModbusRTU = require(`modbus-serial`)
-const { Controller } = require(`ethernet-ip`)
+const { Controller } = require(`tentacle-ethernet-ip`)
 
 const { createTestDb, deleteTestDb } = require('../../../test/db')
 const {

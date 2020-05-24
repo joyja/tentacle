@@ -42,7 +42,7 @@
     "date-fns": "^2.13.0",
     "date-fns-timezone": "^0.1.4",
     "esm": "^3.2.25",
-    "ethernet-ip": "github:joyja/tentacle-ethernet-ip#v1.2.5",
+    "ethernet-ip": "^1.2.5",
     "express": "^4.17.1",
     "graphql-yoga": "^1.18.3",
     "jsonwebtoken": "^8.5.1",
@@ -54,6 +54,7 @@
     "sparkplug-client-jar": "^3.2.2",
     "sqlite3": "^4.2.0",
     "task-easy": "^1.0.1",
+    "tentacle-ethernet-ip": "0.0.3",
     "tentacle-sparkplug-client": "0.0.5",
     "winston": "^3.2.1"
   }

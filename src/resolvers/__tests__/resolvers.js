@@ -1,10 +1,10 @@
 jest.mock(`tentacle-sparkplug-client`)
 jest.mock(`modbus-serial`)
-jest.mock(`ethernet-ip`)
+jest.mock(`tentacle-ethernet-ip`)
 jest.mock(`graphql-yoga`)
 const { PubSub } = require(`graphql-yoga`)
 const ModbusRTU = require(`modbus-serial`)
-const { Controller } = require(`ethernet-ip`)
+const { Controller } = require(`tentacle-ethernet-ip`)
 const sparkplug = require(`tentacle-sparkplug-client`)
 
 const { createTestDb, deleteTestDb } = require('../../../test/db')
@@ -19,7 +19,7 @@ const {
   EthernetIPSource,
   Service,
   Mqtt,
-  MqttSource
+  MqttSource,
 } = require('../../relations')
 const mockSparkplug = {
   on: jest.fn((state, callback) => {
@@ -33,7 +33,7 @@ const mockSparkplug = {
   publishDeviceDeath: jest.fn(),
   stop: jest.fn(),
   on: jest.fn(),
-  subscribePrimaryHost: jest.fn()
+  subscribePrimaryHost: jest.fn(),
 }
 const bcrypt = require('bcryptjs')
 
@@ -45,10 +45,10 @@ let db = undefined
 let user = undefined
 const pubsub = {
   publish: jest.fn(),
-  asyncIterator: jest.fn()
+  asyncIterator: jest.fn(),
 }
 let context = {
-  pubsub
+  pubsub,
 }
 let unauthorizedContext = {}
 
@@ -90,11 +90,11 @@ beforeAll(async () => {
   const { token } = await User.login(user.username, `password`)
   context.request = {
     headers: {
-      authorization: `Bearer ${token}`
-    }
+      authorization: `Bearer ${token}`,
+    },
   }
   unauthorizedContext.request = {
-    headers: {}
+    headers: {},
   }
   context.scanClasses = ScanClass.instances
   context.tags = Tag.instances
@@ -215,7 +215,7 @@ describe(`Mutations: `, () => {
   test(`login returns the appropriate payload`, async () => {
     args = {
       username: user.username,
-      password: 'password'
+      password: 'password',
     }
     const payload = await resolvers.Mutation.login({}, args, context, {}).catch(
       (error) => {
@@ -224,13 +224,13 @@ describe(`Mutations: `, () => {
     )
     expect(payload).toEqual({
       token: expect.any(String),
-      user
+      user,
     })
   })
   test(`login with incorrect username causes an error.`, async () => {
     args = {
       username: `bogusUsername`,
-      password: 'password'
+      password: 'password',
     }
     expect(
       await resolvers.Mutation.login({}, args, context, {}).catch((e) => e)
@@ -239,7 +239,7 @@ describe(`Mutations: `, () => {
   test(`login with incorrect password causes an error.`, async () => {
     args = {
       username: user.username,
-      password: 'bogusPassword'
+      password: 'bogusPassword',
     }
     expect(
       await resolvers.Mutation.login({}, args, context, {}).catch((e) => e)
@@ -248,7 +248,7 @@ describe(`Mutations: `, () => {
   test(`changePassword changes the password`, async () => {
     args = {
       newPassword: `aNewPassword`,
-      oldPassword: `password`
+      oldPassword: `password`,
     }
     const changedUser = await resolvers.Mutation.changePassword(
       {},
@@ -265,7 +265,7 @@ describe(`Mutations: `, () => {
   test(`createScanClass creates a scan class with the selected settings.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
-      rate: 1000
+      rate: 1000,
     }
     scanClass = await resolvers.Mutation.createScanClass(
       {},
@@ -282,7 +282,7 @@ describe(`Mutations: `, () => {
     prevCount = ScanClass.instances.length
     const args = {
       id: scanClass.id,
-      rate: 2000
+      rate: 2000,
     }
     updatedScanClass = await resolvers.Mutation.updateScanClass(
       {},
@@ -299,7 +299,7 @@ describe(`Mutations: `, () => {
   test(`updateScanClass updates a scan class with the selected settings.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
-      id: scanClass.id
+      id: scanClass.id,
     }
     updatedScanClass = await resolvers.Mutation.updateScanClass(
       {},
@@ -316,7 +316,7 @@ describe(`Mutations: `, () => {
     prevCount = ScanClass.instances.length
     const args = {
       id: 1234567,
-      rate: 2000
+      rate: 2000,
     }
     expect(
       await resolvers.Mutation.updateScanClass({}, args, context, {}).catch(
@@ -330,7 +330,7 @@ describe(`Mutations: `, () => {
   test(`deleteScanClass with invalid id throws error.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
-      id: 1234567
+      id: 1234567,
     }
     expect(
       await resolvers.Mutation.deleteScanClass({}, args, context, {}).catch(
@@ -344,7 +344,7 @@ describe(`Mutations: `, () => {
   test(`deleteScanClass deletes a scan class.`, async () => {
     prevCount = ScanClass.instances.length
     const args = {
-      id: scanClass.id
+      id: scanClass.id,
     }
     const deletedScanClass = await resolvers.Mutation.deleteScanClass(
       {},
@@ -364,7 +364,7 @@ describe(`Mutations: `, () => {
       name: `TestTag`,
       description: `Test Tag`,
       value: 123,
-      scanClassId: ScanClass.instances[0].id
+      scanClassId: ScanClass.instances[0].id,
     }
     tag = await resolvers.Mutation.createTag({}, args, context, {}).catch(
       (error) => {
@@ -380,7 +380,7 @@ describe(`Mutations: `, () => {
       name: `TagWithNewName`,
       description: `Test Tag with different description`,
       value: 321,
-      scanClassId: ScanClass.instances[1].id
+      scanClassId: ScanClass.instances[1].id,
     }
     updatedTag = await resolvers.Mutation.updateTag(
       {},
@@ -395,7 +395,7 @@ describe(`Mutations: `, () => {
   test(`updateTag without args (other than id still completes successfully).`, async () => {
     prevCount = Tag.instances.length
     const args = {
-      id: tag.id
+      id: tag.id,
     }
     updatedTag = await resolvers.Mutation.updateTag(
       {},
@@ -414,7 +414,7 @@ describe(`Mutations: `, () => {
       name: `TagWithNewName`,
       description: `Test Tag with different description`,
       value: 321,
-      scanClassId: ScanClass.instances[1].id
+      scanClassId: ScanClass.instances[1].id,
     }
     expect(
       await resolvers.Mutation.updateTag({}, args, context, {}).catch(
@@ -426,7 +426,7 @@ describe(`Mutations: `, () => {
   test(`deleteTag deletes a scan class.`, async () => {
     prevCount = Tag.instances.length
     const args = {
-      id: tag.id
+      id: tag.id,
     }
     const deletedTag = await resolvers.Mutation.deleteTag(
       {},
@@ -442,7 +442,7 @@ describe(`Mutations: `, () => {
   test(`deleteTag with invalid id throws an error.`, async () => {
     prevCount = Tag.instances.length
     const args = {
-      id: 1234567
+      id: 1234567,
     }
     expect(
       await resolvers.Mutation.deleteTag({}, args, context, {}).catch(
@@ -461,7 +461,7 @@ describe(`Mutations: `, () => {
       port: 502,
       reverseBits: true,
       reverseWords: true,
-      zeroBased: true
+      zeroBased: true,
     }
     device = await resolvers.Mutation.createModbus({}, args, context, {})
     expect(Modbus.instances.length).toBe(prevCount + 1)
@@ -483,7 +483,7 @@ describe(`Mutations: `, () => {
       port: 503,
       reverseBits: false,
       reverseWords: false,
-      zeroBased: false
+      zeroBased: false,
     }
     const updatedDevice = await resolvers.Mutation.updateModbus(
       {},
@@ -506,7 +506,7 @@ describe(`Mutations: `, () => {
   test(`updateModbus updates a modbus device with the selected settings.`, async () => {
     prevCount = Modbus.instances.length
     const args = {
-      id: device.id
+      id: device.id,
     }
     const updatedDevice = await resolvers.Mutation.updateModbus(
       {},
@@ -522,7 +522,7 @@ describe(`Mutations: `, () => {
   test(`updateModbus with invalid id throws error.`, async () => {
     prevCount = Modbus.instances.length
     const args = {
-      id: 1234567
+      id: 1234567,
     }
     expect(
       await resolvers.Mutation.updateModbus({}, args, context, {}).catch(
@@ -534,7 +534,7 @@ describe(`Mutations: `, () => {
   test(`deleteModbus deletes a modbus device with the selected settings.`, async () => {
     prevCount = Modbus.instances.length
     const args = {
-      id: device.id
+      id: device.id,
     }
     const deletedDevice = await resolvers.Mutation.deleteModbus(
       {},
@@ -550,7 +550,7 @@ describe(`Mutations: `, () => {
   test(`deleteModbus with invalid id throws error.`, async () => {
     prevCount = Modbus.instances.length
     const args = {
-      id: 1234567
+      id: 1234567,
     }
     expect(
       await resolvers.Mutation.deleteModbus({}, args, context, {}).catch(
@@ -565,7 +565,7 @@ describe(`Mutations: `, () => {
       deviceId: Modbus.instances[0].device.id,
       tagId: Tag.instances[0].id,
       register: 12345,
-      registerType: `BOOLEAN`
+      registerType: `BOOLEAN`,
     }
     modbusSource = await resolvers.Mutation.createModbusSource(
       {},
@@ -591,7 +591,7 @@ describe(`Mutations: `, () => {
       deviceId: Modbus.instances[0].device.id,
       tagId: 1234567,
       register: 12345,
-      registerType: `BOOLEAN`
+      registerType: `BOOLEAN`,
     }
     expect(
       await resolvers.Mutation.createModbusSource({}, args, context, {}).catch(
@@ -604,7 +604,7 @@ describe(`Mutations: `, () => {
       deviceId: 1234567,
       tagId: Tag.instances[0].id,
       register: 12345,
-      registerType: `BOOLEAN`
+      registerType: `BOOLEAN`,
     }
     expect(
       await resolvers.Mutation.createModbusSource({}, args, context, {}).catch(
@@ -628,7 +628,7 @@ describe(`Mutations: `, () => {
       deviceId: nonModbusDevice.id,
       tagId: Tag.instances[0].id,
       register: 12345,
-      registerType: `BOOLEAN`
+      registerType: `BOOLEAN`,
     }
     expect(
       await resolvers.Mutation.createModbusSource({}, args, context, {}).catch(
@@ -653,7 +653,7 @@ describe(`Mutations: `, () => {
     const args = {
       tagId: Tag.instances[0].id,
       register: 45321,
-      registerType: `FLOAT`
+      registerType: `FLOAT`,
     }
     const updatedModbusSource = await resolvers.Mutation.updateModbusSource(
       {},
@@ -672,7 +672,7 @@ describe(`Mutations: `, () => {
   test(`updateModbusSource updates a modbus device with the selected settings.`, async () => {
     prevCount = ModbusSource.instances.length
     const args = {
-      tagId: Tag.instances[0].id
+      tagId: Tag.instances[0].id,
     }
     const updatedModbusSource = await resolvers.Mutation.updateModbusSource(
       {},
@@ -687,7 +687,7 @@ describe(`Mutations: `, () => {
   test(`updateModbusSource with invalid id throws error.`, async () => {
     prevCount = Modbus.instances.length
     const args = {
-      tagId: 1234567
+      tagId: 1234567,
     }
     expect(
       await resolvers.Mutation.updateModbusSource({}, args, context, {}).catch(
@@ -699,7 +699,7 @@ describe(`Mutations: `, () => {
   test(`deleteModbusSource deletes a modbus device with the selected settings.`, async () => {
     prevCount = ModbusSource.instances.length
     const args = {
-      tagId: Tag.instances[0].id
+      tagId: Tag.instances[0].id,
     }
     const deletedModbusSource = await resolvers.Mutation.deleteModbusSource(
       {},
@@ -715,7 +715,7 @@ describe(`Mutations: `, () => {
   test(`deleteModbusSource with invalid id throws error.`, async () => {
     prevCount = Modbus.instances.length
     const args = {
-      tagId: 1234567
+      tagId: 1234567,
     }
     expect(
       await resolvers.Mutation.deleteModbusSource({}, args, context, {}).catch(
@@ -730,7 +730,7 @@ describe(`Mutations: `, () => {
       name: `resolverTestEthernetIP`,
       description: `Resolver Test EthernetIP`,
       host: 'localhost',
-      slot: 0
+      slot: 0,
     }
     device = await resolvers.Mutation.createEthernetIP(
       {},
@@ -753,7 +753,7 @@ describe(`Mutations: `, () => {
       name: `resolverTestEthernetIPUpdated`,
       description: `Resolver Test EthernetIP Updated`,
       host: '192.168.1.123',
-      slot: 3
+      slot: 3,
     }
     const updatedDevice = await resolvers.Mutation.updateEthernetIP(
       {},
@@ -773,7 +773,7 @@ describe(`Mutations: `, () => {
   test(`updateEthernetIP without arguments is valid.`, async () => {
     prevCount = EthernetIP.instances.length
     const args = {
-      id: device.id
+      id: device.id,
     }
     const updatedDevice = await resolvers.Mutation.updateEthernetIP(
       {},
@@ -789,7 +789,7 @@ describe(`Mutations: `, () => {
   test(`updateEthernetIP with invalid id throws error.`, async () => {
     prevCount = EthernetIP.instances.length
     const args = {
-      id: 1234567
+      id: 1234567,
     }
     expect(
       await resolvers.Mutation.updateEthernetIP({}, args, context, {}).catch(
@@ -800,7 +800,7 @@ describe(`Mutations: `, () => {
   test(`deleteEthernetIP deletes a ethernetip device with the selected settings.`, async () => {
     prevCount = EthernetIP.instances.length
     const args = {
-      id: device.id
+      id: device.id,
     }
     const deletedDevice = await resolvers.Mutation.deleteEthernetIP(
       {},
@@ -816,7 +816,7 @@ describe(`Mutations: `, () => {
   test(`deleteEthernetIP with invalid id throws error.`, async () => {
     prevCount = EthernetIP.instances.length
     const args = {
-      id: 1234567
+      id: 1234567,
     }
     expect(
       await resolvers.Mutation.deleteEthernetIP({}, args, context, {}).catch(
@@ -830,7 +830,7 @@ describe(`Mutations: `, () => {
     const args = {
       deviceId: EthernetIP.instances[0].device.id,
       tagId: 1234567,
-      tagname: `Tagname`
+      tagname: `Tagname`,
     }
     expect(
       await resolvers.Mutation.createEthernetIPSource(
@@ -847,7 +847,7 @@ describe(`Mutations: `, () => {
     const args = {
       deviceId: 1234567,
       tagId: Tag.instances[0].id,
-      tagname: `Tagname`
+      tagname: `Tagname`,
     }
     expect(
       await resolvers.Mutation.createEthernetIPSource(
@@ -870,7 +870,7 @@ describe(`Mutations: `, () => {
     const args = {
       deviceId: nonEthernetIPDevice.id,
       tagId: Tag.instances[0].id,
-      tagname: `Tagname`
+      tagname: `Tagname`,
     }
     expect(
       await resolvers.Mutation.createEthernetIPSource(
@@ -889,7 +889,7 @@ describe(`Mutations: `, () => {
     const args = {
       deviceId: EthernetIP.instances[0].device.id,
       tagId: Tag.instances[0].id,
-      tagname: `Tagname`
+      tagname: `Tagname`,
     }
     ethernetipSource = await resolvers.Mutation.createEthernetIPSource(
       {},
@@ -910,7 +910,7 @@ describe(`Mutations: `, () => {
     prevCount = EthernetIPSource.instances.length
     const args = {
       tagId: Tag.instances[0].id,
-      tagname: `aDifferentTagname`
+      tagname: `aDifferentTagname`,
     }
     const updatedEthernetIPSource = await resolvers.Mutation.updateEthernetIPSource(
       {},
@@ -930,7 +930,7 @@ describe(`Mutations: `, () => {
   test(`updateEthernetIPSource update without args still works.`, async () => {
     prevCount = EthernetIPSource.instances.length
     const args = {
-      tagId: Tag.instances[0].id
+      tagId: Tag.instances[0].id,
     }
     const updatedEthernetIPSource = await resolvers.Mutation.updateEthernetIPSource(
       {},
@@ -947,7 +947,7 @@ describe(`Mutations: `, () => {
   })
   test(`updateEthernetIPSource with invalid id throws error.`, async () => {
     const args = {
-      id: 1234567
+      id: 1234567,
     }
     expect(
       await resolvers.Mutation.updateEthernetIPSource(
@@ -971,7 +971,7 @@ describe(`Mutations: `, () => {
   test(`deleteEthernetIP deletes a modbus device with the selected settings.`, async () => {
     prevCount = EthernetIP.instances.length
     const args = {
-      tagId: Tag.instances[0].id
+      tagId: Tag.instances[0].id,
     }
     const deletedEthernetIPSource = await resolvers.Mutation.deleteEthernetIPSource(
       {},
@@ -986,7 +986,7 @@ describe(`Mutations: `, () => {
   })
   test(`deleteEthernetIPSource with invalid id throws error.`, async () => {
     const args = {
-      id: 1234567
+      id: 1234567,
     }
     expect(
       await resolvers.Mutation.deleteEthernetIPSource(
@@ -1010,7 +1010,7 @@ describe(`Mutations: `, () => {
       username: `mqttUser`,
       password: `mqttPassword`,
       devices: [Device.instances[0].id],
-      rate: 1000
+      rate: 1000,
     }
     service = await resolvers.Mutation.createMqtt({}, args, context, {}).catch(
       (error) => {
@@ -1028,7 +1028,7 @@ describe(`Mutations: `, () => {
     expect(service.config.password).toBe(args.password)
     expect(service.config.rate).toBe(args.rate)
     expect([service.config.sources[0].device]).toStrictEqual([
-      Device.findById(args.devices[0])
+      Device.findById(args.devices[0]),
     ])
   })
   test(`updateMqtt updates a mqtt service with the selected settings.`, async () => {
@@ -1043,7 +1043,7 @@ describe(`Mutations: `, () => {
       node: `aDifferentNode`,
       username: `anotherMqttUser`,
       password: `anotherMqttPassword`,
-      rate: 1000
+      rate: 1000,
     }
     const updatedService = await resolvers.Mutation.updateMqtt(
       {},
@@ -1067,7 +1067,7 @@ describe(`Mutations: `, () => {
   test(`updateMqtt without args still returns.`, async () => {
     prevCount = Mqtt.instances.length
     const args = {
-      id: service.id
+      id: service.id,
     }
     const updatedService = await resolvers.Mutation.updateMqtt(
       {},
@@ -1082,7 +1082,7 @@ describe(`Mutations: `, () => {
   test(`updateMqtt with invalid id throws an error.`, async () => {
     prevCount = Mqtt.instances.length
     const args = {
-      id: 1234567
+      id: 1234567,
     }
     expect(
       await resolvers.Mutation.updateMqtt({}, args, context, {}).catch((e) => e)
@@ -1093,7 +1093,7 @@ describe(`Mutations: `, () => {
     const prevLength = service.config.primaryHosts.length
     const args = {
       id: 1234567,
-      name: 'yetAnotherPrimaryHost'
+      name: 'yetAnotherPrimaryHost',
     }
     expect(
       await resolvers.Mutation.addMqttPrimaryHost({}, args, context, {}).catch(
@@ -1109,7 +1109,7 @@ describe(`Mutations: `, () => {
     const prevLength = service.config.primaryHosts.length
     const args = {
       id: service.id,
-      name: 'yetAnotherPrimaryHost'
+      name: 'yetAnotherPrimaryHost',
     }
     await resolvers.Mutation.addMqttPrimaryHost({}, args, context, {})
     expect(service.config.primaryHosts.length).toBe(prevLength + 1)
@@ -1126,7 +1126,7 @@ describe(`Mutations: `, () => {
     )
     const args = {
       id: nonMqttService.id,
-      name: 'yetAnotherPrimaryHost'
+      name: 'yetAnotherPrimaryHost',
     }
     expect(
       await resolvers.Mutation.addMqttPrimaryHost({}, args, context, {}).catch(
@@ -1140,7 +1140,7 @@ describe(`Mutations: `, () => {
     const prevLength = service.config.primaryHosts.length
     const args = {
       id: 1234567,
-      name: 'yetAnotherPrimaryHost'
+      name: 'yetAnotherPrimaryHost',
     }
     expect(
       await resolvers.Mutation.deleteMqttPrimaryHost(
@@ -1159,7 +1159,7 @@ describe(`Mutations: `, () => {
     const prevLength = service.config.primaryHosts.length
     const args = {
       id: service.id,
-      name: 'yetAnotherPrimaryHost'
+      name: 'yetAnotherPrimaryHost',
     }
     await resolvers.Mutation.deleteMqttPrimaryHost({}, args, context, {})
     expect(service.config.primaryHosts.length).toBe(prevLength - 1)
@@ -1176,7 +1176,7 @@ describe(`Mutations: `, () => {
     )
     const args = {
       id: nonMqttService.id,
-      name: 'yetAnotherPrimaryHost'
+      name: 'yetAnotherPrimaryHost',
     }
     expect(
       await resolvers.Mutation.deleteMqttPrimaryHost(
@@ -1211,7 +1211,7 @@ describe(`Mutations: `, () => {
     const prevLength = mqtt.service.config.sources.length
     const args = {
       id: 1234567,
-      deviceId: device.id
+      deviceId: device.id,
     }
     expect(
       await resolvers.Mutation.addMqttSource({}, args, context, {}).catch(
@@ -1230,7 +1230,7 @@ describe(`Mutations: `, () => {
     const prevLength = mqtt.service.config.sources.length
     const args = {
       id: mqtt.service.id,
-      deviceId: device.id
+      deviceId: device.id,
     }
     await resolvers.Mutation.addMqttSource({}, args, context, {})
     expect(mqtt.service.config.sources.length).toBe(prevLength + 1)
@@ -1248,7 +1248,7 @@ describe(`Mutations: `, () => {
     )
     const args = {
       id: nonMqttService.id,
-      deviceId: device.id
+      deviceId: device.id,
     }
     expect(
       await resolvers.Mutation.addMqttSource({}, args, context, {}).catch(
@@ -1263,7 +1263,7 @@ describe(`Mutations: `, () => {
     const prevLength = service.config.sources.length
     const args = {
       id: 1234567,
-      deviceId: device.id
+      deviceId: device.id,
     }
     expect(
       await resolvers.Mutation.deleteMqttSource({}, args, context, {}).catch(
@@ -1280,7 +1280,7 @@ describe(`Mutations: `, () => {
     const prevLength = mqtt.service.config.sources.length
     const args = {
       id: mqtt.service.id,
-      deviceId: device.id
+      deviceId: device.id,
     }
     await resolvers.Mutation.deleteMqttSource({}, args, context, {})
     expect(mqtt.service.config.sources.length).toBe(prevLength - 1)
@@ -1298,7 +1298,7 @@ describe(`Mutations: `, () => {
     )
     const args = {
       id: nonMqttService.id,
-      deviceId: device.id
+      deviceId: device.id,
     }
     expect(
       await resolvers.Mutation.deleteMqttSource({}, args, context, {}).catch(
@@ -1311,7 +1311,7 @@ describe(`Mutations: `, () => {
   test(`updateMqtt with invalid id throws an error.`, async () => {
     prevCount = Mqtt.instances.length
     const args = {
-      id: 1234567
+      id: 1234567,
     }
     expect(
       await resolvers.Mutation.updateMqtt({}, args, context, {}).catch((e) => e)
@@ -1321,7 +1321,7 @@ describe(`Mutations: `, () => {
   test(`deleteMqtt deletes a mqtt service with the selected settings.`, async () => {
     prevCount = Mqtt.instances.length
     const args = {
-      id: service.id
+      id: service.id,
     }
     const deletedService = await resolvers.Mutation.deleteMqtt(
       {},
@@ -1337,7 +1337,7 @@ describe(`Mutations: `, () => {
   test(`deleteMqtt with invalid id throws an error.`, async () => {
     prevCount = Mqtt.instances.length
     const args = {
-      id: 1234567
+      id: 1234567,
     }
     expect(
       await resolvers.Mutation.deleteMqtt({}, args, context, {}).catch((e) => e)

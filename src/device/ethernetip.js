@@ -1,5 +1,5 @@
 const { Model } = require(`../database`)
-const { Controller, Tag, TagList } = require('ethernet-ip')
+const { Controller, Tag, TagList } = require('tentacle-ethernet-ip')
 const logger = require(`../logger`)
 
 class EthernetIP extends Model {
@@ -51,21 +51,9 @@ class EthernetIP extends Model {
       if (!this.client) {
         this.client = new Controller()
       }
-      const tagList = new TagList()
       await this.client.connect(this.host, this.slot).catch(async (error) => {
         this.error = error.message
         this.connected = false
-        await this.client.getControllerTagList(tagList)
-
-        // Displays all tags
-        console.log('this happend')
-        console.log(tagList.tags)
-
-        // Displays all templates
-        console.log(tagList.templates)
-
-        // Displays program names
-        console.log(tagList.programs)
         if (!this.retryInterval) {
           this.retryInterval = setInterval(async () => {
             if (this.device) {
