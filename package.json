@@ -42,7 +42,7 @@
     "date-fns": "^2.13.0",
     "date-fns-timezone": "^0.1.4",
     "esm": "^3.2.25",
-    "ethernet-ip": "^1.2.5",
+    "ethernet-ip": "github:SerafinTech/node-ethernet-ip#v2.0.1",
     "express": "^4.17.1",
     "graphql-yoga": "^1.18.3",
     "jsonwebtoken": "^8.5.1",

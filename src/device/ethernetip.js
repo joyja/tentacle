@@ -1,5 +1,5 @@
 const { Model } = require(`../database`)
-const { Controller, Tag, TagList } = require('tentacle-ethernet-ip')
+const { Controller, Tag, TagList } = require('ethernet-ip')
 const logger = require(`../logger`)
 
 class EthernetIP extends Model {
