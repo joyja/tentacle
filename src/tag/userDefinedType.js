@@ -1,3 +1,8 @@
+const { Model } = require('../database')
+const { User } = require('../auth')
+const getUnixTime = require('date-fns/getUnixTime')
+const fromUnixTime = require('date-fns/fromUnixTime')
+
 class UserDefinedType extends Model {
   static create(name, description) {
     const createdOn = getUnixTime(new Date())
@@ -245,4 +250,5 @@ UserDefinedTypeInstance.initialized = false
 module.exports = {
   UserDefinedType,
   UserDefinedTypeMember,
+  UserDefinedTypeInstance
 }

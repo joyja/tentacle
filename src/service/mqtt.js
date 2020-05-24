@@ -37,9 +37,9 @@ class Mqtt extends Model {
     let history = undefined
     let sql = undefined
     if (this.version < 5) {
-      sql = `DROP TABLE mqttHistory`
+      sql = `DROP TABLE IF EXISTS mqttHistory`
       await this.executeUpdate(sql)
-      sql = `DROP TABLE mqttPrimaryHostHistory`
+      sql = `DROP TABLE IF EXISTS mqttPrimaryHostHistory`
       await this.executeUpdate(sql)
     }
   }

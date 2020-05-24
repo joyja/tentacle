@@ -1,5 +1,5 @@
-const { Model } = require('./database')
-const { User } = require('./auth')
+const { Model } = require('../database')
+const { User } = require('../auth')
 const getUnixTime = require('date-fns/getUnixTime')
 const fromUnixTime = require('date-fns/fromUnixTime')
 
@@ -17,7 +17,7 @@ class Tag extends Model {
         let sql = `ALTER TABLE "${this.table}" ADD "${column.colName}" ${column.colType}`
         await this.executeUpdate(sql)
       }
-    } else if (this.tableExisted && this.version < 6) {
+    } else if (this.tableExisted && this.version < 7) {
       const newColumns = [
         {
           colName: 'userDefinedTypeInstance',

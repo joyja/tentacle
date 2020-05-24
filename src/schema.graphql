@@ -234,6 +234,9 @@ type UserDefinedType {
   members: [UserDefinedTypeMember!]!
 }
 
+"""
+Includes all the template parameters for a member of a user defined data type
+"""
 type UserDefinedTypeMember {
   id: ID!
   udt: UserDefinedType!
@@ -241,13 +244,16 @@ type UserDefinedTypeMember {
   description: String!
   value: String
   datatype: Datatype!
-  scanClass: scanClass
+  scanClass: ScanClass
   source: Source
   max: Float
   min: Float
   units: String
 }
 
+"""
+An instance of a User Defined Type
+"""
 type UserDefinedTypeInstance {
   id: ID!
   name: String!
