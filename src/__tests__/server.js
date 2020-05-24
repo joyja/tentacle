@@ -21,7 +21,7 @@ const mockSparkplug = {
   publishDeviceData: jest.fn(),
   publishDeviceDeath: jest.fn(),
   stop: jest.fn(),
-  subscribePrimaryHost: jest.fn()
+  subscribePrimaryHost: jest.fn(),
 }
 
 beforeAll(async () => {
@@ -64,20 +64,20 @@ test('login with default username/password returns appropriate results.', async 
     }
   }`
   const {
-    login: { user, token }
+    login: { user, token },
   } = await request(host, mutation).catch((error) => {
     throw error
   })
   expect(user).toEqual({
     id: expect.any(String),
-    username: 'admin'
+    username: 'admin',
   })
   expect(Number.isInteger(parseInt(user.id))).toBe(true)
   expect(token).toEqual(expect.any(String))
   client = new GraphQLClient(host, {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   })
 })
 test('user query returns currently logged in user', async () => {
@@ -92,7 +92,7 @@ test('user query returns currently logged in user', async () => {
   })
   expect(user).toEqual({
     id: '1',
-    username: 'admin'
+    username: 'admin',
   })
 })
 let scanClass = undefined
@@ -112,7 +112,7 @@ test('create scan class with the proper headers and fields returns valid results
     id: expect.any(String),
     name: 'default',
     description: 'default scan class',
-    rate: 1000
+    rate: 1000,
   })
   scanClass = createScanClass
 })
@@ -171,7 +171,7 @@ test('create tag with the proper headers and fields returns valid results', asyn
     scanClassId: scanClass.id,
     max: 200,
     min: 0,
-    units: 'thingies'
+    units: 'thingies',
   }
   const { createTag } = await client
     .request(mutation.createTag, tagFields)
@@ -184,9 +184,9 @@ test('create tag with the proper headers and fields returns valid results', asyn
     scanClass: scanClass,
     createdBy: {
       id: '1',
-      username: 'admin'
+      username: 'admin',
     },
-    createdOn: expect.any(String)
+    createdOn: expect.any(String),
   })
   tag = createTag
 })
@@ -239,7 +239,7 @@ test('create modbus with the proper headers and fields returns valid results', a
     reverseWords: true,
     zeroBased: true,
     timeout: 1000,
-    retryRate: 4000
+    retryRate: 4000,
   }
   const { createModbus } = await client
     .request(mutation.createModbus, modbusFields)
@@ -256,13 +256,13 @@ test('create modbus with the proper headers and fields returns valid results', a
       ..._.omit(modbusFields, ['name', 'description', 'port']),
       port: `${modbusFields.port}`,
       sources: [],
-      status: 'connected'
+      status: 'connected',
     },
     createdBy: {
       id: '1',
-      username: 'admin'
+      username: 'admin',
     },
-    createdOn: expect.any(String)
+    createdOn: expect.any(String),
   })
   modbus = createModbus
 })
@@ -301,19 +301,19 @@ test('updateModbus updates the modbus values', async () => {
       ..._.omit(modbusFields, ['name', 'description', 'port']),
       port: `${modbusFields.port}`,
       sources: [],
-      status: 'connected'
+      status: 'connected',
     },
     createdBy: {
       id: '1',
-      username: 'admin'
+      username: 'admin',
     },
-    createdOn: modbus.createdOn
+    createdOn: modbus.createdOn,
   })
   modbus = updateModbus
 })
 test('updateModbus without authorization headers returns error', async () => {
   const result = await request(host, mutation.updateModbus, {
-    id: modbus.id
+    id: modbus.id,
   }).catch((e) => e)
   expect(result.message).toContain(`You are not authorized.`)
   expect(ModbusRTU.prototype.connectTCP).toBeCalledTimes(0)
@@ -326,7 +326,7 @@ test('create ethernetip with the proper headers and fields returns valid results
     name: 'aEthernetIP',
     description: 'A EthernetIP',
     host: 'localhost',
-    slot: 0
+    slot: 0,
   }
   const { createEthernetIP } = await client
     .request(mutation.createEthernetIP, ethernetipFields)
@@ -343,13 +343,13 @@ test('create ethernetip with the proper headers and fields returns valid results
       ..._.omit(ethernetipFields, ['name', 'description', 'slot']),
       slot: `${ethernetipFields.slot}`,
       sources: [],
-      status: 'connected'
+      status: 'connected',
     },
     createdBy: {
       id: '1',
-      username: 'admin'
+      username: 'admin',
     },
-    createdOn: expect.any(String)
+    createdOn: expect.any(String),
   })
   ethernetip = createEthernetIP
 })
@@ -369,7 +369,7 @@ test('updateEthernetIP updates the ethernetip values', async () => {
     name: 'anotherEthernetIP',
     description: 'Another EthernetIP',
     host: '192.168.1.1',
-    slot: 1
+    slot: 1,
   }
   const { updateEthernetIP } = await client
     .request(mutation.updateEthernetIP, ethernetipFields)
@@ -386,19 +386,19 @@ test('updateEthernetIP updates the ethernetip values', async () => {
       ..._.omit(ethernetipFields, ['id', 'name', 'description', 'slot']),
       slot: `${ethernetipFields.slot}`,
       sources: [],
-      status: 'connected'
+      status: 'connected',
     },
     createdBy: {
       id: '1',
-      username: 'admin'
+      username: 'admin',
     },
-    createdOn: ethernetip.createdOn
+    createdOn: ethernetip.createdOn,
   })
   ethernetip = updateEthernetIP
 })
 test('updateEthernetIP without authorization headers returns error', async () => {
   const result = await request(host, mutation.updateEthernetIP, {
-    id: ethernetip.id
+    id: ethernetip.id,
   }).catch((e) => e)
   expect(result.message).toContain(`You are not authorized.`)
   expect(Controller.prototype.connect).toBeCalledTimes(0)
@@ -430,7 +430,7 @@ test('create mqtt with the proper headers and fields returns valid results', asy
     rate: 1000,
     encrypt: true,
     recordLimit: 50,
-    primaryHosts: ['aPrimaryHost']
+    primaryHosts: ['aPrimaryHost'],
   }
   const { createMqtt } = await client
     .request(mutation.createMqtt, mqttFields)
@@ -454,30 +454,30 @@ test('create mqtt with the proper headers and fields returns valid results', asy
         'description',
         'port',
         'devices',
-        'primaryHosts'
+        'primaryHosts',
       ]),
       primaryHosts: mqttFields.primaryHosts.map((host) => {
         return {
           id: expect.any(String),
           name: host,
           status: 'UNKNOWN',
-          recordCount: expect.any(Number)
+          recordCount: expect.any(Number),
         }
       }),
       port: `${mqttFields.port}`,
       sources: [
         {
           device: {
-            id: modbus.id
-          }
-        }
-      ]
+            id: modbus.id,
+          },
+        },
+      ],
     },
     createdBy: {
       id: '1',
-      username: 'admin'
+      username: 'admin',
     },
-    createdOn: expect.any(String)
+    createdOn: expect.any(String),
   })
   mqtt = createMqtt
 })
@@ -507,7 +507,7 @@ test('update mqtt with the proper headers and fields returns valid results', asy
     password: 'anotherPassword',
     rate: 2000,
     encrypt: false,
-    recordLimit: 100
+    recordLimit: 100,
   }
   const { updateMqtt } = await client
     .request(mutation.updateMqtt, mqttFields)
@@ -531,23 +531,23 @@ test('update mqtt with the proper headers and fields returns valid results', asy
         'description',
         'port',
         'devices',
-        'primaryHosts'
+        'primaryHosts',
       ]),
       primaryHosts: mqtt.config.primaryHosts,
       port: `${mqttFields.port}`,
       sources: [
         {
           device: {
-            id: modbus.id
-          }
-        }
-      ]
+            id: modbus.id,
+          },
+        },
+      ],
     },
     createdBy: {
       id: '1',
-      username: 'admin'
+      username: 'admin',
     },
-    createdOn: mqtt.createdOn
+    createdOn: mqtt.createdOn,
   })
   mqtt = updateMqtt
 })
@@ -586,7 +586,7 @@ test('service query without authorization headers returns error', async () => {
 })
 test('delete service without authorization headers returns error', async () => {
   const result = await request(host, mutation.deleteMqtt, {
-    id: mqtt.id
+    id: mqtt.id,
   }).catch((e) => e)
   expect(result.message).toContain('You are not authorized.')
 })
@@ -614,7 +614,7 @@ test('delete mqtt with valid arguments and credentials returns deleted service',
 })
 test('delete modbus without authorization headers returns error', async () => {
   const result = await request(host, mutation.deleteModbus, {
-    id: modbus.id
+    id: modbus.id,
   }).catch((e) => e)
   expect(result.message).toContain(`You are not authorized.`)
 })
@@ -625,7 +625,7 @@ test('delete modbus with valid arguments and credentials returns deleted device'
       throw error
     })
   expect(ModbusRTU.prototype.connectTCP).toBeCalledTimes(0)
-  expect(ModbusRTU.prototype.close).toBeCalledTimes(0)
+  expect(ModbusRTU.prototype.close).toBeCalledTimes(1)
   expect(deleteModbus.id).toEqual(modbus.id)
   const { devices } = await client.request(query.devices).catch((error) => {
     error
@@ -637,7 +637,7 @@ test('delete modbus with valid arguments and credentials returns deleted device'
 })
 test('delete ethernetip without authorization headers returns error', async () => {
   const result = await request(host, mutation.deleteEthernetIP, {
-    id: ethernetip.id
+    id: ethernetip.id,
   }).catch((e) => e)
   expect(result.message).toContain(`You are not authorized.`)
 })
