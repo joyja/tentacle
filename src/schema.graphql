@@ -94,6 +94,10 @@ type EthernetIP {
   sources: [EthernetIPSource!]!
   """Status of the Ethernet/IP device connection. Will be connected if connection is successful or an error message if connection failed."""
   status: String
+  """"""
+  tags: [EthernetIPTag!]!
+  """"""
+  programs: [String!]!
 }
 
 """An Ethernet/IP source reads an tag from an Ethernet/IP device and updates a tag value per the tags scan class."""
@@ -105,6 +109,52 @@ type EthernetIPSource {
   tag: Tag!
   """The tagname of the tag in the Ethernet/IP device (not to be confused with the name of the tag in this gateway)"""
   tagname: String!
+}
+
+type EthernetIPTagType {
+  code: Int!,
+  sintPos: Int
+  typeName: String
+  structure: Boolean!
+  arrayDims: Int!
+  reserved: Boolean!
+}
+
+type EthernetIPTag {
+  id: Int!,
+  name: String!,
+  type: EthernetIPTagType!
+  program: String
+  template: EthernetIPTemplate
+}
+
+type EthernetIPTemplateMemberType {
+  code: Int!
+  string: String
+  structure: Boolean!
+  reserved: Boolean!
+  arrayDims: Int!
+}
+
+type EthernetIPTemplateMember {
+  info: Int!
+  type: EthernetIPTemplateMemberType!
+  offset: Int!
+  name: String!
+  template: EthernetIPTemplate
+}
+
+type EthernetIPTemplateAttributes {
+  id: Int!
+  ObjDefinitionSize: Int!
+  StructureSize: Int!
+  MemberCount: Int!
+  StructureHandle: Int!
+}
+
+type EthernetIPTemplate {
+  attributes: EthernetIPTemplateAttributes
+  members: [EthernetIPTemplateMember!]!
 }
 
 """A scan class allows for groups of tags to be updated at the same pre-defined rate."""

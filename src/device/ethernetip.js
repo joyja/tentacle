@@ -30,7 +30,6 @@ class EthernetIP extends Model {
   }
   constructor(selector, checkExists = true) {
     super(selector, checkExists)
-    // this.client = new Controller()
   }
   async init() {
     const result = await super.init()
@@ -41,6 +40,16 @@ class EthernetIP extends Model {
     this.connected = false
     this.error = null
     this.retryCount = 0
+    this.tagList = new TagList()
+    this.loadingTags = false
+  }
+  async getTags() {
+    this.loadingTags = true
+    const plc = new Controller({ connectedMessaging: false })
+    await plc.connect(this.host)
+    await plc.getControllerTagList(this.tagList)
+    await plc.disconnect()
+    this.loadingTags = false
   }
   async connect() {
     if (!this.connected) {
@@ -67,6 +76,9 @@ class EthernetIP extends Model {
             }
           }, this.retryRate)
         }
+      })
+      this.getTags().catch((error) => {
+        logger.error(error)
       })
       if (!this.error) {
         this.retryCount = 0
@@ -136,6 +148,23 @@ class EthernetIP extends Model {
     } else {
       return `connecting`
     }
+  }
+  get tags() {
+    return this.tagList.tags.filter((tag) => {
+      return (
+        !tag.name.includes('__DEFVAL_') &&
+        !tag.name.includes('Routine:') &&
+        !tag.name.includes('Map:') &&
+        !tag.name.includes('Task:') &&
+        !tag.name.includes('Program:')
+      )
+    })
+  }
+  get templates() {
+    return this.tagList.templates
+  }
+  get programs() {
+    return this.tagList.programs
   }
 }
 EthernetIP.table = `ethernetip`
