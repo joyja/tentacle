@@ -30,7 +30,7 @@ class EthernetIP extends Model {
   }
   constructor(selector, checkExists = true) {
     super(selector, checkExists)
-    this.client = new Controller()
+    // this.client = new Controller()
   }
   async init() {
     const result = await super.init()
@@ -49,7 +49,7 @@ class EthernetIP extends Model {
         `Connecting to ethernetip device ${this.device.name}, host: ${this.host}, slot: ${this.slot}.`
       )
       if (!this.client) {
-        this.client = new Controller()
+        this.client = new Controller({ connectedMessaging: false })
       }
       await this.client.connect(this.host, this.slot).catch(async (error) => {
         this.error = error.message

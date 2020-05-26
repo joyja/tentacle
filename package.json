@@ -54,7 +54,7 @@
     "sparkplug-client-jar": "^3.2.2",
     "sqlite3": "^4.2.0",
     "task-easy": "^1.0.1",
-    "tentacle-ethernet-ip": "0.0.3",
+    "tentacle-ethernet-ip": "0.0.6",
     "tentacle-sparkplug-client": "0.0.5",
     "winston": "^3.2.1"
   }
