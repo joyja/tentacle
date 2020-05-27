@@ -94,9 +94,9 @@ type EthernetIP {
   sources: [EthernetIPSource!]!
   """Status of the Ethernet/IP device connection. Will be connected if connection is successful or an error message if connection failed."""
   status: String
-  """"""
+  """A List of available tags in the Ethernet/IP Device"""
   tags: [EthernetIPTag!]!
-  """"""
+  """A List of programs in the Ethernet/IP Device"""
   programs: [String!]!
 }
 
@@ -277,10 +277,12 @@ type Query {
   user: User
   """Requires a valid authorization token. List of all tags configured in this gateway"""
   tags: [Tag!]!
-  """Requires a valid authorization token. ist of all scan classes configured in this gateway"""
+  """Requires a valid authorization token. List of all scan classes configured in this gateway"""
   scanClasses: [ScanClass!]!
   """Requires a valid authorization token. List of all devices configured in this gateway"""
   devices(type: String): [Device!]!
+  """Requires a valid authorization token. Get details of a single device"""
+  device(id: ID!): Device!
   """Requires a valid authorization token. List of all services configured in this gateway"""
   services(type: String): [Service!]!
 }

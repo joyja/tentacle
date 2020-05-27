@@ -150,15 +150,29 @@ class EthernetIP extends Model {
     }
   }
   get tags() {
-    return this.tagList.tags.filter((tag) => {
-      return (
-        !tag.name.includes('__DEFVAL_') &&
-        !tag.name.includes('Routine:') &&
-        !tag.name.includes('Map:') &&
-        !tag.name.includes('Task:') &&
-        !tag.name.includes('Program:')
-      )
-    })
+    return this.tagList.tags
+      .filter((tag) => {
+        const exclude = [
+          '__DEFVAL_',
+          'Routine:',
+          'Map:',
+          'Task:',
+          'Program:',
+          ':',
+        ]
+        return !exclude.some((text) => {
+          return tag.name.includes(text) || tag.name.startsWith('__')
+        })
+      })
+      .sort((a, b) => {
+        if (a.name > b.name) {
+          return 1
+        }
+        if (a.name < b.name) {
+          return -1
+        }
+        return 0
+      })
   }
   get templates() {
     return this.tagList.templates
