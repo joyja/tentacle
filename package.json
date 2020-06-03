@@ -36,7 +36,7 @@
     "prettier": "^2.0.5"
   },
   "dependencies": {
-    "@types/jest": "^25.2.1",
+    "@types/jest": "^25.2.2",
     "bcryptjs": "^2.4.3",
     "cross-env": "^7.0.2",
     "date-fns": "^2.13.0",
