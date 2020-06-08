@@ -39,7 +39,7 @@
     "@types/jest": "^25.2.1",
     "bcryptjs": "^2.4.3",
     "cross-env": "^7.0.2",
-    "date-fns": "^2.13.0",
+    "date-fns": "^2.14.0",
     "date-fns-timezone": "^0.1.4",
     "esm": "^3.2.25",
     "ethernet-ip": "^1.2.5",
