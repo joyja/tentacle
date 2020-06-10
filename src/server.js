@@ -15,6 +15,11 @@ let db = undefined
 let httpServer = undefined
 let server = undefined
 start = async function (dbFilename) {
+  const dir = './database'
+
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir)
+  }
   let fileExisted = false
   // Create database
   if (dbFilename === `:memory:`) {
@@ -24,10 +29,10 @@ start = async function (dbFilename) {
       }
     })
   } else {
-    if (fs.existsSync(`./${dbFilename}.db`)) {
+    if (fs.existsSync(`${dir}/${dbFilename}.db`)) {
       fileExisted = true
     }
-    db = new sqlite3.cached.Database(`./${dbFilename}.db`, (error) => {
+    db = new sqlite3.cached.Database(`${dir}/${dbFilename}.db`, (error) => {
       if (error) {
         throw error
       }
@@ -65,8 +70,8 @@ start = async function (dbFilename) {
         userVersion !== desiredUserVersion
       ) {
         fs.copyFileSync(
-          `./${dbFilename}.db`,
-          `./${dbFilename}-backup-${new Date().toISOString()}.db`
+          `${dir}/${dbFilename}.db`,
+          `${dir}/${dbFilename}-backup-${new Date().toISOString()}.db`
         )
       }
       //Check for administrator account and initialize one if it doesn't exist.
