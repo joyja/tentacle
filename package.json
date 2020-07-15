@@ -48,7 +48,7 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
     "make-promises-safe": "^5.1.0",
-    "modbus-serial": "^7.8.1",
+    "modbus-serial": "^7.8.1-no-serial-port",
     "mqtt": "^4.0.1",
     "sparkplug-client": "^3.2.2",
     "sparkplug-client-jar": "^3.2.2",
