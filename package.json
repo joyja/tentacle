@@ -46,7 +46,7 @@
     "express": "^4.17.1",
     "graphql-yoga": "^1.18.3",
     "jsonwebtoken": "^8.5.1",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.20",
     "make-promises-safe": "^5.1.0",
     "modbus-serial": "^7.8.1-no-serial-port",
     "mqtt": "^4.0.1",
