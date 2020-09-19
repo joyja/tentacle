@@ -145,6 +145,8 @@ type Tag {
   max: Float
   """Minimum tag value (meant for use if the tag is numeric). Can be used to generate out of range indication and for graphical displays"""
   min: Float
+  """Deadband, used to determine whether to publish a change or write to history. If the change in value is less than the deadband, the update is ignored. If this value is zero, all changes are published and write to history."""
+  deadband: Float
   """Engineering units of the tag. Meant to be used for user displays to give context to a numerical value."""
   units: String
 }

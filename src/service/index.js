@@ -5,5 +5,5 @@ module.exports = {
   Service,
   Mqtt,
   MqttSource,
-  MqttHistory
+  MqttHistory,
 }

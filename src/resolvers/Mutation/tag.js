@@ -57,6 +57,7 @@ async function createTag(root, args, context, info) {
     args.datatype,
     args.max,
     args.min,
+    arrgs.deadband,
     args.units
   )
   return tag
@@ -87,6 +88,9 @@ async function updateTag(root, args, context, info) {
     if (args.max) {
       await tag.setMax(args.max)
     }
+    if (args.deadband) {
+      await tag.setDeadband(args.deadband)
+    }
     if (args.units) {
       await tag.setUnits(args.units)
     }
@@ -112,5 +116,5 @@ module.exports = {
   deleteScanClass,
   createTag,
   updateTag,
-  deleteTag
+  deleteTag,
 }
