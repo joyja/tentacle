@@ -150,5 +150,5 @@ module.exports = {
   addMqttPrimaryHost,
   deleteMqttPrimaryHost,
   addMqttSource,
-  deleteMqttSource
+  deleteMqttSource,
 }

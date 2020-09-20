@@ -92,4 +92,4 @@ sw.*
 # production database
 /spread-edge*.db
 /tentacle-edge*.db
-/database
+/database*

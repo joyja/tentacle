@@ -4,11 +4,12 @@ const {
   Modbus,
   ModbusSource,
   EthernetIP,
-  EthernetIPSource
+  EthernetIPSource,
 } = require('./device')
 const { Service, Mqtt, MqttSource, MqttHistory } = require('./service')
 const { User } = require('./auth')
 const getTime = require('date-fns/getTime')
+const tag = require('./resolvers/Query/tag')
 
 // This file creates properties and defines methods requiring relationships with other models.
 // It is defined here to prevent circular dependencies.
@@ -17,7 +18,7 @@ const getTime = require('date-fns/getTime')
 //           Tags
 // ==============================
 
-ScanClass.prototype.scan = async function() {
+ScanClass.prototype.scan = async function () {
   for (const tag of this.tags) {
     if (tag.source) {
       await tag.source.read()
@@ -35,24 +36,24 @@ Object.defineProperties(ScanClass.prototype, {
       return Tag.instances.filter((instance) => {
         return instance.scanClass.id === this.id
       })
-    }
+    },
   },
   createdBy: {
     get() {
       this.checkInit()
       return User.findById(this._createdBy)
-    }
-  }
+    },
+  },
 })
 
-Tag.delete = async function(selector) {
+Tag.delete = async function (selector) {
   const deleted = await this._deleteModel(selector)
   await ModbusSource.getAll()
   await EthernetIPSource.getAll()
   return deleted
 }
 
-Tag.prototype.setScanClass = async function(id) {
+Tag.prototype.setScanClass = async function (id) {
   const scanClass = ScanClass.findById(id)
   if (scanClass) {
     this.scanClass = scanClass
@@ -69,7 +70,7 @@ Object.defineProperties(Tag.prototype, {
     get() {
       this.checkInit()
       return ScanClass.findById(this._scanClass)
-    }
+    },
   },
   source: {
     get() {
@@ -84,14 +85,14 @@ Object.defineProperties(Tag.prototype, {
         })
       }
       return source
-    }
+    },
   },
   createdBy: {
     get() {
       this.checkInit()
       return User.findById(this._createdBy)
-    }
-  }
+    },
+  },
 })
 
 // ==============================
@@ -112,13 +113,13 @@ Object.defineProperties(Device.prototype, {
           return instance._device === this._id
         })
       }
-    }
+    },
   },
   createdBy: {
     get() {
       this.checkInit()
       return User.findById(this._createdBy)
-    }
+    },
   },
   mqttSource: {
     get() {
@@ -126,12 +127,12 @@ Object.defineProperties(Device.prototype, {
       return MqttSource.instances.find((instance) => {
         return instance._device === this._id
       })
-    }
-  }
+    },
+  },
 })
 
 // Modbus
-Modbus.create = async function(
+Modbus.create = async function (
   name,
   description,
   host,
@@ -152,7 +153,7 @@ Modbus.create = async function(
     reverseWords,
     zeroBased,
     timeout,
-    retryRate
+    retryRate,
   }
   return this._createModel(fields)
 }
@@ -162,7 +163,7 @@ Object.defineProperties(Modbus.prototype, {
     get() {
       this.checkInit()
       return Device.findById(this._device)
-    }
+    },
   },
   sources: {
     get() {
@@ -170,8 +171,8 @@ Object.defineProperties(Modbus.prototype, {
       return ModbusSource.instances.filter((instance) => {
         return instance.modbus.id === this.id
       })
-    }
-  }
+    },
+  },
 })
 
 Object.defineProperties(ModbusSource.prototype, {
@@ -179,29 +180,29 @@ Object.defineProperties(ModbusSource.prototype, {
     get() {
       this.checkInit()
       return Modbus.findById(this._modbus)
-    }
+    },
   },
   device: {
     get() {
       this.checkInit()
       return this.modbus.device
-    }
+    },
   },
   tag: {
     get() {
       this.checkInit()
       return Tag.findById(this._tag)
-    }
-  }
+    },
+  },
 })
 
 // EthernetIP
-EthernetIP.create = async function(name, description, host, slot, createdBy) {
+EthernetIP.create = async function (name, description, host, slot, createdBy) {
   const device = await Device.create(name, description, `ethernetip`, createdBy)
   const fields = {
     device: device.id,
     host,
-    slot
+    slot,
   }
   return this._createModel(fields)
 }
@@ -211,7 +212,7 @@ Object.defineProperties(EthernetIP.prototype, {
     get() {
       this.checkInit()
       return Device.findById(this._device)
-    }
+    },
   },
   sources: {
     get() {
@@ -219,8 +220,8 @@ Object.defineProperties(EthernetIP.prototype, {
       return EthernetIPSource.instances.filter((instance) => {
         return instance.ethernetip.id === this.id
       })
-    }
-  }
+    },
+  },
 })
 
 Object.defineProperties(EthernetIPSource.prototype, {
@@ -228,20 +229,20 @@ Object.defineProperties(EthernetIPSource.prototype, {
     get() {
       this.checkInit()
       return EthernetIP.findById(this._ethernetip)
-    }
+    },
   },
   device: {
     get() {
       this.checkInit()
       return this.ethernetip.device
-    }
+    },
   },
   tag: {
     get() {
       this.checkInit()
       return Tag.findById(this._tag)
-    }
-  }
+    },
+  },
 })
 
 // ==============================
@@ -256,17 +257,17 @@ Object.defineProperties(Service.prototype, {
       return Mqtt.instances.find((instance) => {
         return instance._service === this._id
       })
-    }
+    },
   },
   createdBy: {
     get() {
       this.checkInit()
       return User.findById(this._createdBy)
-    }
-  }
+    },
+  },
 })
 
-Mqtt.create = async function(
+Mqtt.create = async function (
   name,
   description,
   host,
@@ -294,7 +295,7 @@ Mqtt.create = async function(
     rate,
     encrypt,
     recordLimit,
-    primaryHosts
+    primaryHosts,
   }
   const mqtt = await this._createModel(fields)
   for (device of devices) {
@@ -303,7 +304,28 @@ Mqtt.create = async function(
   return mqtt
 }
 
-Mqtt.prototype.publishHistory = async function() {
+Mqtt.prototype.publish = async function () {
+  for (const source of this.sources) {
+    const payload = source.rtHistory.map((record) => {
+      const tag = Tag.findById(record.id)
+      return {
+        name: tag.name,
+        value: record.value,
+        type: tag.datatype,
+        timestamp: record.timestamp,
+      }
+    })
+    if (payload.length > 0) {
+      await this.client.publishDeviceData(`${source.device.name}`, {
+        timestamp: getTime(new Date()),
+        metrics: [...payload],
+      })
+    }
+    source.rtHistory = []
+  }
+}
+
+Mqtt.prototype.publishHistory = async function () {
   const hosts = this.primaryHosts.filter((host) => {
     return host.readyForData
   })
@@ -338,12 +360,12 @@ Mqtt.prototype.publishHistory = async function() {
           value: tag.datatype === 'BOOLEAN' ? !!+record.value : record.value,
           timestamp: record.timestamp,
           type: tag.datatype,
-          isHistorical: true
+          isHistorical: true,
         }
       })
     this.client.publishDeviceData(`${device.name}`, {
       timestamp: getTime(new Date()),
-      metrics: [...payload]
+      metrics: [...payload],
     })
   }
   let sql = `DELETE FROM mqttPrimaryHostHistory WHERE id in (${'?,'
@@ -364,7 +386,7 @@ Mqtt.prototype.publishHistory = async function() {
   await this.constructor.executeUpdate(sql)
 }
 
-Mqtt.prototype.onDcmd = function(payload) {
+Mqtt.prototype.onDcmd = function (payload) {
   const { metrics } = payload
   for (metric of metrics) {
     const tag = Tag.instances.find((tag) => metric.name === tag.name)
@@ -377,7 +399,7 @@ Object.defineProperties(Mqtt.prototype, {
     get() {
       this.checkInit()
       return Service.findById(this._service)
-    }
+    },
   },
   sources: {
     get() {
@@ -385,14 +407,14 @@ Object.defineProperties(Mqtt.prototype, {
       return MqttSource.instances.filter((instance) => {
         return instance.mqtt.id === this.id
       })
-    }
-  }
+    },
+  },
 })
 
-MqttSource.prototype.log = async function(scanClassId) {
+MqttSource.prototype.log = async function (scanClassId) {
   const scanClass = ScanClass.findById(scanClassId)
   const tags = Tag.instances.filter((tag) => {
-    if (tag.source) {
+    if (tag.source && !tag.prevChangeWithinDeadband) {
       return (
         tag.scanClass.id === scanClass.id &&
         this.device.id === tag.source.device.id
@@ -401,6 +423,20 @@ MqttSource.prototype.log = async function(scanClassId) {
       return false
     }
   })
+  // The following is to collect realtime history of events to be published without isHistorical
+  if (tags.length > 0) {
+    this.rtHistory = [
+      ...this.rtHistory,
+      ...tags.map((tag) => {
+        return {
+          id: tag.id,
+          value: tag.value,
+          timestamp: getTime(new Date()),
+        }
+      }),
+    ]
+  }
+  // The following is to collect history in the event of a primaryHost going offline
   if (tags.length > 0) {
     await new Promise((resolve) => {
       this.db.serialize(async () => {
@@ -408,20 +444,25 @@ MqttSource.prototype.log = async function(scanClassId) {
         sql = `${sql} VALUES (?,?);`
         let params = [this.id, getTime(new Date())]
         const result = await this.constructor.executeUpdate(sql, params)
-        for (host of this.mqtt.primaryHosts) {
-          sql = `INSERT INTO mqttPrimaryHostHistory (mqttPrimaryHost, mqttHistory)`
-          sql = `${sql} VALUES (?,?);`
-          params = [host.id, result.lastID]
-          await this.constructor.executeUpdate(sql, params)
-          this.pubsub.publish('serviceUpdate', {
-            serviceUpdate: this.mqtt.service
-          })
-        }
-        for (const tag of tags) {
-          let sql = `INSERT INTO mqttHistoryTag (mqttHistory, tag, value)`
-          sql = `${sql} VALUES (?,?,?);`
-          let params = [result.lastID, tag.id, tag.value]
-          await this.constructor.executeUpdate(sql, params)
+        hostsDown = this.mqtt.primaryHosts.filter((host) => !host.readyForData)
+        if (hostsDown.length > 0) {
+          for (host of hostsDown) {
+            sql = `INSERT INTO mqttPrimaryHostHistory (mqttPrimaryHost, mqttHistory)`
+            sql = `${sql} VALUES (?,?);`
+            params = [host.id, result.lastID]
+            await this.constructor.executeUpdate(sql, params)
+            this.pubsub.publish('serviceUpdate', {
+              serviceUpdate: this.mqtt.service,
+            })
+          }
+          for (const tag of tags.filter(
+            (tag) => !tag.prevChangeWithinDeadband
+          )) {
+            sql = `INSERT INTO mqttHistoryTag (mqttHistory, tag, value)`
+            sql = `${sql} VALUES (?,?,?);`
+            params = [result.lastID, tag.id, tag.value]
+            await this.constructor.executeUpdate(sql, params)
+          }
         }
         resolve()
       })
@@ -434,14 +475,14 @@ Object.defineProperties(MqttSource.prototype, {
     get() {
       this.checkInit()
       return Mqtt.findById(this._mqtt)
-    }
+    },
   },
   device: {
     get() {
       this.checkInit()
       return Device.findById(this._device)
-    }
-  }
+    },
+  },
 })
 
 module.exports = {
@@ -455,5 +496,5 @@ module.exports = {
   MqttSource,
   Tag,
   ScanClass,
-  User
+  User,
 }

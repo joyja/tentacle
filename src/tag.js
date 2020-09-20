@@ -7,16 +7,18 @@ class Tag extends Model {
   static async initialize(db, pubsub) {
     ScanClass.initialize(db, pubsub)
     const result = await super.initialize(db, pubsub)
+    const newColumns = []
     if (this.tableExisted && this.version === 0) {
-      const newColumns = [
-        { colName: 'units', colType: 'TEXT' },
-        { colName: 'max', colType: 'REAL' },
-        { colName: 'min', colType: 'REAL' }
-      ]
-      for (const column of newColumns) {
-        let sql = `ALTER TABLE "${this.table}" ADD "${column.colName}" ${column.colType}`
-        await this.executeUpdate(sql)
-      }
+      newColumns.push({ colName: 'units', colType: 'TEXT' })
+      newColumns.push({ colName: 'max', colType: 'REAL' })
+      newColumns.push({ colName: 'min', colType: 'REAL' })
+    }
+    if (this.tableExisted && this.version < 7) {
+      newColumns.push({ colName: 'deadband', colType: 'REAL' })
+    }
+    for (const column of newColumns) {
+      let sql = `ALTER TABLE "${this.table}" ADD "${column.colName}" ${column.colType}`
+      await this.executeUpdate(sql)
     }
     return result
   }
@@ -29,6 +31,7 @@ class Tag extends Model {
     datatype,
     max,
     min,
+    deadband,
     units
   ) {
     const createdOn = getUnixTime(new Date())
@@ -42,7 +45,8 @@ class Tag extends Model {
       datatype,
       max,
       min,
-      units
+      deadband,
+      units,
     }
     return super.create(fields)
   }
@@ -62,6 +66,9 @@ class Tag extends Model {
     this._max = result.max
     this._min = result.min
     this._units = result.units
+    this._deadband = result.deadband
+    this.prevValue = null
+    this.prevChangeWithinDeadband = false
   }
   get name() {
     this.checkInit()
@@ -94,10 +101,17 @@ class Tag extends Model {
     if (this.source && write) {
       this.source.write(value)
     }
-    return this.update(this.id, 'value', value, Tag).then((result) => {
+    const result = this.update(this.id, 'value', value, Tag).then((result) => {
       this._value = result
       this.pubsub.publish('tagUpdate', { tagUpdate: this })
     })
+    if (Math.abs(this.value - this.prevValue) < this.deadband) {
+      this.prevChangeWithinDeadband = true
+    } else {
+      this.prevChangeWithinDeadband = false
+      this.prevValue = this.value
+    }
+    return result
   }
   get createdOn() {
     this.checkInit()
@@ -143,6 +157,16 @@ class Tag extends Model {
       (result) => (this._units = result)
     )
   }
+  get deadband() {
+    this.checkInit()
+    return this._deadband
+  }
+  setDeadband(value) {
+    this.checkInit()
+    return this.update(this.id, 'deadband', value, Tag).then(
+      (result) => (this._deadband = result)
+    )
+  }
 }
 Tag.table = `tag`
 Tag.fields = [
@@ -156,7 +180,8 @@ Tag.fields = [
   { colName: 'units', colType: 'TEXT' },
   { colName: 'quality', colType: 'TEXT' },
   { colName: 'max', colType: 'REAL' },
-  { colName: 'min', colType: 'REAL' }
+  { colName: 'min', colType: 'REAL' },
+  { colName: 'deadband', colType: 'REAL' },
 ]
 Tag.instances = []
 Tag.initialized = false
@@ -167,7 +192,7 @@ class ScanClass extends Model {
     if (this.tableExisted && this.version < 2) {
       const newColumns = [
         { colName: 'name', colType: 'TEXT' },
-        { colName: 'description', colType: 'TEXT' }
+        { colName: 'description', colType: 'TEXT' },
       ]
       for (const column of newColumns) {
         let sql = `ALTER TABLE "${this.table}" ADD "${column.colName}" ${column.colType}`
@@ -183,7 +208,7 @@ class ScanClass extends Model {
       description,
       rate,
       createdOn,
-      createdBy
+      createdBy,
     }
     return super.create(fields)
   }
@@ -247,12 +272,12 @@ ScanClass.fields = [
   { colName: 'description', colType: 'TEXT' },
   { colName: 'rate', colType: 'INTEGER' },
   { colName: 'createdBy', colRef: 'user', onDelete: 'SET NULL' },
-  { colName: 'createdOn', colType: 'INTEGER' }
+  { colName: 'createdOn', colType: 'INTEGER' },
 ]
 ScanClass.instances = []
 ScanClass.initialized = false
 
 module.exports = {
   Tag,
-  ScanClass
+  ScanClass,
 }

@@ -15,7 +15,7 @@ class Service extends Model {
       description,
       type,
       createdBy,
-      createdOn
+      createdOn,
     }
     return super.create(fields)
   }
@@ -74,11 +74,11 @@ Service.fields = [
   { colName: 'description', colType: 'TEXT' },
   { colName: 'type', colType: 'TEXT' },
   { colName: 'createdBy', colRef: 'user', onDelete: 'SET NULL' },
-  { colName: 'createdOn', colType: 'INTEGER' }
+  { colName: 'createdOn', colType: 'INTEGER' },
 ]
 Service.initialized = false
 Service.connected = false
 
 module.exports = {
-  Service
+  Service,
 }

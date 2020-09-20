@@ -13,9 +13,10 @@ const {
   ModbusSource,
   Service,
   Mqtt,
-  MqttSource
+  MqttSource,
 } = require('../../relations')
 const fromUnixTime = require('date-fns/fromUnixTime')
+const { matchesProperty } = require('lodash')
 
 const mockSparkplug = {
   on: jest.fn(),
@@ -24,7 +25,7 @@ const mockSparkplug = {
   publishDeviceData: jest.fn(),
   publishDeviceDeath: jest.fn(),
   stop: jest.fn(),
-  on: jest.fn()
+  on: jest.fn(),
 }
 
 const pubsub = {}
@@ -211,7 +212,7 @@ describe(`MQTT: `, () => {
     expect(mockSparkplug.publishNodeBirth).toBeCalledTimes(1)
     expect(mockSparkplug.publishNodeBirth).toBeCalledWith({
       timestamp: expect.any(Number),
-      metrics: expect.any(Object)
+      metrics: expect.any(Object),
     })
     expect(mockSparkplug.publishDeviceBirth).toBeCalledTimes(
       mqtt.sources.length
@@ -225,9 +226,9 @@ describe(`MQTT: `, () => {
             return {
               name: deviceSource.tag.name,
               value: `${deviceSource.tag.value}`,
-              type: 'string'
+              type: 'string',
             }
-          })
+          }),
         }
       )
     })
@@ -253,10 +254,6 @@ describe(`MQTT: `, () => {
     mqtt.disconnect()
     mqtt.connect()
   })
-  test(`publish publishes realtime and historical values that have been logged`, () => {
-    mqtt.publish()
-    expect(mockSparkplug.publishDeviceData).toBeCalledTimes(mqtt.sources.length)
-  })
   test(`disconnect stops publishing, publishes death, and clears client`, () => {
     mqtt.disconnect()
     expect(clearInterval).toBeCalledTimes(1)
@@ -267,7 +264,7 @@ describe(`MQTT: `, () => {
       expect(mockSparkplug.publishDeviceDeath).toBeCalledWith(
         `${source.device.name}`,
         {
-          timestamp: expect.any(Number)
+          timestamp: expect.any(Number),
         }
       )
     })
@@ -306,12 +303,6 @@ describe(`MQTT Source: `, () => {
   })
 })
 
-test(`Publish publishes the real tag values, the historical tag values, and deletes the buffer.`, async () => {
-  const mqtt = Mqtt.instances[0]
-  mqtt.connect()
-  await mqtt.publish()
-  expect(mockSparkplug.publishDeviceData).toBeCalledTimes(2)
-})
 test(`Tag: scan calls tag.source.read for each tag with a source and mqttSource.log`, async () => {
   spyOn(ModbusSource.prototype, 'read')
   spyOn(MqttSource.prototype, 'log')

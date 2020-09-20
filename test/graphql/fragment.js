@@ -12,6 +12,7 @@ const scalarTag = `
     createdOn
     max
     min
+    deadband
     units
   }
 `
@@ -134,5 +135,5 @@ module.exports = {
   tag,
   scanClass,
   device,
-  service
+  service,
 }

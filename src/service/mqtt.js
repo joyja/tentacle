@@ -4,7 +4,7 @@ const getTime = require('date-fns/getTime')
 const _ = require('lodash')
 const logger = require('../logger')
 
-const createTable = function(db, tableName, fields) {
+const createTable = function (db, tableName, fields) {
   let sql = `CREATE TABLE IF NOT EXISTS "${tableName}" (`
   sql = `${sql} "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE`
   fields.forEach((field) => {
@@ -53,22 +53,22 @@ class Mqtt extends Model {
     let sql = undefined
     const mqttHistoryFields = [
       { colName: 'mqttSource', colRef: 'mqttSource', onDelete: 'CASCADE' },
-      { colName: 'timestamp', colType: 'INTEGER' }
+      { colName: 'timestamp', colType: 'INTEGER' },
     ]
     await createTable(this.db, 'mqttHistory', mqttHistoryFields)
     const mqttHistoryTagFields = [
       { colName: 'mqttHistory', colRef: 'mqttHistory', onDelete: 'CASCADE' },
       { colName: 'tag', colRef: 'tag', onDelete: 'CASCADE' },
-      { colName: 'value', colType: 'TEXT' }
+      { colName: 'value', colType: 'TEXT' },
     ]
     await createTable(this.db, 'mqttHistoryTag', mqttHistoryTagFields)
     const mqttPrimaryHostHistoryFields = [
       {
         colName: 'mqttPrimaryHost',
         colRef: 'mqttPrimaryHost',
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
       },
-      { colName: 'mqttHistory', colRef: 'mqttHistory', onDelete: 'CASCADE' }
+      { colName: 'mqttHistory', colRef: 'mqttHistory', onDelete: 'CASCADE' },
     ]
     await createTable(
       this.db,
@@ -113,7 +113,7 @@ class Mqtt extends Model {
         edgeNode: this.node,
         clientId: this.node,
         version: 'spBv1.0',
-        publishDeath: true
+        publishDeath: true,
       }
       this.client = sparkplug.newClient(config)
       this.client.on('reconnect', () => {
@@ -155,7 +155,7 @@ class Mqtt extends Model {
   onBirth() {
     const payload = {
       timestamp: getTime(new Date()),
-      metrics: []
+      metrics: [],
     }
     this.client.publishNodeBirth(payload)
     this.sources.forEach((source) => {
@@ -165,9 +165,9 @@ class Mqtt extends Model {
           return {
             name: source.tag.name,
             value: `${source.tag.value}`,
-            type: source.tag.datatype
+            type: source.tag.datatype,
           }
-        })
+        }),
       })
     })
     this.primaryHosts.forEach((host) => {
@@ -190,7 +190,7 @@ class Mqtt extends Model {
               }
             }
             this.pubsub.publish('serviceUpdate', {
-              serviceUpdate: this.service
+              serviceUpdate: this.service,
             })
           })
       }
@@ -214,6 +214,9 @@ class Mqtt extends Model {
     this.interval = setInterval(() => {
       this.publish()
       this.publishHistory()
+      this.pubsub.publish('serviceUpdate', {
+        serviceUpdate: this.service,
+      })
     }, this.rate)
   }
   stopPublishing() {
@@ -224,7 +227,7 @@ class Mqtt extends Model {
       logger.info(`Mqtt service ${this.service.name} is disconnecting.`)
       this.stopPublishing()
       const payload = {
-        timestamp: getTime(new Date())
+        timestamp: getTime(new Date()),
       }
       this.sources.forEach((source) => {
         if (this.testNumber) {
@@ -240,22 +243,6 @@ class Mqtt extends Model {
       })
       this.client.stop()
       this.client = undefined
-    }
-  }
-  async publish() {
-    for (const source of this.sources) {
-      const payload = source.device.config.sources.map((source) => {
-        return {
-          name: source.tag.name,
-          value: source.tag.value,
-          type: source.tag.datatype,
-          timestamp: getTime(new Date())
-        }
-      })
-      this.client.publishDeviceData(`${source.device.name}`, {
-        timestamp: getTime(new Date()),
-        metrics: [...payload]
-      })
     }
   }
   get primaryHosts() {
@@ -395,7 +382,7 @@ Mqtt.fields = [
   { colName: 'rate', colType: 'INTEGER' },
   { colName: 'encrypt', colType: 'INTEGER' },
   { colName: 'primaryHost', colType: 'TEXT' },
-  { colName: 'recordLimit', colType: 'INTEGER' }
+  { colName: 'recordLimit', colType: 'INTEGER' },
 ]
 Mqtt.instances = []
 Mqtt.initialized = false
@@ -408,7 +395,7 @@ class MqttSource extends Model {
   static create(mqtt, device) {
     const fields = {
       mqtt,
-      device
+      device,
     }
     return super.create(fields)
   }
@@ -416,12 +403,13 @@ class MqttSource extends Model {
     const result = await super.init()
     this._mqtt = result.mqtt
     this._device = result.device
+    this.rtHistory = []
   }
 }
 MqttSource.table = `mqttSource`
 MqttSource.fields = [
   { colName: 'mqtt', colRef: 'mqtt', onDelete: 'CASCADE' },
-  { colName: 'device', colRef: 'device', onDelete: 'CASCADE' }
+  { colName: 'device', colRef: 'device', onDelete: 'CASCADE' },
 ]
 MqttSource.instances = []
 MqttSource.initialized = false
@@ -430,7 +418,7 @@ class MqttPrimaryHost extends Model {
   static create(mqtt, name) {
     const fields = {
       mqtt,
-      name
+      name,
     }
     return super.create(fields)
   }
@@ -480,7 +468,7 @@ class MqttPrimaryHost extends Model {
 MqttPrimaryHost.table = `mqttPrimaryHost`
 MqttPrimaryHost.fields = [
   { colName: 'mqtt', colRef: 'mqtt', onDelete: 'CASCADE' },
-  { colName: 'name', colType: 'TEXT' }
+  { colName: 'name', colType: 'TEXT' },
 ]
 MqttPrimaryHost.instances = []
 MqttPrimaryHost.initialized = false
@@ -488,5 +476,5 @@ MqttPrimaryHost.initialized = false
 module.exports = {
   Mqtt,
   MqttSource,
-  MqttPrimaryHost
+  MqttPrimaryHost,
 }

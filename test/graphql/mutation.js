@@ -9,6 +9,7 @@ const createTag = `
       $scanClassId: ID!
       $max: Float
       $min: Float
+      $deadband: Float
       $units: String
     ) {
     createTag(
@@ -19,6 +20,7 @@ const createTag = `
       scanClassId: $scanClassId
       max: $max
       min: $min
+      deadband: $deadband
       units: $units
     ) {
       ...FullTag
@@ -268,5 +270,5 @@ module.exports = {
   deleteEthernetIP,
   createMqtt,
   updateMqtt,
-  deleteMqtt
+  deleteMqtt,
 }
