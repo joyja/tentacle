@@ -57,7 +57,7 @@ async function createTag(root, args, context, info) {
     args.datatype,
     args.max,
     args.min,
-    arrgs.deadband,
+    args.deadband,
     args.units
   )
   return tag
@@ -82,13 +82,13 @@ async function updateTag(root, args, context, info) {
     if (args.scanClassId) {
       await tag.setScanClass(args.scanClassId)
     }
-    if (args.min) {
+    if (args.min !== undefined) {
       await tag.setMin(args.min)
     }
-    if (args.max) {
+    if (args.max !== undefined) {
       await tag.setMax(args.max)
     }
-    if (args.deadband) {
+    if (args.deadband !== undefined) {
       await tag.setDeadband(args.deadband)
     }
     if (args.units) {

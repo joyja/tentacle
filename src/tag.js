@@ -68,13 +68,7 @@ class Tag extends Model {
     this._units = result.units
     this._deadband = result.deadband
     this.prevValue = null
-  }
-  get lastChangeWithinDeadband() {
-    if (this.preValue) {
-      return Math.abs(this.value - this.prevValue) < this.deadband
-    } else {
-      return false
-    }
+    this.prevChangeWithinDeadband = false
   }
   get name() {
     this.checkInit()
@@ -104,14 +98,20 @@ class Tag extends Model {
   }
   async setValue(value, write = true) {
     this.checkInit()
-    this.prevValue = this._value
     if (this.source && write) {
       this.source.write(value)
     }
-    return this.update(this.id, 'value', value, Tag).then((result) => {
+    const result = this.update(this.id, 'value', value, Tag).then((result) => {
       this._value = result
       this.pubsub.publish('tagUpdate', { tagUpdate: this })
     })
+    if (Math.abs(this.value - this.prevValue) < this.deadband) {
+      this.prevChangeWithinDeadband = true
+    } else {
+      this.prevChangeWithinDeadband = false
+      this.prevValue = this.value
+    }
+    return result
   }
   get createdOn() {
     this.checkInit()
@@ -161,9 +161,11 @@ class Tag extends Model {
     this.checkInit()
     return this._deadband
   }
-  setDeadband() {
+  setDeadband(value) {
     this.checkInit()
-    return this.update(this.id, 'deadband')
+    return this.update(this.id, 'deadband', value, Tag).then(
+      (result) => (this._deadband = result)
+    )
   }
 }
 Tag.table = `tag`

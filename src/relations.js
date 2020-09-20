@@ -315,10 +315,12 @@ Mqtt.prototype.publish = async function () {
         timestamp: record.timestamp,
       }
     })
-    await this.client.publishDeviceData(`${source.device.name}`, {
-      timestamp: getTime(new Date()),
-      metrics: [...payload],
-    })
+    if (payload.length > 0) {
+      await this.client.publishDeviceData(`${source.device.name}`, {
+        timestamp: getTime(new Date()),
+        metrics: [...payload],
+      })
+    }
     source.rtHistory = []
   }
 }
@@ -412,7 +414,7 @@ Object.defineProperties(Mqtt.prototype, {
 MqttSource.prototype.log = async function (scanClassId) {
   const scanClass = ScanClass.findById(scanClassId)
   const tags = Tag.instances.filter((tag) => {
-    if (tag.source) {
+    if (tag.source && !tag.prevChangeWithinDeadband) {
       return (
         tag.scanClass.id === scanClass.id &&
         this.device.id === tag.source.device.id
@@ -453,7 +455,9 @@ MqttSource.prototype.log = async function (scanClassId) {
               serviceUpdate: this.mqtt.service,
             })
           }
-          for (const tag of tags) {
+          for (const tag of tags.filter(
+            (tag) => !tag.prevChangeWithinDeadband
+          )) {
             sql = `INSERT INTO mqttHistoryTag (mqttHistory, tag, value)`
             sql = `${sql} VALUES (?,?,?);`
             params = [result.lastID, tag.id, tag.value]

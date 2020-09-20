@@ -171,6 +171,7 @@ test('create tag with the proper headers and fields returns valid results', asyn
     scanClassId: scanClass.id,
     max: 200,
     min: 0,
+    deadband: 0,
     units: 'thingies',
   }
   const { createTag } = await client
