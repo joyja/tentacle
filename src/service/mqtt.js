@@ -166,6 +166,7 @@ class Mqtt extends Model {
             name: source.tag.name,
             value: `${source.tag.value}`,
             type: source.tag.datatype,
+            timestamp: getTime(new Date()),
           }
         }),
       })
