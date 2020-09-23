@@ -1,6 +1,6 @@
 const { Model, executeUpdate } = require(`../database`)
 const sparkplug = require(`tentacle-sparkplug-client`)
-const getTime = require('date-fns/getTime')
+const getUnixTime = require('date-fns/getUnixTime')
 const _ = require('lodash')
 const logger = require('../logger')
 
@@ -154,19 +154,19 @@ class Mqtt extends Model {
   }
   onBirth() {
     const payload = {
-      timestamp: getTime(new Date()),
+      timestamp: getUnixTime(new Date()),
       metrics: [],
     }
     this.client.publishNodeBirth(payload)
     this.sources.forEach((source) => {
       this.client.publishDeviceBirth(`${source.device.name}`, {
-        timestamp: getTime(new Date()),
+        timestamp: getUnixTime(new Date()),
         metrics: source.device.config.sources.map((source) => {
           return {
             name: source.tag.name,
             value: `${source.tag.value}`,
             type: source.tag.datatype,
-            timestamp: getTime(new Date()),
+            timestamp: getUnixTime(new Date()),
           }
         }),
       })
@@ -228,7 +228,7 @@ class Mqtt extends Model {
       logger.info(`Mqtt service ${this.service.name} is disconnecting.`)
       this.stopPublishing()
       const payload = {
-        timestamp: getTime(new Date()),
+        timestamp: getUnixTime(new Date()),
       }
       this.sources.forEach((source) => {
         if (this.testNumber) {
