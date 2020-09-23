@@ -8,7 +8,7 @@ const {
 } = require('./device')
 const { Service, Mqtt, MqttSource, MqttHistory } = require('./service')
 const { User } = require('./auth')
-const getTime = require('date-fns/getTime')
+const getUnixTime = require('date-fns/getUnixTime')
 const tag = require('./resolvers/Query/tag')
 
 // This file creates properties and defines methods requiring relationships with other models.
@@ -317,7 +317,7 @@ Mqtt.prototype.publish = async function () {
     })
     if (payload.length > 0) {
       await this.client.publishDeviceData(`${source.device.name}`, {
-        timestamp: getTime(new Date()),
+        timestamp: getUnixTime(new Date()),
         metrics: [...payload],
       })
     }
@@ -364,7 +364,7 @@ Mqtt.prototype.publishHistory = async function () {
         }
       })
     this.client.publishDeviceData(`${device.name}`, {
-      timestamp: getTime(new Date()),
+      timestamp: getUnixTime(new Date()),
       metrics: [...payload],
     })
   }
@@ -431,7 +431,7 @@ MqttSource.prototype.log = async function (scanClassId) {
         return {
           id: tag.id,
           value: tag.value,
-          timestamp: getTime(new Date()),
+          timestamp: getUnixTime(new Date()),
         }
       }),
     ]
@@ -442,7 +442,7 @@ MqttSource.prototype.log = async function (scanClassId) {
       this.db.serialize(async () => {
         let sql = `INSERT INTO mqttHistory (mqttSource, timestamp)`
         sql = `${sql} VALUES (?,?);`
-        let params = [this.id, getTime(new Date())]
+        let params = [this.id, getUnixTime(new Date())]
         const result = await this.constructor.executeUpdate(sql, params)
         hostsDown = this.mqtt.primaryHosts.filter((host) => !host.readyForData)
         if (hostsDown.length > 0) {
