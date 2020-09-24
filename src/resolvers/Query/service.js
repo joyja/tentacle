@@ -6,5 +6,5 @@ async function services(root, args, context, info) {
 }
 
 module.exports = {
-  services
+  services,
 }

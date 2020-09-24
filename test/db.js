@@ -47,5 +47,5 @@ async function deleteTestDb(db) {
 
 module.exports = {
   createTestDb,
-  deleteTestDb
+  deleteTestDb,
 }

@@ -5,5 +5,5 @@ const service = require('./service')
 module.exports = {
   ...device,
   ...service,
-  ...tag
+  ...tag,
 }

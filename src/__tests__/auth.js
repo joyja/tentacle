@@ -57,9 +57,9 @@ describe(`User:`, () => {
     const context = {
       request: {
         headers: {
-          authorization: `Bearer ${token}`
-        }
-      }
+          authorization: `Bearer ${token}`,
+        },
+      },
     }
     const user = await User.getUserFromContext(context)
     expect(user.username).toBe(`admin`)
@@ -70,9 +70,9 @@ describe(`User:`, () => {
     const context = {
       connection: {
         context: {
-          Authorization: `Bearer ${token}`
-        }
-      }
+          Authorization: `Bearer ${token}`,
+        },
+      },
     }
     const user = await User.getUserFromContext(context)
     expect(user.username).toBe(`admin`)
@@ -106,9 +106,9 @@ describe(`User:`, () => {
     const context = {
       request: {
         headers: {
-          authorization: `Bearer ${token}`
-        }
-      }
+          authorization: `Bearer ${token}`,
+        },
+      },
     }
     expect(
       await User.changePassword(
@@ -123,9 +123,9 @@ describe(`User:`, () => {
     const context = {
       request: {
         headers: {
-          authorization: `Bearer ${token}`
-        }
-      }
+          authorization: `Bearer ${token}`,
+        },
+      },
     }
     const user = await User.changePassword(context, 'password', 'newPassword')
     expect(await bcrypt.compare(`newPassword`, user.password)).toBe(true)
@@ -133,16 +133,16 @@ describe(`User:`, () => {
   test(`getUserFromContext without valid token returns an error.`, async () => {
     const token = jwt.sign(
       {
-        userId: 123
+        userId: 123,
       },
       `aSecret`
     )
     const context = {
       request: {
         headers: {
-          authorization: `Bearer ${token}`
-        }
-      }
+          authorization: `Bearer ${token}`,
+        },
+      },
     }
     expect(
       await User.getUserFromContext(context).catch((e) => e)

@@ -12,5 +12,5 @@ async function scanClasses(root, args, context, info) {
 
 module.exports = {
   tags,
-  scanClasses
+  scanClasses,
 }

@@ -36,7 +36,7 @@ TestModel.table = 'test'
 describe(`executeQuery:`, () => {
   test('Called with undefined params calls db.all with empty object.', () => {
     const mockdb = {
-      all: jest.fn((sql, params, callback) => callback())
+      all: jest.fn((sql, params, callback) => callback()),
     }
     const sql = ``
     const params = undefined
@@ -54,7 +54,7 @@ describe(`executeQuery:`, () => {
 
 test('executeUpdate: Called with undefined params calls db.run with empty object.', () => {
   const mockdb = {
-    run: jest.fn((sql, params, callback) => callback())
+    run: jest.fn((sql, params, callback) => callback()),
   }
   const sql = ``
   const params = undefined
@@ -165,7 +165,7 @@ describe(`Model:`, () => {
     const result = await new Promise((resolve, reject) => {
       return db.run(
         `INSERT INTO test (testField) VALUES ("testValue")`,
-        function(error) {
+        function (error) {
           if (error) {
             reject(error)
           } else {

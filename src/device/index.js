@@ -7,5 +7,5 @@ module.exports = {
   Modbus,
   ModbusSource,
   EthernetIP,
-  EthernetIPSource
+  EthernetIPSource,
 }

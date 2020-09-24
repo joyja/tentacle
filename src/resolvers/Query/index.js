@@ -7,5 +7,5 @@ module.exports = {
   ...user,
   ...tag,
   ...device,
-  ...service
+  ...service,
 }

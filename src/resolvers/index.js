@@ -11,5 +11,5 @@ module.exports = {
   Subscription,
   Source,
   DeviceConfig,
-  MqttPrimaryHost
+  MqttPrimaryHost,
 }

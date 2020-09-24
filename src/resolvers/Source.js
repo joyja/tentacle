@@ -3,5 +3,5 @@ async function __resolveType(parent, args, context, info) {
 }
 
 module.exports = {
-  __resolveType
+  __resolveType,
 }

@@ -6,5 +6,5 @@ async function devices(root, args, context, info) {
 }
 
 module.exports = {
-  devices
+  devices,
 }

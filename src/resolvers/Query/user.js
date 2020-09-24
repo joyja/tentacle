@@ -5,5 +5,5 @@ async function user(root, args, context, info) {
 }
 
 module.exports = {
-  user
+  user,
 }
