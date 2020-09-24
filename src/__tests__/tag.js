@@ -7,7 +7,7 @@ const {
   ScanClass,
   Device,
   Service,
-  MqttSource
+  MqttSource,
 } = require('../relations')
 const fromUnixTime = require('date-fns/fromUnixTime')
 
