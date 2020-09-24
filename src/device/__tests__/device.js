@@ -239,7 +239,11 @@ describe(`Modbus Source: `, () => {
       0,
       scanClass,
       user,
-      `FLOAT`
+      `FLOAT`,
+      100,
+      0,
+      0,
+      'testUnits'
     )
     const modbusSource = await ModbusSource.create(
       modbus.id,

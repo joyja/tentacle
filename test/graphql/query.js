@@ -29,5 +29,5 @@ const services = `
 module.exports = {
   tags,
   devices,
-  services
+  services,
 }

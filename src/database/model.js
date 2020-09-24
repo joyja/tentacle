@@ -42,6 +42,7 @@ const executeUpdate = function (db, sql, params = []) {
 class Model {
   static executeUpdate(sql, params) {
     return executeUpdate(this.db, sql, params).catch((error) => {
+      throw error
       logger.error(error.message, { message: `sql: ${sql}` })
     })
   }

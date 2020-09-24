@@ -5,5 +5,5 @@ const mutation = require('./mutation')
 module.exports = {
   fragment,
   query,
-  mutation
+  mutation,
 }
