@@ -31,7 +31,7 @@ class Modbus extends Model {
   constructor(selector, checkExists = true) {
     super(selector, checkExists)
     this.client = new ModbusRTU()
-    this.client.setID(1)
+    this.client.setID(0)
   }
   async init() {
     const result = await super.init()
