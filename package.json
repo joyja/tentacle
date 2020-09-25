@@ -55,6 +55,6 @@
     "sqlite3": "^4.2.0",
     "task-easy": "^1.0.1",
     "tentacle-sparkplug-client": "0.0.6",
-    "winston": "^3.2.1"
+    "winston": "^3.3.3"
   }
 }
