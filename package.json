@@ -36,7 +36,7 @@
     "prettier": "^2.0.5"
   },
   "dependencies": {
-    "@types/jest": "^25.2.1",
+    "@types/jest": "^26.0.14",
     "apollo-server": "^2.18.1",
     "apollo-server-express": "^2.18.1",
     "bcryptjs": "^2.4.3",
