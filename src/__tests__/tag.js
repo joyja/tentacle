@@ -1,5 +1,5 @@
-jest.mock('graphql-yoga')
-const { PubSub } = require('graphql-yoga')
+jest.mock(`apollo-server-express`)
+const { PubSub } = require(`apollo-server-express`)
 const { createTestDb, deleteTestDb } = require('../../test/db')
 const {
   User,

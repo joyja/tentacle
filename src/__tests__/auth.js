@@ -55,7 +55,7 @@ describe(`User:`, () => {
   test(`getUserFromContext with approriate authorization token returns a valid user.`, async () => {
     const { token } = await User.login(`admin`, `password`)
     const context = {
-      request: {
+      req: {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -104,7 +104,7 @@ describe(`User:`, () => {
   test(`change password with invalid old password throws error.`, async () => {
     const { token } = await User.login(`admin`, `password`)
     const context = {
-      request: {
+      req: {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -121,7 +121,7 @@ describe(`User:`, () => {
   test(`change password with valid old password returns valid user.`, async () => {
     const { token } = await User.login(`admin`, `password`)
     const context = {
-      request: {
+      req: {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -138,7 +138,7 @@ describe(`User:`, () => {
       `aSecret`
     )
     const context = {
-      request: {
+      req: {
         headers: {
           authorization: `Bearer ${token}`,
         },
