@@ -1,8 +1,8 @@
 jest.mock(`tentacle-sparkplug-client`)
 jest.mock(`modbus-serial`)
 jest.mock(`ethernet-ip`)
-jest.mock(`graphql-yoga`)
-const { PubSub } = require(`graphql-yoga`)
+jest.mock(`apollo-server-express`)
+const { PubSub } = require(`apollo-server-express`)
 const ModbusRTU = require(`modbus-serial`)
 const { Controller } = require(`ethernet-ip`)
 const sparkplug = require(`tentacle-sparkplug-client`)
@@ -88,12 +88,12 @@ beforeAll(async () => {
   })
   user = User.instances[0]
   const { token } = await User.login(user.username, `password`)
-  context.request = {
+  context.req = {
     headers: {
       authorization: `Bearer ${token}`,
     },
   }
-  unauthorizedContext.request = {
+  unauthorizedContext.req = {
     headers: {},
   }
   context.scanClasses = ScanClass.instances

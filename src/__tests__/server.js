@@ -8,6 +8,9 @@ const { GraphQLClient, request } = require('graphql-request')
 const { query, mutation } = require('../../test/graphql')
 const { start, stop } = require('../server')
 const _ = require('lodash')
+const { Headers } = require('cross-fetch')
+
+global.Headers = global.Headers || Headers
 
 const host = 'http://localhost:4000'
 const mockSparkplug = {
@@ -75,6 +78,9 @@ test('login with default username/password returns appropriate results.', async 
   expect(Number.isInteger(parseInt(user.id))).toBe(true)
   expect(token).toEqual(expect.any(String))
   client = new GraphQLClient(host, {
+    Headers: {
+      Authorization: `Bearer ${token}`,
+    },
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -124,7 +130,7 @@ test('create scan class without authorization headers returns error', async () =
     }
   }`
   expect(await request(host, mutation).catch((e) => e)).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":{"createScanClass":null},"errors":[{"message":"You are not authorized.","locations":[{"line":2,"column":5}],"path":["createScanClass"]}],"status":200},"request":{"query":"mutation {\\n    createScanClass(name: \\"default\\", description: \\"default scan class\\" ,rate: 1000) {\\n      id\\n      rate\\n    }\\n  }"}}]`
+    `[Error: You are not authorized.: {"response":{"errors":[{"message":"You are not authorized.","locations":[{"line":2,"column":5}],"path":["createScanClass"],"extensions":{"code":"INTERNAL_SERVER_ERROR"}}],"data":{"createScanClass":null},"status":200},"request":{"query":"mutation {\\n    createScanClass(name: \\"default\\", description: \\"default scan class\\" ,rate: 1000) {\\n      id\\n      rate\\n    }\\n  }"}}]`
   )
 })
 test('scan class query returns a list of scan classes', async () => {
@@ -693,7 +699,7 @@ test('delete scanClass without authorization headers returns error', async () =>
       { id: scanClass.id }
     ).catch((e) => e)
   ).toMatchInlineSnapshot(
-    `[Error: You are not authorized.: {"response":{"data":{"deleteScanClass":null},"errors":[{"message":"You are not authorized.","locations":[{"line":2,"column":7}],"path":["deleteScanClass"]}],"status":200},"request":{"query":"mutation DeleteScanClass($id: ID!){\\n      deleteScanClass(id: $id) {\\n        id\\n        rate\\n      }\\n    }","variables":{"id":"1"}}}]`
+    `[Error: You are not authorized.: {"response":{"errors":[{"message":"You are not authorized.","locations":[{"line":2,"column":7}],"path":["deleteScanClass"],"extensions":{"code":"INTERNAL_SERVER_ERROR"}}],"data":{"deleteScanClass":null},"status":200},"request":{"query":"mutation DeleteScanClass($id: ID!){\\n      deleteScanClass(id: $id) {\\n        id\\n        rate\\n      }\\n    }","variables":{"id":"1"}}}]`
   )
 })
 test('delete scanClass with valid credentials deletes a scan class', async () => {

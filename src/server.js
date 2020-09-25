@@ -1,13 +1,18 @@
 #!/usr/bin/env node
 
+const http = require('http')
+const express = require('express')
 const path = require('path')
 const sqlite3 = require('sqlite3').verbose()
-const { GraphQLServer, PubSub } = require('graphql-yoga')
+const { ApolloServer, PubSub, gql } = require('apollo-server-express')
 const resolvers = require('./resolvers')
 const { User, Tag, ScanClass, Device, Service } = require('./relations')
 const { executeQuery } = require('./database/model')
 const fs = require('fs')
 const logger = require('./logger')
+const { SubscriptionServer } = require('subscriptions-transport-ws')
+
+const app = express()
 
 const desiredUserVersion = 7
 
@@ -39,11 +44,17 @@ start = async function (dbFilename) {
     })
   }
   const pubsub = new PubSub()
-  server = new GraphQLServer({
-    typeDefs: path.join(__dirname, '/schema.graphql'),
+  server = new ApolloServer({
+    typeDefs: gql`
+      ${fs.readFileSync(__dirname.concat('/schema.graphql'), 'utf8')}
+    `,
     resolvers,
+    subscriptions: {
+      path: '/',
+    },
     context: (req) => ({
       ...req,
+      request: req,
       pubsub,
       db,
       users: User.instances,
@@ -53,9 +64,13 @@ start = async function (dbFilename) {
       services: Service.instances,
     }),
   })
+  server.applyMiddleware({ app, path: '/' })
+
+  httpServer = http.createServer(app)
+  server.installSubscriptionHandlers(httpServer)
 
   await new Promise(async (resolve, reject) => {
-    httpServer = await server.start(async () => {
+    httpServer.listen(4000, async () => {
       const context = server.context()
       await executeQuery(context.db, 'PRAGMA foreign_keys = ON', [], true)
       const { user_version: userVersion } = await executeQuery(

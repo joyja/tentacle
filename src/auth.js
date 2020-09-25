@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { executeUpdate, Model } = require('./database')
-const uuidv1 = require('uuid/v1')
+const { v1: uuidv1 } = require('uuid')
 
 const APP_SECRET =
   process.env.NODE_ENV === 'development' ? 'development_secret' : uuidv1()
@@ -53,8 +53,8 @@ class User extends Model {
   static async getUserFromContext(context) {
     const secret = APP_SECRET
     const errorMessage = `You are not authorized.`
-    const authorization = context.request
-      ? context.request.headers.authorization
+    const authorization = context.req
+      ? context.req.headers.authorization
       : context.connection.context.Authorization
     if (authorization) {
       const token = authorization.replace('Bearer ', '')
