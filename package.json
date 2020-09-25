@@ -36,8 +36,7 @@
     "prettier": "^2.0.5"
   },
   "dependencies": {
-    "@types/jest": "^25.2.1",
-    "apollo-server": "^2.18.1",
+    "@types/jest": "^26.0.14",
     "apollo-server-express": "^2.18.1",
     "bcryptjs": "^2.4.3",
     "cross-env": "^7.0.2",
@@ -52,7 +51,6 @@
     "modbus-serial": "^8.0.1",
     "mqtt": "^4.2.1",
     "sparkplug-client": "^3.2.2",
-    "sparkplug-client-jar": "^3.2.2",
     "sqlite3": "^4.2.0",
     "subscriptions-transport-ws": "^0.9.18",
     "task-easy": "^1.0.1",
