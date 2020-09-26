@@ -1,0 +1,109 @@
+config:
+  security.nesting: "true"
+  user.user-data: |
+    #cloud-config
+    package_update: true
+    package_upgrade: true
+    apt:
+      sources:
+        docker:
+          source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu $RELEASE stable"
+          keyid: 0EBFCD88
+    packages:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg-agent
+      - software-properties-common
+      - docker-ce
+    write_files:
+      - path: /etc/environment
+        content: |
+          COMPOSE_HTTP_TIMEOUT=300
+          DOCKER_CLIENT_TIMEOUT=300
+      - path: /root/docker-compose.yml
+        permissions: 0644
+        content: |
+          version: '3'
+          services:
+            tentacle:
+              restart: always
+              container_name: 'tentacle'
+              image: 'joyja/tentacle:version-0.0.31'
+              volumes:
+                - tentacleDB:/database
+              networks:
+                - upstream
+            tentacle-ui:
+              restart: always
+              container_name: 'tentacle-ui'
+              image: 'joyja/tentacle-ui:version-0.0.19'
+              networks:
+                - upstream
+            nginx:
+              container_name: 'nginx'
+              image: 'nginx'
+              volumes:
+                - /root/nginx.conf:/etc/nginx/conf.d/default.conf
+              ports:
+                - 80:80
+              networks:
+                - upstream
+              depends_on:
+                - tentacle
+                - tentacle-ui
+          networks:
+            upstream: {}
+          volumes:
+            tentacleDB: {}
+      - path: /root/nginx.conf
+        permissions: 0644
+        content: |
+          server {
+            listen 80;
+            listen [::]:80;
+            server_name _;
+          
+            location /api/ {
+              proxy_http_version 1.1;
+              proxy_cache_bypass $http_upgrade;
+          
+              proxy_set_header Upgrade                $http_upgrade;
+              proxy_set_header Connection             "Upgrade";
+              proxy_set_header Host                   $host;
+              proxy_set_header X-Real-IP              $remote_addr;
+              proxy_set_header X-Forwarded-For        $proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto      $scheme;
+              proxy_set_header X-Forwarded-Host       $host;
+              proxy_set_header X-Forwarded-Port       $server_port;
+          
+              proxy_pass http://tentacle:4000/;
+            }
+          
+            location / {
+              proxy_http_version 1.1;
+              proxy_cache_bypass $http_upgrade;
+          
+              proxy_set_header Upgrade                $http_upgrade;
+              proxy_set_header Connection             "Upgrade";
+              proxy_set_header Host                   $host;
+              proxy_set_header X-Real-IP              $remote_addr;
+              proxy_set_header X-Forwarded-For        $proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto      $scheme;
+              proxy_set_header X-Forwarded-Host       $host;
+              proxy_set_header X-Forwarded-Port       $server_port;
+          
+              proxy_pass http://tentacle-ui:3000/;
+            }
+          }
+    runcmd:
+      - 'sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose'
+      - 'chmod +x /usr/local/bin/docker-compose'
+      - 'usermod -aG docker ubuntu'
+      - 'export DOCKER_CLIENT_TIMEOUT=300'
+      - 'export COMPOSE_HTTP_TIMEOUT=300'
+      - 'systemctl restart docker'
+      - '/usr/local/bin/docker-compose -f /root/docker-compose.yml up -d'
+
+description: Tentacle LXD Profile
+name: tentacle

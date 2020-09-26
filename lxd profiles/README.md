@@ -1,0 +1,3 @@
+# LXD Profiles
+
+The tentacle-docker profile sets up docker and docker compose, then installs the latest stable version of tentacle, tentacle-ui, and an nginx container. Using docker-compose, it creates an upstream network for the containers to communicate with one another and two volumes: one for the nginx configuration and one for the tentacle database. Port 80 is exposed and the tentacle graphql api is at the /api endpoint.
