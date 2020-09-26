@@ -93,10 +93,9 @@ class Modbus extends Model {
       logger.info(`Disconnecting from modbus device ${this.device.name}`)
       const logText = `Closed connection to modbus device ${this.device.name}.`
       if (this.connected) {
-        this.client.close(() => {
-          logger.info(logText)
-          resolve()
-        })
+        this.client.close(() => {})
+        logger.info(logText)
+        resolve()
       } else {
         logger.info(logText)
         resolve()
@@ -300,9 +299,15 @@ class ModbusSource extends Model {
             }
           )
         }).catch(async (error) => {
-          if (error.name === 'TransactionTimedOutError') {
+          if (
+            error.name === 'TransactionTimedOutError' ||
+            error.name === 'PortNotOpenError'
+          ) {
+            logger.info(`Connection Timed Out on device ${this.device.name}`)
             await this.modbus.disconnect()
             await this.modbus.connect()
+          } else {
+            logger.error(error)
           }
         })
       } else if (this.registerType === 'HOLDING_REGISTER') {
@@ -326,6 +331,8 @@ class ModbusSource extends Model {
           if (error.name === 'TransactionTimedOutError') {
             await this.modbus.disconnect()
             await this.modbus.connect()
+          } else {
+            logger.error(error)
           }
         })
       } else if (this.registerType === 'DISCRETE_INPUT') {
@@ -349,6 +356,8 @@ class ModbusSource extends Model {
           if (error.name === 'TransactionTimedOutError') {
             await this.modbus.disconnect()
             await this.modbus.connect()
+          } else {
+            logger.error(error)
           }
         })
       }
