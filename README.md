@@ -9,7 +9,7 @@ A nodejs industrial automation edge gateway with a GraphQL API.
 
 ## Installation
 
-The best way to get a full featured tentacle install (which includes tentacle-ui and exposes everything on port 80) is using LXD and applying the [tentacle-docker](https://github.com/joyja/tentacle/lxd) profile.
+The best way to get a full featured tentacle install (which includes tentacle-ui and exposes everything on port 80) is using LXD and applying the [tentacle-docker](https://github.com/joyja/tentacle/tree/master/lxd%20profiles) profile.
 
 To install tentacle as a global module with all of it's dependencies:
 
