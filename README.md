@@ -9,6 +9,8 @@ A nodejs industrial automation edge gateway with a GraphQL API.
 
 ## Installation
 
+The best way to get a full featured tentacle install (which includes tentacle-ui and exposes everything on port 80) is using LXD and applying the [tentacle-docker](https://github.com/joyja/tentacle/lxd) profile.
+
 To install tentacle as a global module with all of it's dependencies:
 
 ```bash
@@ -76,7 +78,7 @@ The easiest way is to use [PM2](https://github.com/Unitech/pm2).
 
 <!-- START graphql-markdown -->
 
-### Schema Types
+# Schema Types
 
 <details>
   <summary><strong>Table of Contents</strong></summary>
@@ -111,7 +113,7 @@ The easiest way is to use [PM2](https://github.com/Unitech/pm2).
 
 </details>
 
-#### Query
+## Query
 Read only queries
 
 <table>
@@ -182,7 +184,7 @@ Requires a valid authorization token. List of all services configured in this ga
 </tbody>
 </table>
 
-#### Mutation
+## Mutation
 Read/Write queries
 
 <table>
@@ -346,6 +348,11 @@ Requires a valid authorization token. Creates a new tag
 <td></td>
 </tr>
 <tr>
+<td colspan="2" align="right" valign="top">deadband</td>
+<td valign="top"><a href="#float">Float</a></td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" align="right" valign="top">units</td>
 <td valign="top"><a href="#string">String</a></td>
 <td></td>
@@ -396,6 +403,11 @@ Requires a valid authorization token. Updates an existing tag
 </tr>
 <tr>
 <td colspan="2" align="right" valign="top">max</td>
+<td valign="top"><a href="#float">Float</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">deadband</td>
 <td valign="top"><a href="#float">Float</a></td>
 <td></td>
 </tr>
@@ -799,7 +811,7 @@ Requires a valid authorization token. Creates an MQTT Sparkplug B service (tied 
 </tr>
 <tr>
 <td colspan="2" align="right" valign="top">devices</td>
-<td valign="top">[<a href="#int">Int</a>!]!</td>
+<td valign="top">[<a href="#id">ID</a>!]!</td>
 <td></td>
 </tr>
 <tr>
@@ -892,7 +904,7 @@ Requires a valid authorization token. Updates an MQTT Sparkplug B service and re
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>addMqttDevice</strong></td>
+<td colspan="2" valign="top"><strong>addMqttSource</strong></td>
 <td valign="top"><a href="#service">Service</a></td>
 <td>
 
@@ -911,7 +923,7 @@ Requires a valid authorization token. Adds a device to an MQTT service. All the 
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>deleteMqttDevice</strong></td>
+<td colspan="2" valign="top"><strong>deleteMqttSource</strong></td>
 <td valign="top"><a href="#service">Service</a></td>
 <td>
 
@@ -984,9 +996,9 @@ Requires a valid authorization token. Deletes an MQTT Service. All devices assig
 </tbody>
 </table>
 
-#### Objects
+## Objects
 
-##### AuthPayload
+### AuthPayload
 
 The data returned after a successful login attempt.
 
@@ -1021,7 +1033,7 @@ User that successfully logged in.
 </tbody>
 </table>
 
-##### Device
+### Device
 
 A Device is a something that can serve data to be used for updating tag values, such as a modbus TCP or Ethernet/IP server.
 
@@ -1088,7 +1100,7 @@ Date/time the tag was created.
 </tbody>
 </table>
 
-##### EthernetIP
+### EthernetIP
 
 Ethernet/IP is a device config allowing for access to data for updating tag values per the ODVA Ethernet/IP specification.
 
@@ -1155,7 +1167,7 @@ Status of the Ethernet/IP device connection. Will be connected if connection is 
 </tbody>
 </table>
 
-##### EthernetIPSource
+### EthernetIPSource
 
 An Ethernet/IP source reads an tag from an Ethernet/IP device and updates a tag value per the tags scan class.
 
@@ -1204,7 +1216,7 @@ The tagname of the tag in the Ethernet/IP device (not to be confused with the na
 </tbody>
 </table>
 
-##### Modbus
+### Modbus
 
 Modbus is a device config allowing for access to data for updating tag values per the Modbus TCP specification.
 
@@ -1316,7 +1328,7 @@ Milliseconds between retries when connection is interrupted.
 </tbody>
 </table>
 
-##### ModbusSource
+### ModbusSource
 
 A Mobus source reads a register from a modbus TCP device and updates a tag value per the tags scan class.
 
@@ -1374,7 +1386,7 @@ The register type per the modbus specification. Can be `HOLDING_REGISTER`, `INPU
 </tbody>
 </table>
 
-##### Mqtt
+### Mqtt
 
 MQTT is a service that allows for publishing tag values to an MQTT broker using the sparkplug B specification, which will server data to other subscribing nodes. One broker per service.
 
@@ -1495,7 +1507,7 @@ Primary host IDs. This is used for store and forward to detect if the consumers 
 </tbody>
 </table>
 
-##### MqttPrimaryHost
+### MqttPrimaryHost
 
 MQTT is a service that allows for publishing tag values to an MQTT broker using the sparkplug B specification, which will server data to other subscribing nodes. One broker per service.
 
@@ -1544,7 +1556,7 @@ Number of historical records stored, awaiting forwarding
 </tbody>
 </table>
 
-##### MqttSource
+### MqttSource
 
 An MQTT source publishes data from all tags with the same device source. The device name will be used as the `Device` field in sparkplug B.
 
@@ -1593,7 +1605,7 @@ Number of historical records stored, awaiting forwarding
 </tbody>
 </table>
 
-##### ScanClass
+### ScanClass
 
 A scan class allows for groups of tags to be updated at the same pre-defined rate.
 
@@ -1660,7 +1672,7 @@ The number of times this scan class has been scanned since the scan class scan s
 </tbody>
 </table>
 
-##### Service
+### Service
 
 A service makes data available to external services by acting as a server or publishing the data as is done with MQTT.
 
@@ -1727,7 +1739,7 @@ Date/time the service was created.
 </tbody>
 </table>
 
-##### Subscription
+### Subscription
 
 <table>
 <thead>
@@ -1744,10 +1756,20 @@ Date/time the service was created.
 <td valign="top"><a href="#tag">Tag</a></td>
 <td></td>
 </tr>
+<tr>
+<td colspan="2" valign="top"><strong>deviceUpdate</strong></td>
+<td valign="top"><a href="#device">Device</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>serviceUpdate</strong></td>
+<td valign="top"><a href="#service">Service</a></td>
+<td></td>
+</tr>
 </tbody>
 </table>
 
-##### Tag
+### Tag
 
 A Tag stores data point values. It's value can be updated from a device source per it's scan class, and it's value can be made available to external services like MQTT.
 
@@ -1857,6 +1879,15 @@ Minimum tag value (meant for use if the tag is numeric). Can be used to generate
 </td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>deadband</strong></td>
+<td valign="top"><a href="#float">Float</a></td>
+<td>
+
+Deadband, used to determine whether to publish a change or write to history. If the change in value is less than the deadband, the update is ignored. If this value is zero, all changes are published and write to history.
+
+</td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>units</strong></td>
 <td valign="top"><a href="#string">String</a></td>
 <td>
@@ -1868,7 +1899,7 @@ Engineering units of the tag. Meant to be used for user displays to give context
 </tbody>
 </table>
 
-##### User
+### User
 
 Credentials used to identify who is logging into the gateway.
 
@@ -1895,9 +1926,9 @@ Credentials used to identify who is logging into the gateway.
 </tbody>
 </table>
 
-#### Enums
+## Enums
 
-##### Datatype
+### Datatype
 
 Tag datatypes allowing for clients to properly parse tag values.
 
@@ -1926,7 +1957,7 @@ Tag datatypes allowing for clients to properly parse tag values.
 </tbody>
 </table>
 
-##### ModbusRegisterType
+### ModbusRegisterType
 
 Modbus register types for use with modbus sources per the modbus specification.
 
@@ -1955,29 +1986,29 @@ Modbus register types for use with modbus sources per the modbus specification.
 </tbody>
 </table>
 
-#### Scalars
+## Scalars
 
-##### Boolean
+### Boolean
 
 The `Boolean` scalar type represents `true` or `false`.
 
-##### DateTime
+### DateTime
 
 Used to deliver timestamp values.
 
-##### Float
+### Float
 
 The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).
 
-##### ID
+### ID
 
 The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `"4"`) or integer (such as `4`) input value will be accepted as an ID.
 
-##### Int
+### Int
 
 The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.
 
-##### String
+### String
 
 The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.
 
