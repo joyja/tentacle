@@ -87,13 +87,13 @@ class Modbus extends Model {
     }
   }
   async disconnect() {
-    await new Promise(async (resolve) => {
+    await new Promise((resolve) => {
       this.retryCount = 0
       this.retryInterval = clearInterval(this.retryInterval)
       logger.info(`Disconnecting from modbus device ${this.device.name}`)
       const logText = `Closed connection to modbus device ${this.device.name}.`
       if (this.connected) {
-        await this.client.close()
+        this.client.close(() => {})
         logger.info(logText)
         resolve()
       } else {

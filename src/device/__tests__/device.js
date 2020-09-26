@@ -159,7 +159,7 @@ describe(`Modbus: `, () => {
     modbus.client.connectTCP.mockReset()
   })
   test(`Disconnect calls client close throws an error on reject.`, async () => {
-    modbus.client.close.mockImplementation(() => {
+    modbus.client.close.mockImplementation((callback) => {
       throw new Error(`Close connection failed.`)
     })
     expect(await modbus.disconnect().catch((e) => e)).toMatchInlineSnapshot(
