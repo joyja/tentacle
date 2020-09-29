@@ -1,4 +1,5 @@
 const { Model } = require('../database')
+const { Opcua } = require('./opcua')
 const { Modbus, ModbusSource } = require('./modbus')
 const { EthernetIP, EthernetIPSource } = require('./ethernetip')
 const getUnixTime = require('date-fns/getUnixTime')
@@ -6,6 +7,7 @@ const fromUnixTime = require('date-fns/fromUnixTime')
 
 class Device extends Model {
   static async initialize(db, pubsub) {
+    await Opcua.initialize(db, pubsub)
     await Modbus.initialize(db, pubsub)
     await EthernetIP.initialize(db, pubsub)
     return super.initialize(db, pubsub, Device)

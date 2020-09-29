@@ -50,6 +50,7 @@
     "make-promises-safe": "^5.1.0",
     "modbus-serial": "^8.0.1",
     "mqtt": "^4.2.1",
+    "node-opcua": "^2.18.0",
     "sparkplug-client": "^3.2.2",
     "sqlite3": "^4.2.0",
     "subscriptions-transport-ws": "^0.9.18",

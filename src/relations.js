@@ -1,6 +1,7 @@
 const { Tag, ScanClass } = require('./tag')
 const {
   Device,
+  Opcua,
   Modbus,
   ModbusSource,
   EthernetIP,
@@ -127,6 +128,33 @@ Object.defineProperties(Device.prototype, {
       return MqttSource.instances.find((instance) => {
         return instance._device === this._id
       })
+    },
+  },
+})
+
+// Opcua
+Opcua.create = async function (
+  name,
+  description,
+  host,
+  port,
+  retryRate,
+  createdBy
+) {
+  const device = await Device.create(name, description, `opcua`, createdBy)
+  const fields = {
+    host,
+    port,
+    retryRate,
+  }
+  return this._createModel(fields)
+}
+
+Object.defineProperties(Opcua.prototype, {
+  device: {
+    get() {
+      this.checkInit()
+      return Device.findById(this._device)
     },
   },
 })
@@ -487,6 +515,7 @@ Object.defineProperties(MqttSource.prototype, {
 
 module.exports = {
   Device,
+  Opcua,
   Modbus,
   ModbusSource,
   EthernetIP,

@@ -20,7 +20,7 @@ enum Datatype {
 """Sources store the configuration to be used for tag value updates from devices."""
 union Source = ModbusSource | EthernetIPSource
 """DeviceConfig stores the protocol specific configuration and status for each device."""
-union DeviceConfig = Modbus | EthernetIP
+union DeviceConfig = Modbus | EthernetIP | Opcua
 
 """Credentials used to identify who is logging into the gateway."""
 type User {
@@ -41,6 +41,21 @@ type Device {
   createdBy: User
   """Date/time the tag was created."""
   createdOn: DateTime!
+}
+
+"""Opcua is a device config allowing for access to data for updating tag values per the Opcua specification."""
+type Opcua {
+  id: ID!
+  """Device for this Opcua configuration."""
+  device: Device!
+  """Host or IP address of the modbus device."""
+  host: String!
+  """Port of the modbus device."""
+  port: String!
+  """Status of the modbus device connection. Will be connected if connection is successful or an error message if connection failed."""
+  status: String
+  """Milliseconds between retries when connection is interrupted."""
+  retryRate: Int!
 }
 
 """Modbus is a device config allowing for access to data for updating tag values per the Modbus TCP specification."""
@@ -256,7 +271,27 @@ type Mutation {
   updateTag(id: ID!, name: String, description: String, datatype: Datatype, value: String, scanClassId: ID, min: Float, max: Float, deadband: Float, units: String): Tag
   """Requires a valid authorization token. Deletes a tag. Will delete any source assigned to this tag, and tag will no longer be scanned."""
   deleteTag(id: ID!): Tag
-  """Requires a valid authorization token. Creates a modbus device, and automatically starts a connection."""
+  """Requires a valid authorization token. Creates a opcua device, and automatically starts a connection."""
+  createOpcua(
+    name: String!, 
+    description: String!, 
+    host: String!, 
+    port: Int!,
+    retryRate: Int!
+  ): Device
+  """Requires a valid authorization token. Updates an existing opcua device and refreshes the connection."""
+  updateOpcua(
+    id: ID!,
+    name: String, 
+    description: String, 
+    host: String, 
+    port: Int,
+    retryRate: Int
+  ): Device
+  """Requires a valid authorization token. Deletes a opcua device. All sources assigned to this device are deleted and tags using
+  this device as a source will have their sources set to null, making their values static."""
+  deleteOpcua(id: ID!): Device
+  """Requires a valid authorization token. Creates a opcua device, and automatically starts a connection."""
   createModbus(
     name: String!, 
     description: String!, 
