@@ -104,7 +104,12 @@ Object.defineProperties(Device.prototype, {
   config: {
     get() {
       this.checkInit()
-      if (this.type === `modbus`) {
+      if (this.type === `opcua`) {
+        console.log(Opcua.instances.map((instance) => instance._device))
+        return Opcua.instances.find((instance) => {
+          return instance._device === this._id
+        })
+      } else if (this.type === `modbus`) {
         return Modbus.instances.find((instance) => {
           return instance._device === this._id
         })
@@ -143,6 +148,7 @@ Opcua.create = async function (
 ) {
   const device = await Device.create(name, description, `opcua`, createdBy)
   const fields = {
+    device: device.id,
     host,
     port,
     retryRate,

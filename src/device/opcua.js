@@ -3,8 +3,36 @@ const {
   OPCUAClient,
   MessageSecurityMode,
   SecurityPolicy,
+  makeBrowsePath,
 } = require('node-opcua')
 const logger = require('../logger')
+
+const browse = async function (
+  session,
+  folder = 'RootFolder',
+  node = '',
+  depth = 0
+) {
+  console.log(folder)
+  console.log(node)
+  let browseResult = undefined
+  if (folder === 'RootFolder') {
+    browseResult = await session.browse(folder)
+  } else {
+    const browsePath = makeBrowsePath(folder, node)
+    console.log(session.translateBrowsePath)
+    const result = await session.translateBrowsePath(browsePath)
+    const productNameNodeId = result.targets[0].targetId
+    browseResult = await session.browse(productNameNodeId)
+  }
+  console.log(`references of ${folder} :`)
+  for (const reference of browseResult.references) {
+    console.log('   '.repeat(depth) + '-> ', reference.browseName.toString())
+    if (depth < 3) {
+      await browse(session, folder, browseResult.reference, depth + 1)
+    }
+  }
+}
 
 class Opcua extends Model {
   static async initialize(db, pubsub) {
@@ -34,7 +62,6 @@ class Opcua extends Model {
   }
   async init() {
     const result = await super.init()
-
     this._device = result.device
     this._host = result.host
     this._port = result.port
@@ -64,7 +91,6 @@ class Opcua extends Model {
             }, this.retryRate)
           }
         })
-      this.session = await this.client.createSession()
       if (!this.error) {
         this.retryCount = 0
         this.retryInterval = clearInterval(this.retryInterval)
@@ -72,6 +98,8 @@ class Opcua extends Model {
           `Connected to opcua device ${this.device.name}, host: ${this.host}, port: ${this.port}.`
         )
         this.connected = true
+        this.session = await this.client.createSession()
+        await this.browse()
       } else {
         this.connected = false
         logger.info(
@@ -137,13 +165,9 @@ class Opcua extends Model {
       return `connecting`
     }
   }
-  browse() {
+  async browse() {
     if (this.connected) {
-      this.session.brows('RootFolder')
-      console.log('references of RootFolder :')
-      for (const reference of browseResult.references) {
-        console.log('   -> ', reference.browseName.toString())
-      }
+      await browse(this.session)
     } else {
       logger.error(`Cannot browse until the service is connected.`)
     }
