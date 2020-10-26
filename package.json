@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@types/jest": "^26.0.14",
-    "apollo-server-express": "^2.18.1",
+    "apollo-server-express": "^2.18.2",
     "bcryptjs": "^2.4.3",
     "cross-env": "^7.0.2",
     "date-fns": "^2.16.1",
