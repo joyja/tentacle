@@ -1,9 +1,11 @@
 jest.mock(`modbus-serial`)
 jest.mock(`ethernet-ip`)
 jest.mock(`apollo-server-express`)
+jest.mock(`node-opcua`)
 const { PubSub } = require(`apollo-server-express`)
 const ModbusRTU = require(`modbus-serial`)
 const { Controller } = require(`ethernet-ip`)
+const { OPCUAClient } = require(`node-opcua`)
 
 const { createTestDb, deleteTestDb } = require('../../../test/db')
 const {
@@ -15,6 +17,8 @@ const {
   ModbusSource,
   EthernetIP,
   EthernetIPSource,
+  Opcua,
+  OpcuaSource,
 } = require('../../relations')
 const fromUnixTime = require('date-fns/fromUnixTime')
 
@@ -26,6 +30,12 @@ beforeAll(async () => {
   await Tag.initialize(db, pubsub)
   ModbusRTU.prototype.getTimeout.mockImplementation(() => {
     return 1000
+  })
+  OPCUAClient.prototype.create = jest.fn()
+  OPCUAClient.prototype.create.mockImplementation(() => {
+    return {
+      connect: jest.fn(),
+    }
   })
 })
 
@@ -44,6 +54,8 @@ test(`Initializing Device, also initializes Modbus, ModbusSource and EthernetIP.
   expect(ModbusSource.initialized).toBe(true)
   expect(EthernetIP.initialized).toBe(true)
   expect(EthernetIPSource.initialized).toBe(true)
+  expect(Opcua.initialized).toBe(true)
+  expect(OpcuaSource.initialized).toBe(true)
 })
 let device = null
 test(`Modbus: create creates a device with modbus config`, async () => {
@@ -425,5 +437,48 @@ describe(`EthernetIPSource: `, () => {
     const tagname = `ADifferentTag`
     await ethernetipSource.setTagname(tagname)
     expect(ethernetipSource.tagname).toBe(tagname)
+  })
+})
+
+// ==============================
+//          OPCUA
+// ==============================
+
+let opcua = undefined
+describe('OPCUA: ', () => {
+  test(`create creates a device with opcua config`, async () => {
+    await User.initialize(db, pubsub)
+    user = User.instances[0]
+    const name = `testDevice`
+    const description = `Test Device`
+    const host = `localhost`
+    const port = 1234
+    const retryRate = 10000
+    const createdBy = user.id
+    opcua = await Opcua.create(
+      name,
+      description,
+      host,
+      port,
+      retryRate,
+      createdBy
+    )
+    device = opcua.device
+    expect(opcua.device).toBe(Device.instances[2])
+    expect(opcua.device.name).toBe(name)
+    expect(opcua.device.description).toBe(description)
+    expect(opcua.host).toBe(host)
+    expect(opcua.port).toBe(port)
+    expect(opcua.retryRate).toBe(retryRate)
+    expect(opcua.device.createdBy.id).toBe(user.id)
+    expect(opcua.client.constructor.name).toBe('OPCUAClientImpl')
+  })
+  test(`Connect calls Controller.connect and rejected results in a false connected status.`, async () => {
+    opcua.client.connect.mockRejectedValueOnce(new Error(`Connection Error.`))
+    await opcua.connect()
+    expect(opcua.error).toMatchInlineSnapshot(`"Connection Error."`)
+    expect(opcua.client.connect).toBeCalledTimes(1)
+    expect(opcua.connected).toBe(false)
+    opcua.client.connect.mockReset()
   })
 })
