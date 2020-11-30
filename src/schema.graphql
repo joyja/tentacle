@@ -18,7 +18,7 @@ enum Datatype {
 }
 
 """Sources store the configuration to be used for tag value updates from devices."""
-union Source = ModbusSource | EthernetIPSource
+union Source = ModbusSource | EthernetIPSource | OpcuaSource
 """DeviceConfig stores the protocol specific configuration and status for each device."""
 union DeviceConfig = Modbus | EthernetIP | Opcua
 
@@ -43,6 +43,17 @@ type Device {
   createdOn: DateTime!
 }
 
+type OpcuaNode {
+  name: String!
+  id: String!
+  datatype: String
+  value: String
+  organizes: [OpcuaNode!]
+  hasProperty: [OpcuaNode!]
+  hasComponent: [OpcuaNode!]
+  children: [OpcuaNode!]!
+}
+
 """Opcua is a device config allowing for access to data for updating tag values per the Opcua specification."""
 type Opcua {
   id: ID!
@@ -56,6 +67,23 @@ type Opcua {
   status: String
   """Milliseconds between retries when connection is interrupted."""
   retryRate: Int!
+  """Nodes"""
+  nodes: OpcuaNode
+  """Non-heirarchical list"""
+  flatNodes: [OpcuaNode!]!
+  """List of sources (tag/nodeId) pairs that are using this opcua device."""
+  sources: [OpcuaSource!]!
+}
+
+"""An OPC UA source reads an tag from an OPC UA device and updates a tag value per the tags scan class."""
+type OpcuaSource {
+  id: ID!
+  """The OPC UA device this source uses to get the register values."""
+  opcua: Opcua!
+  """The tag to update."""
+  tag: Tag!
+  """The node id of the tag in the OPC UA device"""
+  nodeId: String!
 }
 
 """Modbus is a device config allowing for access to data for updating tag values per the Modbus TCP specification."""
@@ -291,7 +319,13 @@ type Mutation {
   """Requires a valid authorization token. Deletes a opcua device. All sources assigned to this device are deleted and tags using
   this device as a source will have their sources set to null, making their values static."""
   deleteOpcua(id: ID!): Device
-  """Requires a valid authorization token. Creates a opcua device, and automatically starts a connection."""
+  """Requires a valid authorization token. Creates a OPC UA source. The tag value will then be updated to the value at the source register per the scan class"""
+  createOpcuaSource(deviceId: ID!, tagId: ID!, nodeId: String!): OpcuaSource
+  """Requires a valid authorization token. Updates a OPC UA source register. The tag value will then update per the new register at the rate of the scan class."""
+  updateOpcuaSource(tagId: ID!, nodeId: String!): OpcuaSource
+  """Requires a valid authorization token. Deletes a OPC UA source. The tag value will then be static."""
+  deleteOpcuaSource(tagId: ID!): OpcuaSource
+  """Requires a valid authorization token. Creates an Modbus TCP/IP device, and automatically starts a connection."""
   createModbus(
     name: String!, 
     description: String!, 

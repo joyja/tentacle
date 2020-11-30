@@ -2,6 +2,7 @@ const { Tag, ScanClass } = require('./tag')
 const {
   Device,
   Opcua,
+  OpcuaSource,
   Modbus,
   ModbusSource,
   EthernetIP,
@@ -85,6 +86,11 @@ Object.defineProperties(Tag.prototype, {
           return instance.tag.id === this.id
         })
       }
+      if (!source) {
+        source = OpcuaSource.instances.find((instance) => {
+          return instance.tag.id === this.id
+        })
+      }
       return source
     },
   },
@@ -105,7 +111,6 @@ Object.defineProperties(Device.prototype, {
     get() {
       this.checkInit()
       if (this.type === `opcua`) {
-        console.log(Opcua.instances.map((instance) => instance._device))
         return Opcua.instances.find((instance) => {
           return instance._device === this._id
         })
@@ -161,6 +166,35 @@ Object.defineProperties(Opcua.prototype, {
     get() {
       this.checkInit()
       return Device.findById(this._device)
+    },
+  },
+  sources: {
+    get() {
+      this.checkInit()
+      return OpcuaSource.instances.filter((instance) => {
+        return instance.opcua.id === this.id
+      })
+    },
+  },
+})
+
+Object.defineProperties(OpcuaSource.prototype, {
+  opcua: {
+    get() {
+      this.checkInit()
+      return Opcua.findById(this._opcua)
+    },
+  },
+  device: {
+    get() {
+      this.checkInit()
+      return this.opcua.device
+    },
+  },
+  tag: {
+    get() {
+      this.checkInit()
+      return Tag.findById(this._tag)
     },
   },
 })
@@ -522,6 +556,7 @@ Object.defineProperties(MqttSource.prototype, {
 module.exports = {
   Device,
   Opcua,
+  OpcuaSource,
   Modbus,
   ModbusSource,
   EthernetIP,

@@ -1,5 +1,5 @@
 const { Model } = require('../database')
-const { Opcua } = require('./opcua')
+const { Opcua, OpcuaSource } = require('./opcua')
 const { Modbus, ModbusSource } = require('./modbus')
 const { EthernetIP, EthernetIPSource } = require('./ethernetip')
 const getUnixTime = require('date-fns/getUnixTime')
@@ -31,6 +31,7 @@ class Device extends Model {
     }
     const deleted = await super.delete(selector)
     await Opcua.getAll()
+    await OpcuaSource.getAll()
     await ModbusSource.getAll()
     await Modbus.getAll()
     await EthernetIPSource.getAll()

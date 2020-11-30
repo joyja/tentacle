@@ -56,6 +56,7 @@
     "subscriptions-transport-ws": "^0.9.18",
     "task-easy": "^1.0.1",
     "tentacle-sparkplug-client": "0.0.6",
+    "treeify": "^1.1.0",
     "uuid": "^8.3.0",
     "winston": "^3.3.3"
   }

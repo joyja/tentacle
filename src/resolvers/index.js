@@ -4,6 +4,8 @@ const Subscription = require('./Subscription')
 const Source = require('./Source')
 const DeviceConfig = require('./DeviceConfig')
 const MqttPrimaryHost = require('./MqttPrimaryHost')
+const Opcua = require('./Opcua')
+const OpcuaNode = require('./OpcuaNode')
 
 module.exports = {
   Query,
@@ -12,4 +14,6 @@ module.exports = {
   Source,
   DeviceConfig,
   MqttPrimaryHost,
+  Opcua,
+  OpcuaNode,
 }
