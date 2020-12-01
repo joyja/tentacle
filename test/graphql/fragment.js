@@ -89,6 +89,39 @@ const device = `
         status
       }
     }
+    config {
+      ... on Opcua {
+        id
+        host
+        port
+        retryRate
+        sources {
+          tag {
+            ...ScalarTag
+          }
+          nodeId
+        }
+        status
+        nodes {
+          id
+          name
+          datatype
+          value
+          children {
+            id
+            name
+            datatype
+            value
+          }
+        }
+        flatNodes {
+          id
+          name
+          datatype
+          value
+        }
+      }
+    }
   }
   ${scalarTag}
 `

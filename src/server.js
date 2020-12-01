@@ -10,7 +10,6 @@ const { User, Tag, ScanClass, Device, Service } = require('./relations')
 const { executeQuery } = require('./database/model')
 const fs = require('fs')
 const logger = require('./logger')
-const { SubscriptionServer } = require('subscriptions-transport-ws')
 
 const app = express()
 

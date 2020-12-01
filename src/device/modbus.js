@@ -360,6 +360,31 @@ class ModbusSource extends Model {
             logger.error(error)
           }
         })
+      } else if (this.registerType === 'COIL') {
+        return new Promise((resolve, reject) => {
+          this.modbus.client.readCoils(
+            this.register,
+            1,
+            async (error, data) => {
+              if (error) {
+                reject(error)
+                return
+              } else {
+                if (data) {
+                  await this.tag.setValue(data.data[0], false)
+                }
+                resolve()
+              }
+            }
+          )
+        }).catch(async (error) => {
+          if (error.name === 'TransactionTimedOutError') {
+            await this.modbus.disconnect()
+            await this.modbus.connect()
+          } else {
+            logger.error(error)
+          }
+        })
       }
     }
   }

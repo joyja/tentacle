@@ -2,6 +2,34 @@ jest.mock(`tentacle-sparkplug-client`)
 jest.mock(`modbus-serial`)
 jest.mock(`ethernet-ip`)
 jest.mock(`apollo-server-express`)
+jest.mock(`node-opcua`, () => {
+  return {
+    OPCUAClient: {
+      create: () => {
+        return {
+          connect: jest.fn(async () => {}),
+          disconnect: jest.fn(),
+          on: jest.fn(),
+          createSession: jest.fn(() => {
+            return {
+              readVariableValue: jest.fn(),
+              writeSingleNode: jest.fn(),
+              close: jest.fn(),
+            }
+          }),
+        }
+      },
+    },
+    MessageSecurityMode: { None: null },
+    SecurityPolicy: { None: null },
+    DataType: {
+      Boolean: 1,
+      Float: 2,
+      Int32: 3,
+      String: 4,
+    },
+  }
+})
 const { PubSub } = require(`apollo-server-express`)
 const ModbusRTU = require(`modbus-serial`)
 const { Controller } = require(`ethernet-ip`)
@@ -17,6 +45,8 @@ const {
   ModbusSource,
   EthernetIP,
   EthernetIPSource,
+  Opcua,
+  OpcuaSource,
   Service,
   Mqtt,
   MqttSource,
@@ -133,6 +163,16 @@ beforeAll(async () => {
     `Test EIP Device 1`,
     'localhost',
     3,
+    user.id
+  ).catch((error) => {
+    throw error
+  })
+  await Opcua.create(
+    'testopcuaDevice1',
+    'Test OPCUA Device 1',
+    'localhost',
+    4840,
+    30000,
     user.id
   ).catch((error) => {
     throw error
@@ -380,6 +420,7 @@ describe(`Mutations: `, () => {
       name: `TagWithNewName`,
       description: `Test Tag with different description`,
       value: 321,
+      deadband: 1,
       scanClassId: ScanClass.instances[1].id,
     }
     updatedTag = await resolvers.Mutation.updateTag(
@@ -995,6 +1036,258 @@ describe(`Mutations: `, () => {
         context,
         {}
       ).catch((error) => error)
+    ).toMatchInlineSnapshot(`[Error: Tag with id 1234567 does not exist.]`)
+  })
+  test(`createOpcua creates an OPCUA device with the selected settings.`, async () => {
+    prevCount = Opcua.instances.length
+    const args = {
+      name: `resolverTestOpcua`,
+      description: `Resolver Test Opcua`,
+      host: 'localhost',
+      port: 4840,
+      retryRate: 30000,
+    }
+    device = await resolvers.Mutation.createOpcua({}, args, context, {}).catch(
+      (error) => {
+        throw error
+      }
+    )
+    expect(Opcua.instances.length).toBe(prevCount + 1)
+    expect(device.name).toBe(args.name)
+    expect(device.description).toBe(args.description)
+    expect(device.config.host).toBe(args.host)
+    expect(device.config.port).toBe(args.port)
+  })
+  test(`updateOpcua updates a ethernetip device with the selected settings.`, async () => {
+    prevCount = Opcua.instances.length
+    const args = {
+      id: device.id,
+      name: `resolverTestOpcuaUpdated`,
+      description: `Resolver Test Opcua Updated`,
+      host: '192.168.1.123',
+      port: 3,
+      retryRate: 15000,
+    }
+    const updatedDevice = await resolvers.Mutation.updateOpcua(
+      {},
+      args,
+      context,
+      {}
+    ).catch((error) => {
+      throw error
+    })
+    expect(Opcua.instances.length).toBe(prevCount)
+    expect(updatedDevice.id).toBe(args.id)
+    expect(updatedDevice.name).toBe(args.name)
+    expect(updatedDevice.description).toBe(args.description)
+    expect(updatedDevice.config.host).toBe(args.host)
+    expect(updatedDevice.config.port).toBe(args.port)
+    expect(updatedDevice.config.retryRate).toBe(args.retryRate)
+  })
+  test(`updateOpcua without arguments is valid.`, async () => {
+    prevCount = Opcua.instances.length
+    const args = {
+      id: device.id,
+    }
+    const updatedDevice = await resolvers.Mutation.updateOpcua(
+      {},
+      args,
+      context,
+      {}
+    ).catch((error) => {
+      throw error
+    })
+    expect(Opcua.instances.length).toBe(prevCount)
+    expect(updatedDevice.id).toBe(args.id)
+  })
+  test(`updateOpcua with invalid id throws error.`, async () => {
+    prevCount = Opcua.instances.length
+    const args = {
+      id: 1234567,
+    }
+    expect(
+      await resolvers.Mutation.updateOpcua({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(`[Error: Device with id 1234567 does not exist.]`)
+  })
+  test(`deleteOpcua deletes a ethernetip device with the selected settings.`, async () => {
+    prevCount = Opcua.instances.length
+    const args = {
+      id: device.id,
+    }
+    const deletedDevice = await resolvers.Mutation.deleteOpcua(
+      {},
+      args,
+      context,
+      {}
+    ).catch((error) => {
+      throw error
+    })
+    expect(Opcua.instances.length).toBe(prevCount - 1)
+    expect(deletedDevice.id).toBe(args.id)
+  })
+  test(`deleteOpcua with invalid id throws error.`, async () => {
+    prevCount = Opcua.instances.length
+    const args = {
+      id: 1234567,
+    }
+    expect(
+      await resolvers.Mutation.deleteOpcua({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(`[Error: Device with id 1234567 does not exist.]`)
+  })
+  let opcuaSource = undefined
+  test(`createOpcuaSource with invalid tag ID throws error.`, async () => {
+    prevCount = OpcuaSource.instances.length
+    const args = {
+      deviceId: Opcua.instances[0].device.id,
+      tagId: 1234567,
+      tagname: `Tagname`,
+    }
+    expect(
+      await resolvers.Mutation.createOpcuaSource({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(`[Error: There is no tag with id 1234567]`)
+    expect(OpcuaSource.instances.length).toBe(prevCount)
+  })
+  test(`createOpcuaSource with invalid device ID throws error.`, async () => {
+    prevCount = OpcuaSource.instances.length
+    const args = {
+      deviceId: 1234567,
+      tagId: Tag.instances[0].id,
+      tagname: `Tagname`,
+    }
+    expect(
+      await resolvers.Mutation.createOpcuaSource({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(`[Error: There is no device with id 1234567]`)
+    expect(OpcuaSource.instances.length).toBe(prevCount)
+  })
+  test(`createOpcuaSource with invalid device ID throws error.`, async () => {
+    prevCount = OpcuaSource.instances.length
+    const nonOpcuaDevice = await Device.create(
+      'aDevice',
+      'aDescription',
+      'notOpcua',
+      User.instances[0].id
+    )
+    const args = {
+      deviceId: nonOpcuaDevice.id,
+      tagId: Tag.instances[0].id,
+      tagname: `Tagname`,
+    }
+    expect(
+      await resolvers.Mutation.createOpcuaSource({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(
+      `[Error: The device named aDevice is not an opcua device.]`
+    )
+    expect(OpcuaSource.instances.length).toBe(prevCount)
+  })
+  test(`createOpcuaSource creates a opcua source with the selected settings.`, async () => {
+    prevCount = OpcuaSource.instances.length
+    const args = {
+      deviceId: Opcua.instances[0].device.id,
+      tagId: Tag.instances[0].id,
+      nodeId: `n1,s`,
+    }
+    opcuaSource = await resolvers.Mutation.createOpcuaSource(
+      {},
+      args,
+      context,
+      {}
+    ).catch((error) => {
+      throw error
+    })
+    expect(OpcuaSource.instances.length).toBe(prevCount + 1)
+    expect(opcuaSource.opcua.device).toBe(Opcua.instances[0].device)
+    expect(opcuaSource.tag).toBe(Tag.instances[0])
+    expect(opcuaSource.nodeId).toBe(args.nodeId)
+  })
+  test(`updateOpcuaSource updates a opcua source with the selected settings.`, async () => {
+    prevCount = OpcuaSource.instances.length
+    const args = {
+      tagId: Tag.instances[0].id,
+      nodeId: `aDifferentNodeId`,
+    }
+    const updatedOpcuaSource = await resolvers.Mutation.updateOpcuaSource(
+      {},
+      args,
+      context,
+      {}
+    ).catch((error) => {
+      throw error
+    })
+    expect(OpcuaSource.instances.length).toBe(prevCount)
+    expect(updatedOpcuaSource.opcua.device).toBe(Opcua.instances[0].device)
+    expect(updatedOpcuaSource.tag).toBe(Tag.instances[0])
+    expect(updatedOpcuaSource.nodeId).toBe(args.nodeId)
+  })
+  test(`updateOpcuaSource update without args still works.`, async () => {
+    prevCount = OpcuaSource.instances.length
+    const args = {
+      tagId: Tag.instances[0].id,
+    }
+    const updatedOpcuaSource = await resolvers.Mutation.updateOpcuaSource(
+      {},
+      args,
+      context,
+      {}
+    ).catch((error) => {
+      throw error
+    })
+    expect(OpcuaSource.instances.length).toBe(prevCount)
+    expect(updatedOpcuaSource.opcua.device).toBe(Opcua.instances[0].device)
+  })
+  test(`updateOpcuaSource with invalid id throws error.`, async () => {
+    const args = {
+      id: 1234567,
+    }
+    expect(
+      await resolvers.Mutation.updateOpcuaSource({}, args, context, {}).catch(
+        (error) => error
+      )
+    ).toMatchInlineSnapshot(`[Error: Tag with id 1234567 does not exist.]`)
+  })
+  test(`Source resolver returns it's parents type`, async () => {
+    expect(await resolvers.Source.__resolveType(opcuaSource)).toBe(
+      `OpcuaSource`
+    )
+  })
+  test(`DeviceConfig resolver type returns the type of the parent`, async () => {
+    expect(await resolvers.DeviceConfig.__resolveType(Opcua.instances[0])).toBe(
+      `Opcua`
+    )
+  })
+  test(`deleteOpcua deletes a modbus device with the selected settings.`, async () => {
+    prevCount = Opcua.instances.length
+    const args = {
+      tagId: Tag.instances[0].id,
+    }
+    const deletedOpcuaSource = await resolvers.Mutation.deleteOpcuaSource(
+      {},
+      args,
+      context,
+      {}
+    ).catch((error) => {
+      throw error
+    })
+    expect(OpcuaSource.instances.length).toBe(prevCount - 1)
+    expect(deletedOpcuaSource.id).toBe(args.tagId)
+  })
+  test(`deleteOpcuaSource with invalid id throws error.`, async () => {
+    const args = {
+      id: 1234567,
+    }
+    expect(
+      await resolvers.Mutation.deleteOpcuaSource({}, args, context, {}).catch(
+        (error) => error
+      )
     ).toMatchInlineSnapshot(`[Error: Tag with id 1234567 does not exist.]`)
   })
   let service = undefined

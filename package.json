@@ -9,6 +9,7 @@
     "test": "jest --watchAll",
     "test:ci": "jest",
     "test:coverage": "jest --coverage",
+    "test:detect-open-handles": "jest --detectOpenHandles",
     "fix": "eslint --ext .js,.vue --fix --ignore-path .gitignore .",
     "coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls"
   },
@@ -29,7 +30,7 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "graphql-request": "^3.1.0",
-    "jest": "^26.0.1",
+    "jest": "^26.6.3",
     "jest-watch-select-projects": "^2.0.0",
     "jest-watch-typeahead": "^0.6.0",
     "nodemon": "^2.0.3",
@@ -37,7 +38,7 @@
   },
   "dependencies": {
     "@types/jest": "^26.0.14",
-    "apollo-server-express": "^2.18.1",
+    "apollo-server-express": "^2.19.0",
     "bcryptjs": "^2.4.3",
     "cross-env": "^7.0.2",
     "date-fns": "^2.16.1",
@@ -50,11 +51,13 @@
     "make-promises-safe": "^5.1.0",
     "modbus-serial": "^8.0.1",
     "mqtt": "^4.2.1",
+    "node-opcua": "^2.18.0",
     "sparkplug-client": "^3.2.2",
     "sqlite3": "^4.2.0",
     "subscriptions-transport-ws": "^0.9.18",
     "task-easy": "^1.0.1",
     "tentacle-sparkplug-client": "0.0.6",
+    "treeify": "^1.1.0",
     "uuid": "^8.3.0",
     "winston": "^3.3.3"
   }

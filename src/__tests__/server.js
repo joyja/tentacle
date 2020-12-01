@@ -10,6 +10,55 @@ const { start, stop } = require('../server')
 const _ = require('lodash')
 const { Headers } = require('cross-fetch')
 
+const opcuaNodes = {
+  nodeId: '1',
+  browseName: 'testnode',
+  dataValue: {
+    value: {
+      value: 'something',
+      dataType: 'aDatatype',
+    },
+  },
+  children: [],
+}
+
+jest.mock(`node-opcua`, () => {
+  return {
+    OPCUAClient: {
+      create: () => {
+        return {
+          connect: jest.fn(async () => {}),
+          disconnect: jest.fn(),
+          on: jest.fn(),
+          createSession: jest.fn(() => {
+            return {
+              readVariableValue: jest.fn(),
+              writeSingleNode: jest.fn(),
+              close: jest.fn(),
+            }
+          }),
+        }
+      },
+    },
+    MessageSecurityMode: { None: null },
+    SecurityPolicy: { None: null },
+    DataType: {
+      Boolean: 1,
+      Float: 2,
+      Int32: 3,
+      String: 4,
+    },
+    NodeCrawler: function (session) {
+      return {
+        read: jest.fn((nodeId, callback) => {
+          callback(null, opcuaNodes)
+        }),
+        on: jest.fn(),
+      }
+    },
+  }
+})
+
 global.Headers = global.Headers || Headers
 
 const host = 'http://localhost:4000'
@@ -411,11 +460,104 @@ test('updateEthernetIP without authorization headers returns error', async () =>
   expect(Controller.prototype.connect).toBeCalledTimes(0)
   expect(Controller.prototype.destroy).toBeCalledTimes(0)
 })
+let opcua = undefined
+let opcuaFields = undefined
+test('create opcua with the proper headers and fields returns valid results', async () => {
+  opcuaFields = {
+    name: 'aOpcua',
+    description: 'A Opcua',
+    host: 'localhost',
+    port: 4840,
+    retryRate: 10000,
+  }
+  const { createOpcua } = await client
+    .request(mutation.createOpcua, opcuaFields)
+    .catch((error) => {
+      throw error
+    })
+  expect(createOpcua).toEqual({
+    id: '3',
+    ..._.pick(opcuaFields, ['name', 'description']),
+    config: {
+      id: '1',
+      ..._.omit(opcuaFields, ['name', 'description', 'port']),
+      port: `${opcuaFields.port}`,
+      sources: [],
+      flatNodes: [],
+      nodes: {
+        id: opcuaNodes.nodeId,
+        name: opcuaNodes.browseName,
+        value: JSON.stringify(opcuaNodes.dataValue.value.value),
+        datatype: opcuaNodes.dataValue.value.dataType,
+        children: opcuaNodes.children,
+      },
+      status: 'connected',
+    },
+    createdBy: {
+      id: '1',
+      username: 'admin',
+    },
+    createdOn: expect.any(String),
+  })
+  opcua = createOpcua
+})
+test('create opcua without authorization headers returns error', async () => {
+  const result = await request(host, mutation.createOpcua, opcuaFields).catch(
+    (e) => e
+  )
+  expect(result.message).toContain(`You are not authorized.`)
+})
+test('updateOpcua updates the opcua values', async () => {
+  opcuaFields = {
+    id: opcua.id,
+    name: 'anotherOpcua',
+    description: 'Another Opcua',
+    host: '192.168.1.1',
+    port: 4841,
+    retryRate: 123456,
+  }
+  const { updateOpcua } = await client
+    .request(mutation.updateOpcua, opcuaFields)
+    .catch((error) => {
+      throw error
+    })
+  expect(updateOpcua).toEqual({
+    id: opcua.id,
+    ..._.pick(opcuaFields, ['name', 'description']),
+    config: {
+      id: '1',
+      ..._.omit(opcuaFields, ['id', 'name', 'description', 'port']),
+      port: `${opcuaFields.port}`,
+      flatNodes: [],
+      nodes: {
+        id: opcuaNodes.nodeId,
+        name: opcuaNodes.browseName,
+        value: JSON.stringify(opcuaNodes.dataValue.value.value),
+        datatype: opcuaNodes.dataValue.value.dataType,
+        children: opcuaNodes.children,
+      },
+      sources: [],
+      status: 'connected',
+    },
+    createdBy: {
+      id: '1',
+      username: 'admin',
+    },
+    createdOn: opcua.createdOn,
+  })
+  opcua = updateOpcua
+})
+test('updateOpcua without authorization headers returns error', async () => {
+  const result = await request(host, mutation.updateOpcua, {
+    id: opcua.id,
+  }).catch((e) => e)
+  expect(result.message).toContain(`You are not authorized.`)
+})
 test('device query returns a list of devices', async () => {
   const { devices } = await client.request(query.devices).catch((error) => {
     throw error
   })
-  expect(devices).toEqual([modbus, ethernetip])
+  expect(devices).toEqual([modbus, ethernetip, opcua])
 })
 test('device query without authorization headers returns error', async () => {
   const result = await request(host, query.devices).catch((e) => e)
@@ -662,6 +804,27 @@ test('delete ethernetip with valid arguments and credentials returns deleted dev
   })
   const isStillThere = devices.some((device) => {
     device.id === deleteEthernetIP.id
+  })
+  expect(isStillThere).toBe(false)
+})
+test('delete opcua without authorization headers returns error', async () => {
+  const result = await request(host, mutation.deleteOpcua, {
+    id: opcua.id,
+  }).catch((e) => e)
+  expect(result.message).toContain(`You are not authorized.`)
+})
+test('delete opcua with valid arguments and credentials returns deleted device', async () => {
+  const { deleteOpcua } = await client
+    .request(mutation.deleteOpcua, { id: opcua.id })
+    .catch((error) => {
+      throw error
+    })
+  expect(deleteOpcua.id).toEqual(opcua.id)
+  const { devices } = await client.request(query.devices).catch((error) => {
+    error
+  })
+  const isStillThere = devices.some((device) => {
+    device.id === deleteOpcua.id
   })
   expect(isStillThere).toBe(false)
 })

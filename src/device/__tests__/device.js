@@ -1,9 +1,50 @@
 jest.mock(`modbus-serial`)
 jest.mock(`ethernet-ip`)
 jest.mock(`apollo-server-express`)
+jest.mock(`node-opcua`, () => {
+  return {
+    OPCUAClient: {
+      create: () => {
+        return {
+          connect: jest.fn(async () => {}),
+          disconnect: jest.fn(),
+          on: jest.fn(),
+          createSession: jest.fn(() => {
+            return {
+              readVariableValue: jest.fn(),
+              writeSingleNode: jest.fn(),
+              close: jest.fn(),
+            }
+          }),
+        }
+      },
+    },
+    MessageSecurityMode: { None: null },
+    SecurityPolicy: { None: null },
+    DataType: {
+      Boolean: 1,
+      Float: 2,
+      Int32: 3,
+      String: 4,
+    },
+    NodeCrawler: function (session) {
+      return {
+        read: jest.fn((nodeId, callback) => {
+          callback()
+        }),
+        on: jest.fn(),
+      }
+    },
+  }
+})
 const { PubSub } = require(`apollo-server-express`)
 const ModbusRTU = require(`modbus-serial`)
 const { Controller } = require(`ethernet-ip`)
+const {
+  OPCUAClient,
+  MessageSecurityMode,
+  SecurityPolicy,
+} = require(`node-opcua`)
 
 const { createTestDb, deleteTestDb } = require('../../../test/db')
 const {
@@ -15,8 +56,11 @@ const {
   ModbusSource,
   EthernetIP,
   EthernetIPSource,
+  Opcua,
+  OpcuaSource,
 } = require('../../relations')
 const fromUnixTime = require('date-fns/fromUnixTime')
+const { read } = require('tentacle-sparkplug-client/src/logger')
 
 const pubsub = new PubSub()
 let db = undefined
@@ -44,6 +88,8 @@ test(`Initializing Device, also initializes Modbus, ModbusSource and EthernetIP.
   expect(ModbusSource.initialized).toBe(true)
   expect(EthernetIP.initialized).toBe(true)
   expect(EthernetIPSource.initialized).toBe(true)
+  expect(Opcua.initialized).toBe(true)
+  expect(OpcuaSource.initialized).toBe(true)
 })
 let device = null
 test(`Modbus: create creates a device with modbus config`, async () => {
@@ -159,7 +205,7 @@ describe(`Modbus: `, () => {
     modbus.client.connectTCP.mockReset()
   })
   test(`Disconnect calls client close throws an error on reject.`, async () => {
-    modbus.client.close.mockImplementation((callback) => {
+    modbus.client.close.mockImplementation(() => {
       throw new Error(`Close connection failed.`)
     })
     expect(await modbus.disconnect().catch((e) => e)).toMatchInlineSnapshot(
@@ -425,5 +471,156 @@ describe(`EthernetIPSource: `, () => {
     const tagname = `ADifferentTag`
     await ethernetipSource.setTagname(tagname)
     expect(ethernetipSource.tagname).toBe(tagname)
+  })
+})
+
+// ==============================
+//          OPCUA
+// ==============================
+
+let opcua = undefined
+describe('OPCUA: ', () => {
+  test(`create creates a device with opcua config`, async () => {
+    await User.initialize(db, pubsub)
+    user = User.instances[0]
+    const name = `testDevice`
+    const description = `Test Device`
+    const host = `localhost`
+    const port = 1234
+    const retryRate = 10000
+    const createdBy = user.id
+    opcua = await Opcua.create(
+      name,
+      description,
+      host,
+      port,
+      retryRate,
+      createdBy
+    )
+    device = opcua.device
+    expect(opcua.device).toBe(Device.instances[2])
+    expect(opcua.device.name).toBe(name)
+    expect(opcua.device.description).toBe(description)
+    expect(opcua.host).toBe(host)
+    expect(opcua.port).toBe(port)
+    expect(opcua.retryRate).toBe(retryRate)
+    expect(opcua.device.createdBy.id).toBe(user.id)
+  })
+  test(`Connect calls OPCUAClient.connect and rejected results in a false connected status.`, async () => {
+    opcua.client.connect.mockRejectedValueOnce(new Error(`Connection Error.`))
+    await opcua.connect()
+    expect(opcua.error).toMatchInlineSnapshot(`"Connection Error."`)
+    expect(opcua.client.connect).toBeCalledTimes(1)
+    expect(opcua.connected).toBe(false)
+    opcua.client.connect.mockReset()
+  })
+  test(`Connect calls OPCUAClient.connect and resolved results in a true connected status.`, async () => {
+    opcua.client.connect.mockResolvedValueOnce({})
+    await opcua.connect()
+    expect(opcua.error).toBe(null)
+    expect(opcua.client.connect).toBeCalledTimes(1)
+    expect(opcua.client.createSession).toBeCalledTimes(1)
+    expect(opcua.connected).toBe(true)
+    opcua.client.connect.mockReset()
+  })
+  test(`Disconnect calls client close throws an error on reject.`, async () => {
+    opcua.client.disconnect.mockImplementation(() => {
+      throw new Error(`Close connection failed.`)
+    })
+    expect(await opcua.disconnect().catch((e) => e)).toMatchInlineSnapshot(
+      `[Error: Close connection failed.]`
+    )
+    expect(opcua.client.disconnect).toBeCalledTimes(1)
+    expect(opcua.session.close).toBeCalledTimes(1)
+    expect(opcua.connected).toBe(true)
+    opcua.client.disconnect.mockClear()
+  })
+  test(`Disconnect calls client close and connected status becomes false.`, async () => {
+    opcua.client.disconnect.mockImplementation(() => {})
+    await opcua.disconnect()
+    expect(opcua.connected).toBe(false)
+  })
+  test(`Getters all return their underscore values`, () => {
+    expect(opcua.host).toBe(opcua._host)
+    expect(opcua.port).toBe(opcua._port)
+    expect(opcua.retryRate).toBe(opcua._retryRate)
+  })
+  test(`Setters all set the values appropriately`, async () => {
+    const host = `newHost`
+    const port = 12345
+    const retryRate = 30000
+    await opcua.setHost(host)
+    await opcua.setPort(port)
+    await opcua.setRetryRate(retryRate)
+    expect(opcua.host).toBe(host)
+    expect(opcua.port).toBe(port)
+    expect(opcua.retryRate).toBe(retryRate)
+  })
+
+  describe(`OPCUASource: `, () => {
+    let opcuaSource = undefined
+    test.todo(`rewrite read tests to mock ethernet-ip module.`)
+    test(`read reads`, async () => {
+      opcua.client.connect.mockResolvedValueOnce({})
+      await opcua.connect()
+      opcua.session.readVariableValue.mockImplementation(async (nodeId) => {
+        return new Promise((resolve, reject) => {
+          resolve({
+            value: {
+              value: 123.45,
+            },
+          })
+        })
+      })
+      const tag = await Tag.create(
+        'testOpcua',
+        'Test OPC-UA Tag',
+        0,
+        scanClass,
+        user,
+        `FLOAT`
+      )
+      opcuaSource = await OpcuaSource.create(opcua.id, tag.id, 'n1')
+      await opcuaSource.read()
+      expect(tag.value).toBeGreaterThan(0)
+      opcua.session.readVariableValue.mockReset()
+    })
+    test(`write writes`, async () => {
+      opcua.client.connect.mockResolvedValueOnce({})
+      opcua.session.writeSingleNode.mockResolvedValueOnce({})
+      await opcua.connect()
+      await opcuaSource.write()
+      opcua.session.writeSingleNode.mockResolvedValueOnce({})
+      await opcuaSource.tag.setDatatype('INT32')
+      await opcuaSource.write()
+      opcua.session.writeSingleNode.mockResolvedValueOnce({})
+      await opcuaSource.tag.setDatatype('BOOLEAN')
+      await opcuaSource.write()
+      opcua.session.writeSingleNode.mockResolvedValueOnce({})
+      await opcuaSource.tag.setDatatype('STRING')
+      await opcuaSource.write()
+      opcua.session.writeSingleNode.mockRejectedValueOnce({})
+      await opcuaSource.write()
+      await opcua.disconnect()
+      await opcuaSource.write()
+      expect(opcua.session.writeSingleNode).toBeCalledTimes(5)
+      opcua.session.writeSingleNode.mockReset()
+    })
+    test(`Getters all return their underscore values`, () => {
+      expect(opcuaSource.nodeId).toBe(opcuaSource._nodeId)
+    })
+    test(`Setters all set the values appropriately`, async () => {
+      const nodeId = `ADifferentNodeId`
+      await opcuaSource.setNodeId(nodeId)
+      expect(opcuaSource.nodeId).toBe(nodeId)
+    })
+    test(`browse browses.`, async () => {
+      opcua.client.connect.mockResolvedValueOnce({})
+      await opcua.browse()
+      await opcua.browse('', true)
+      await opcua.connect()
+      await opcua.browse()
+      await opcua.browse('', true)
+    })
   })
 })
