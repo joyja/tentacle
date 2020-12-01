@@ -483,6 +483,7 @@ test('create opcua with the proper headers and fields returns valid results', as
       ..._.omit(opcuaFields, ['name', 'description', 'port']),
       port: `${opcuaFields.port}`,
       sources: [],
+      flatNodes: [],
       nodes: {
         id: opcuaNodes.nodeId,
         name: opcuaNodes.browseName,
@@ -527,6 +528,7 @@ test('updateOpcua updates the opcua values', async () => {
       id: '1',
       ..._.omit(opcuaFields, ['id', 'name', 'description', 'port']),
       port: `${opcuaFields.port}`,
+      flatNodes: [],
       nodes: {
         id: opcuaNodes.nodeId,
         name: opcuaNodes.browseName,

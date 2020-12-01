@@ -114,6 +114,12 @@ const device = `
             value
           }
         }
+        flatNodes {
+          id
+          name
+          datatype
+          value
+        }
       }
     }
   }
