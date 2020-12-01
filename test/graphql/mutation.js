@@ -179,6 +179,57 @@ const deleteEthernetIP = `mutation DeleteEthernetIP (
 }
 ${fragment.device}`
 
+const createOpcua = `mutation CreateOpcua (
+  $name: String!
+  $description: String!
+  $host: String!
+  $port: Int!
+  $retryRate: Int!
+){
+  createOpcua(
+    name: $name
+    description: $description
+    host: $host
+    port: $port
+    retryRate: $retryRate
+  ) {
+    ... FullDevice
+  }
+}
+${fragment.device}`
+
+const updateOpcua = `mutation UpdateOpcua (
+  $id: ID!
+  $name: String
+  $description: String
+  $host: String
+  $port: Int
+  $retryRate: Int
+){
+  updateOpcua(
+    id: $id
+    name: $name
+    description: $description
+    host: $host
+    port: $port
+    retryRate: $retryRate
+  ) {
+    ... FullDevice
+  }
+}
+${fragment.device}`
+
+const deleteOpcua = `mutation DeleteOpcua (
+  $id: ID!
+){
+  deleteOpcua(
+    id: $id
+  ) {
+    ... FullDevice
+  }
+}
+${fragment.device}`
+
 const createMqtt = `mutation CreateMqtt (
     $name: String!
     $description: String!
@@ -268,6 +319,9 @@ module.exports = {
   createEthernetIP,
   updateEthernetIP,
   deleteEthernetIP,
+  createOpcua,
+  updateOpcua,
+  deleteOpcua,
   createMqtt,
   updateMqtt,
   deleteMqtt,

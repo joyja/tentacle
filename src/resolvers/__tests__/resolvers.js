@@ -2,6 +2,34 @@ jest.mock(`tentacle-sparkplug-client`)
 jest.mock(`modbus-serial`)
 jest.mock(`ethernet-ip`)
 jest.mock(`apollo-server-express`)
+jest.mock(`node-opcua`, () => {
+  return {
+    OPCUAClient: {
+      create: () => {
+        return {
+          connect: jest.fn(async () => {}),
+          disconnect: jest.fn(),
+          on: jest.fn(),
+          createSession: jest.fn(() => {
+            return {
+              readVariableValue: jest.fn(),
+              writeSingleNode: jest.fn(),
+              close: jest.fn(),
+            }
+          }),
+        }
+      },
+    },
+    MessageSecurityMode: { None: null },
+    SecurityPolicy: { None: null },
+    DataType: {
+      Boolean: 1,
+      Float: 2,
+      Int32: 3,
+      String: 4,
+    },
+  }
+})
 const { PubSub } = require(`apollo-server-express`)
 const ModbusRTU = require(`modbus-serial`)
 const { Controller } = require(`ethernet-ip`)
@@ -17,6 +45,8 @@ const {
   ModbusSource,
   EthernetIP,
   EthernetIPSource,
+  Opcua,
+  OpcuaSource,
   Service,
   Mqtt,
   MqttSource,
@@ -133,6 +163,16 @@ beforeAll(async () => {
     `Test EIP Device 1`,
     'localhost',
     3,
+    user.id
+  ).catch((error) => {
+    throw error
+  })
+  await Opcua.create(
+    'testopcuaDevice1',
+    'Test OPCUA Device 1',
+    'localhost',
+    4840,
+    30000,
     user.id
   ).catch((error) => {
     throw error
