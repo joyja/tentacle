@@ -29,7 +29,7 @@ config:
             tentacle:
               restart: always
               container_name: 'tentacle'
-              image: 'joyja/tentacle:version-0.0.34'
+              image: 'joyja/tentacle:version-0.0.35'
               volumes:
                 - tentacleDB:/database
               networks:
