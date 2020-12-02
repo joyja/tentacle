@@ -95,6 +95,9 @@ The easiest way is to use [PM2](https://github.com/Unitech/pm2).
     * [Mqtt](#mqtt)
     * [MqttPrimaryHost](#mqttprimaryhost)
     * [MqttSource](#mqttsource)
+    * [Opcua](#opcua)
+    * [OpcuaNode](#opcuanode)
+    * [OpcuaSource](#opcuasource)
     * [ScanClass](#scanclass)
     * [Service](#service)
     * [Subscription](#subscription)
@@ -431,11 +434,156 @@ Requires a valid authorization token. Deletes a tag. Will delete any source assi
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>createOpcua</strong></td>
+<td valign="top"><a href="#device">Device</a></td>
+<td>
+
+Requires a valid authorization token. Creates a opcua device, and automatically starts a connection.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">name</td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">description</td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">host</td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">port</td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">retryRate</td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>updateOpcua</strong></td>
+<td valign="top"><a href="#device">Device</a></td>
+<td>
+
+Requires a valid authorization token. Updates an existing opcua device and refreshes the connection.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">id</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">name</td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">description</td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">host</td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">port</td>
+<td valign="top"><a href="#int">Int</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">retryRate</td>
+<td valign="top"><a href="#int">Int</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>deleteOpcua</strong></td>
+<td valign="top"><a href="#device">Device</a></td>
+<td>
+
+Requires a valid authorization token. Deletes a opcua device. All sources assigned to this device are deleted and tags using
+this device as a source will have their sources set to null, making their values static.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">id</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>createOpcuaSource</strong></td>
+<td valign="top"><a href="#opcuasource">OpcuaSource</a></td>
+<td>
+
+Requires a valid authorization token. Creates a OPC UA source. The tag value will then be updated to the value at the source register per the scan class
+
+</td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">deviceId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">tagId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">nodeId</td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>updateOpcuaSource</strong></td>
+<td valign="top"><a href="#opcuasource">OpcuaSource</a></td>
+<td>
+
+Requires a valid authorization token. Updates a OPC UA source register. The tag value will then update per the new register at the rate of the scan class.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">tagId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">nodeId</td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>deleteOpcuaSource</strong></td>
+<td valign="top"><a href="#opcuasource">OpcuaSource</a></td>
+<td>
+
+Requires a valid authorization token. Deletes a OPC UA source. The tag value will then be static.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">tagId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>createModbus</strong></td>
 <td valign="top"><a href="#device">Device</a></td>
 <td>
 
-Requires a valid authorization token. Creates a modbus device, and automatically starts a connection.
+Requires a valid authorization token. Creates an Modbus TCP/IP device, and automatically starts a connection.
 
 </td>
 </tr>
@@ -1599,6 +1747,204 @@ Source device. All tags updating their values from this device will be published
 <td>
 
 Number of historical records stored, awaiting forwarding
+
+</td>
+</tr>
+</tbody>
+</table>
+
+### Opcua
+
+Opcua is a device config allowing for access to data for updating tag values per the Opcua specification.
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>id</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>device</strong></td>
+<td valign="top"><a href="#device">Device</a>!</td>
+<td>
+
+Device for this Opcua configuration.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>host</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td>
+
+Host or IP address of the modbus device.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>port</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td>
+
+Port of the modbus device.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>status</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td>
+
+Status of the modbus device connection. Will be connected if connection is successful or an error message if connection failed.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>retryRate</strong></td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td>
+
+Milliseconds between retries when connection is interrupted.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>nodes</strong></td>
+<td valign="top"><a href="#opcuanode">OpcuaNode</a></td>
+<td>
+
+Nodes
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>flatNodes</strong></td>
+<td valign="top">[<a href="#opcuanode">OpcuaNode</a>!]!</td>
+<td>
+
+Non-heirarchical list
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>sources</strong></td>
+<td valign="top">[<a href="#opcuasource">OpcuaSource</a>!]!</td>
+<td>
+
+List of sources (tag/nodeId) pairs that are using this opcua device.
+
+</td>
+</tr>
+</tbody>
+</table>
+
+### OpcuaNode
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>name</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>id</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>datatype</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>value</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>organizes</strong></td>
+<td valign="top">[<a href="#opcuanode">OpcuaNode</a>!]</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>hasProperty</strong></td>
+<td valign="top">[<a href="#opcuanode">OpcuaNode</a>!]</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>hasComponent</strong></td>
+<td valign="top">[<a href="#opcuanode">OpcuaNode</a>!]</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>children</strong></td>
+<td valign="top">[<a href="#opcuanode">OpcuaNode</a>!]!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### OpcuaSource
+
+An OPC UA source reads an tag from an OPC UA device and updates a tag value per the tags scan class.
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>id</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>opcua</strong></td>
+<td valign="top"><a href="#opcua">Opcua</a>!</td>
+<td>
+
+The OPC UA device this source uses to get the register values.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>tag</strong></td>
+<td valign="top"><a href="#tag">Tag</a>!</td>
+<td>
+
+The tag to update.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>nodeId</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td>
+
+The node id of the tag in the OPC UA device
 
 </td>
 </tr>
