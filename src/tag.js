@@ -105,9 +105,11 @@ class Tag extends Model {
       this._value = result
       this.pubsub.publish('tagUpdate', { tagUpdate: this })
     })
-    if (Math.abs(this.value - this.prevValue) < this.deadband) {
-      this.prevChangeWithinDeadband = true
-    } else {
+    this.prevChangeWithinDeadband =
+      this.datatype === 'BOOLEAN'
+        ? this.value === this.prevValue
+        : Math.abs(this.value - this.prevValue) < this.deadband
+    if (!this.prevChangeWithinDeadband) {
       this.prevChangeWithinDeadband = false
       this.prevValue = this.value
     }
