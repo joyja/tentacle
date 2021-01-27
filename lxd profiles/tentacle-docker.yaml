@@ -41,6 +41,7 @@ config:
               networks:
                 - upstream
             nginx:
+              restart: always
               container_name: 'nginx'
               image: 'nginx'
               volumes:
