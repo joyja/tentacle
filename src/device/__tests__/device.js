@@ -283,8 +283,8 @@ describe(`Modbus Source: `, () => {
       'testTag',
       'Test Tag',
       0,
-      scanClass,
-      user,
+      scanClass.id,
+      user.id,
       `FLOAT`
     )
     const modbusSource = await ModbusSource.create(
@@ -452,8 +452,8 @@ describe(`EthernetIPSource: `, () => {
       'testEthernetIP',
       'Test Ethernet IP Tag',
       0,
-      scanClass,
-      user,
+      scanClass.id,
+      user.id,
       `FLOAT`
     )
     ethernetipSource = await EthernetIPSource.create(
@@ -576,8 +576,8 @@ describe('OPCUA: ', () => {
         'testOpcua',
         'Test OPC-UA Tag',
         0,
-        scanClass,
-        user,
+        scanClass.id,
+        user.id,
         `FLOAT`
       )
       opcuaSource = await OpcuaSource.create(opcua.id, tag.id, 'n1')

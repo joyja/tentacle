@@ -140,7 +140,7 @@ beforeAll(async () => {
     `testTag1`,
     `Test Tag 1`,
     123,
-    scanClass,
+    scanClass.id,
     user.id,
     'FLOAT'
   ).catch((error) => {
