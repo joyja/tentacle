@@ -70,23 +70,9 @@ class Tag extends Model {
     this.prevValue = null
     this.prevChangeWithinDeadband = false
   }
-  get name() {
+  get createdOn() {
     this.checkInit()
-    return this._name
-  }
-  setName(value) {
-    return this.update(this.id, 'name', value, Tag).then(
-      (result) => (this._name = result)
-    )
-  }
-  get description() {
-    this.checkInit()
-    return this._description
-  }
-  setDescription(value) {
-    return this.update(this.id, 'description', value, Tag).then(
-      (result) => (this._description = result)
-    )
+    return fromUnixTime(this._createdOn)
   }
   get value() {
     this.checkInit()
@@ -114,60 +100,6 @@ class Tag extends Model {
       this.prevValue = this.value
     }
     return result
-  }
-  get createdOn() {
-    this.checkInit()
-    return fromUnixTime(this._createdOn)
-  }
-  get datatype() {
-    this.checkInit()
-    return this._datatype
-  }
-  setDatatype(datatype) {
-    this.checkInit()
-    return this.update(this.id, 'datatype', datatype, Tag).then(
-      (result) => (this._datatype = result)
-    )
-  }
-  get max() {
-    this.checkInit()
-    return this._max
-  }
-  setMax(value) {
-    this.checkInit()
-    return this.update(this.id, 'max', value, Tag).then(
-      (result) => (this._max = result)
-    )
-  }
-  get min() {
-    this.checkInit()
-    return this._min
-  }
-  setMin(value) {
-    this.checkInit()
-    return this.update(this.id, 'min', value, Tag).then(
-      (result) => (this._min = result)
-    )
-  }
-  get units() {
-    this.checkInit()
-    return this._units
-  }
-  setUnits(value) {
-    this.checkInit()
-    return this.update(this.id, 'units', value, Tag).then(
-      (result) => (this._units = result)
-    )
-  }
-  get deadband() {
-    this.checkInit()
-    return this._deadband
-  }
-  setDeadband(value) {
-    this.checkInit()
-    return this.update(this.id, 'deadband', value, Tag).then(
-      (result) => (this._deadband = result)
-    )
   }
 }
 Tag.table = `tag`

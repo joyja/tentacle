@@ -142,6 +142,7 @@ describe(`Model:`, () => {
   })
   test(`get throws error if the id doesn't existing in the database`, async () => {
     const result = await TestModel.get(123).catch((e) => e)
+    console.log(result)
     expect(result.errors[0]).toMatchInlineSnapshot(
       `[Error: There is no test with id# 123.]`
     )
