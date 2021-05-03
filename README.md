@@ -1,4 +1,4 @@
-# Tentacle
+![Tentacle](https://res.cloudinary.com/jarautomation/image/upload/c_scale,w_250/v1620021619/logos/tentacle-light.png)
 
 [![GitHub](https://img.shields.io/github/license/joyja/tentacle)](https://github.com/joyja/tentacle/blob/master/LICENSE)
 ![Travis (.com)](https://img.shields.io/travis/com/joyja/tentacle)
