@@ -69,6 +69,7 @@ class Tag extends Model {
     this._deadband = result.deadband
     this.prevValue = null
     this.prevChangeWithinDeadband = false
+    this.prevChangeOn = getUnixTime(new Date())
   }
   get name() {
     this.checkInit()
@@ -112,6 +113,7 @@ class Tag extends Model {
     if (!this.prevChangeWithinDeadband) {
       this.prevChangeWithinDeadband = false
       this.prevValue = this.value
+      this.prevChangeOn = getUnixTime(new Date())
     }
     return result
   }

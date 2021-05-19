@@ -491,6 +491,20 @@ MqttSource.prototype.log = async function (scanClassId) {
       return false
     }
   })
+  // TO-DO check how long it has been since last change, if it's been a while, log the previous value before out of deadband was detected.
+  const preDeadbandExitPoints = tags
+    .filter((tag) => {
+      const now = getUnixTime(new Date())
+      const secondsSinceChange = now - tag.prevChangeOn
+      return secondsSinceChange >= (tag.scanClass.rate / 1000.0) * 3
+    })
+    .map((tag) => {
+      return {
+        id: tag.id,
+        value: tag.prevValue,
+        timestamp: getUnixTime(new Date()),
+      }
+    })
   // The following is to collect realtime history of events to be published without isHistorical
   if (tags.length > 0) {
     this.rtHistory = [
@@ -502,6 +516,7 @@ MqttSource.prototype.log = async function (scanClassId) {
           timestamp: getUnixTime(new Date()),
         }
       }),
+      ...preDeadbandExitPoints,
     ]
   }
   // The following is to collect history in the event of a primaryHost going offline
