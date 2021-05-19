@@ -68,6 +68,7 @@ class Tag extends Model {
     this._units = result.units
     this._deadband = result.deadband
     this.prevValue = null
+    this.lastChangeOn = getUnixTime(new Date())
     this.prevChangeWithinDeadband = false
     this.prevChangeOn = getUnixTime(new Date())
   }
@@ -99,6 +100,12 @@ class Tag extends Model {
   }
   async setValue(value, write = true) {
     this.checkInit()
+    const lastValue = this.value
+    const lastChangeOn = this.lastChangeOn
+    if (!this.prevChangeWithinDeadband) {
+      this.prevValue = lastValue
+      this.prevChangeOn = lastChangeOn
+    }
     if (this.source && write) {
       this.source.write(value)
     }
@@ -106,14 +113,13 @@ class Tag extends Model {
       this._value = result
       this.pubsub.publish('tagUpdate', { tagUpdate: this })
     })
+    this.lastChangeOn = getUnixTime(new Date())
     this.prevChangeWithinDeadband =
       this.datatype === 'BOOLEAN'
         ? this.value === this.prevValue
         : Math.abs(this.value - this.prevValue) < this.deadband
     if (!this.prevChangeWithinDeadband) {
       this.prevChangeWithinDeadband = false
-      this.prevValue = this.value
-      this.prevChangeOn = getUnixTime(new Date())
     }
     return result
   }
