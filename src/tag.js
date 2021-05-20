@@ -101,10 +101,10 @@ class Tag extends Model {
   async setValue(value, write = true) {
     this.checkInit()
     const lastValue = this.value
-    const lastChangeOn = this.lastChangeOn
+    this.lastChangeOn = this.timestamp
     if (!this.prevChangeWithinDeadband) {
       this.prevValue = lastValue
-      this.prevChangeOn = lastChangeOn
+      this.prevChangeOn = this.lastChangeOn
     }
     if (this.source && write) {
       this.source.write(value)
@@ -113,7 +113,7 @@ class Tag extends Model {
       this._value = result
       this.pubsub.publish('tagUpdate', { tagUpdate: this })
     })
-    this.lastChangeOn = getUnixTime(new Date())
+    this.timestamp = getUnixTime(new Date())
     this.prevChangeWithinDeadband =
       this.datatype === 'BOOLEAN'
         ? this.value === this.prevValue
