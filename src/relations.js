@@ -501,13 +501,14 @@ MqttSource.prototype.log = async function (scanClassId) {
       return {
         id: tag.id,
         value: tag.prevValue,
-        timestamp: tag.prevChangeOn,
+        timestamp: tag.lastChangeOn,
       }
     })
   // The following is to collect realtime history of events to be published without isHistorical
   if (tags.length > 0) {
     this.rtHistory = [
       ...this.rtHistory,
+      ...preDeadbandExitPoints,
       ...tags.map((tag) => {
         return {
           id: tag.id,
@@ -515,8 +516,8 @@ MqttSource.prototype.log = async function (scanClassId) {
           timestamp: getUnixTime(new Date()),
         }
       }),
-      ...preDeadbandExitPoints,
     ]
+    console.log(this.rtHistory)
   }
   // The following is to collect history in the event of a primaryHost going offline
   if (tags.length > 0) {
